@@ -1,0 +1,20 @@
+UUID
+u-s4t2ud-31d739729a66569fa3753c24bec5a62d62557111a6b9bd51a690afe5061f8cfc
+
+SECRET
+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
+
+
+code
+ee9fd2b5e0212d23d5c400777b7d6e0c1c558771d47e8178b8c2aae827d2aede
+
+
+
+
+
+curl -F grant_type=authorization_code \
+-F client_id=u-s4t2ud-31d739729a66569fa3753c24bec5a62d62557111a6b9bd51a690afe5061f8cfc \
+-F client_secret=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 \
+-F code=ee9fd2b5e0212d23d5c400777b7d6e0c1c558771d47e8178b8c2aae827d2aede \
+-F redirect_uri=http://localhost:8080 \
+-X POST https://api.intra.42.fr/oauth/token
