@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Request } from "express";
 import { AuthService } from "./auth.service";
 import { FortyTwoAuthGuard } from './utils/Guards'
 
@@ -7,7 +8,7 @@ export class AuthController {
 	constructor(private authService: AuthService) {}
 
 	// auth/42/login
-	@Get('42/login')
+	@Get('login')
 	@UseGuards(FortyTwoAuthGuard)
 	handleLogin() {
 		return { msg: '42 Authentication'}
@@ -20,18 +21,16 @@ export class AuthController {
 		return { msg: 'OK'}
 	}
 
+	@Get('status')
+	user(@Req() request: Request) {
+		var user = request.session['passport'];
+		console.log("userfunction");
+		console.log(user);
 
-
-
-
-
-	@Post('signup')
-	signup() {
-		return this.authService.signup();
-	}
-
-	@Post('signin')
-	signin() {
-		return this.authService.signin()
+		if (user) {
+			return { msg: 'Authenticated' };
+		} else {
+			return { msg: 'Not Authenticated'};
+		}
 	}
 }
