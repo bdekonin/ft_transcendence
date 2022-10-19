@@ -1,7 +1,7 @@
 import { Controller, Get, Req, UseGuards } from "@nestjs/common";
 import { Request } from "express";
 import { AuthService } from "./auth.service";
-import { FortyTwoAuthGuard } from './utils/Guards'
+import { AuthenticateGuard, FortyTwoAuthGuard } from './utils/Guards'
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +23,7 @@ export class AuthController {
 
 	@Get('status')
 	user(@Req() request: Request) {
-		var user = request.session['passport'];
+		var user = request.user;
 		console.log("userfunction");
 		console.log(user);
 
@@ -32,5 +32,15 @@ export class AuthController {
 		} else {
 			return { msg: 'Not Authenticated'};
 		}
+	}
+
+	@Get('destroy')
+	@UseGuards(AuthenticateGuard)
+	destroySession(@Req() request: Request) {
+		console.log('Destroying session')
+		request.session.destroy(function(err) {
+			// cannot access session here
+			// what to do here?
+		});
 	}
 }

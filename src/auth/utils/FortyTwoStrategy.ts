@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from 'passport-42';
-import {v4 as uuidv4} from 'uuid';
 import { AuthService } from "../auth.service";
 
 @Injectable()

@@ -13,13 +13,14 @@ async function bootstrap() {
       saveUninitialized: false,
       resave: false,
       cookie: {
-        maxAge: 60000,
+        maxAge: 600000, // 10 minutes
       }
     })
   );
 
-app.use(passport.initialize());
-app.use(passport.session());
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   await app.listen(3000);
 }
 bootstrap();
