@@ -7,22 +7,31 @@ import { Repository } from "typeorm";
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectRepository(Player) private readonly playerRepository:
+		@InjectRepository(Player) public playerRepository:
 		Repository<Player>,
 	) {}
-
-	async setWins(details: PlayerDetails)
+	/* Find functions */
+	async findUserById(idArg: number)
 	{
-		const user = await this.findUserById(details.id);
-
-		user.wins++;
-
-		await this.playerRepository.save(user);
-	}
-
-	async findUserById(id: number)
-	{
-		const user = await this.playerRepository.findOneBy({ id });
+		const user = await this.playerRepository.findOneBy({
+			id:idArg
+		});
 		return user;
 	}
+	async findUserByUsername(usernameArg: string)
+	{
+		const user = await this.playerRepository.findOneBy({
+			username:usernameArg
+		});
+		return user;
+	}
+	async findUserByIdUsername(idArg:number, usernameArg: string)
+	{
+		const user = await this.playerRepository.findOneBy({
+			id: idArg,
+			username:usernameArg
+		});
+		return user;
+	}
+
 }

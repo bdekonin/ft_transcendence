@@ -1,34 +1,45 @@
 import { Injectable} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Player } from "src/typeorm/entities/Player";
+import { UserService } from "src/user/user.service";
 import { PlayerDetails } from "src/utils/types";
-import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthService {
 
 	constructor(
-		@InjectRepository(Player) private readonly playerRepository:
-		Repository<Player>,
+		private userService: UserService
 	) {}
 
 	async validateUser(details: PlayerDetails) {
 		console.log('AuthService');
 		console.log(details);
 
-		const user = await this.playerRepository.findOneBy({id: details.id})
+		const user = await this.getPlayerRepository().findOneBy({
+			id: details.id,
+			username: details.username
+		});
 
 		if (user)
 			return user;
 		console.log('User not found. Creating...');
-		const newUser = this.playerRepository.create(details);
-		return this.playerRepository.save(newUser);
+		const newUser = this.getPlayerRepository().create(details);
+		return this.getPlayerRepository().save(newUser);
+	}
+
+	getPlayerRepository() {
+		return this.userService.playerRepository;
 	}
 
 	async findUserById(id: number)
 	{
-		const user = await this.playerRepository.findOneBy({ id });
-		return user;
+		return await this.userService.findUserById(id)
+	}
+	async findUserByUsername(username: string)
+	{
+		return await this.userService.findUserByUsername(username);
+	}
+	async findUserByIdUsername(idArg:number, usernameArg: string)
+	{
+		return await this.userService.findUserByIdUsername(idArg, usernameArg)
 	}
 }
 
