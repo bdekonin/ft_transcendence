@@ -1,14 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Player } from "src/typeorm/entities/Player";
-import { PlayerDetails } from "src/utils/types";
+import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
 
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectRepository(Player) public playerRepository:
-		Repository<Player>,
+		@InjectRepository(User) public playerRepository:
+		Repository<User>,
 	) {}
 	/* Find functions */
 	async findUserById(idArg: number)

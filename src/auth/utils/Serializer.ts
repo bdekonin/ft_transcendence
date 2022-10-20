@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PassportSerializer } from "@nestjs/passport";
-import { Player } from "src/typeorm/entities/Player";
+import { User } from "src/entities/User.entity";
 import { AuthService } from "../auth.service";
 
 @Injectable()
@@ -11,11 +11,11 @@ export class SessionSerializer extends PassportSerializer {
 		super();
 	}
 
-	serializeUser(user: Player, done: Function) {
+	serializeUser(user: User, done: Function) {
 		console.log('Serialize User');
 		done(null, user);
 	}
-	async deserializeUser(payload: Player, done: Function) {
+	async deserializeUser(payload: User, done: Function) {
 		const user = await this.authService.findUserById(payload.id);
 		console.log('Deserialize User');
 		console.log(user);

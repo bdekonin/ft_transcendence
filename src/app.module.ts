@@ -4,7 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { Player } from './typeorm/entities/Player';
+import { Membership } from './entities/Membership.entity';
+import { User } from './entities/User.entity';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -15,8 +16,8 @@ import { UserModule } from './user/user.module';
       port: 5432,
       username: 'root',
       password: 'root',
-      database: 'postgres_db',
-      entities: [Player],
+      database: 'ft_trans',
+      entities: [User, Membership],
       synchronize: true,
     }),
     PassportModule.register({ session: true}),

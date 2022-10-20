@@ -1,10 +1,7 @@
-export type PlayerDetails = {
+export type UserDetails = {
 	id: number;
 	username: string;
 	avatar: string;
-	// wins: number;
-	// loses: number;
-	// twofa: boolean;
 }
 
 export {};

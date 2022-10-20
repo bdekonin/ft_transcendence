@@ -1,6 +1,6 @@
 import { Injectable} from "@nestjs/common";
 import { UserService } from "src/user/user.service";
-import { PlayerDetails } from "src/utils/types";
+import { UserDetails } from "src/utils/types";
 
 @Injectable()
 export class AuthService {
@@ -9,7 +9,7 @@ export class AuthService {
 		private userService: UserService
 	) {}
 
-	async validateUser(details: PlayerDetails) {
+	async validateUser(details: UserDetails) {
 		console.log('AuthService');
 		console.log(details);
 
@@ -20,6 +20,7 @@ export class AuthService {
 
 		if (user)
 			return user;
+
 		console.log('User not found. Creating...');
 		const newUser = this.getPlayerRepository().create(details);
 		return this.getPlayerRepository().save(newUser);
