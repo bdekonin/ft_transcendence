@@ -10,14 +10,14 @@ export class UserService {
 		Repository<User>,
 	) {}
 	/* Find functions */
-	async findUserById(idArg: number)
+	async findUserById(idArg: number): Promise<User>
 	{
 		const user = await this.playerRepository.findOneBy({
 			id:idArg
 		});
 		return user;
 	}
-	async findUserByUsername(usernameArg: string)
+	async findUserByUsername(usernameArg: string): Promise<User>
 	{
 		const user = await this.playerRepository.findOneBy({
 			username:usernameArg
@@ -25,7 +25,7 @@ export class UserService {
 		return user;
 
 	}
-	async findUserByIdUsername(idArg:number, usernameArg: string)
+	async findUserByIdUsername(idArg:number, usernameArg: string): Promise<User>
 	{
 		const user = await this.playerRepository.findOneBy({
 			id: idArg,
