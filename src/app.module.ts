@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { GameHistory } from './entities/GameHistory.entity';
 import { Membership } from './entities/Membership.entity';
 import { User } from './entities/User.entity';
 import { UserModule } from './user/user.module';
@@ -17,7 +18,7 @@ import { UserModule } from './user/user.module';
       username: 'root',
       password: 'root',
       database: 'ft_trans',
-      entities: [User, Membership],
+      entities: [User, Membership, GameHistory],
       synchronize: true,
     }),
     PassportModule.register({ session: true}),

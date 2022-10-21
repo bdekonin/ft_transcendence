@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { GameHistory } from "src/entities/GameHistory.entity";
 import { Membership } from "src/entities/Membership.entity";
 import { User } from "src/entities/User.entity";
 import { UserModule } from "src/user/user.module";
@@ -10,7 +11,7 @@ import { FortyTwoStrategy } from "./utils/FortyTwoStrategy";
 import { SessionSerializer } from "./utils/Serializer";
 
 @Module({
-	imports: [UserModule, TypeOrmModule.forFeature([User, Membership])],
+	imports: [UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory])],
 	controllers: [AuthController],
 	providers: [
 		UserService, FortyTwoStrategy, AuthService, SessionSerializer,

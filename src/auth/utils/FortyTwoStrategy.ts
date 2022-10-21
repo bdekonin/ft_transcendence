@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { ConsoleLogger, Inject, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from 'passport-42';
 import { AuthService } from "../auth.service";
@@ -16,6 +16,9 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 	async validate(accessToken: string, refreshToken: string, profile: Profile) {
+		console.log(accessToken);
+		console.log(refreshToken);
+		console.log(profile);
 		const user = await this.authService.validateUser({
 			id: profile.id,
 			username: profile.username,

@@ -15,28 +15,23 @@ export class AuthService {
 	) {}
 
 	async validateUser(details: UserDetails) {
-		const user = this.userService.playerRepository.find({
-			where: {
-				username: 'bdekonin',
-			},
-			relations: ['membership']
-		})
+		const user = await this.getPlayerRepository().findOneBy({id: details.id})
 
 		if (user)
 			return user;
 
 		console.log('User not found. Creating...');
 		
-		const newMembership = this.membershipRepo.create({id: 420});
-		this.membershipRepo.save(newMembership);
-
+		const newMembership = this.membershipRepo.create();
+		const savedMembership = await this.membershipRepo.save(newMembership);
+		
 		const newUser = this.getPlayerRepository().create(details);
-		newUser.membership = newMembership;
+		newUser.membership = savedMembership;
 		return this.getPlayerRepository().save(newUser);
 	}
 
 	getPlayerRepository() {
-		return this.userService.playerRepository;
+		return this.userService.userRepository;
 	}
 
 	async findUserById(id: number)

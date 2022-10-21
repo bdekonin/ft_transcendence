@@ -1,4 +1,5 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
+import { GameHistory } from "./GameHistory.entity";
 import { Membership } from "./Membership.entity";
 
 
@@ -12,11 +13,11 @@ export class User {
 	@PrimaryColumn()
 	username: string; // Unique username
 
-	@Column({ nullable: false })
+	@Column({ default: 'https://cdn.intra.42.fr/users/medium_default.png' })
 	avatar: string; // Link to image || or file path to image
 
 	// @Column() // One to One
-	@OneToOne(() => Membership)
+	@OneToOne(() => Membership )
 	@JoinColumn()
 	membership: Membership; // extends to .role .banned .muted
 
@@ -32,8 +33,12 @@ export class User {
 	@Column({ default: false})
 	twofa: boolean;
 
-	@Column({ default: 0 }) // One to Many
-	game_history: number; // history of games
+	// @Column({ default: 0 }) // One to Many
+	// game_history: number; // history of games
+
+	@ManyToMany(() => GameHistory)
+	@JoinTable()
+	game_history: GameHistory[];
 
 	@CreateDateColumn()
 	createdAt: Date;
