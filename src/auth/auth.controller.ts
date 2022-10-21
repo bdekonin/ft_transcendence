@@ -43,4 +43,11 @@ export class AuthController {
 			// what to do here?
 		});
 	}
+
+	@Get('clear')
+	@UseGuards(AuthenticateGuard)
+	clear() {
+		this.authService.membershipRepo.clear();
+		this.authService.getPlayerRepository().clear();
+	}
 }
