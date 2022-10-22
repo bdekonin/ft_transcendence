@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
 import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
@@ -8,37 +9,30 @@ import { Repository } from "typeorm";
 export class UserService {
 	constructor(
 		@InjectRepository(GameHistory) public GamesRepository:
-		Repository<GameHistory>,
+			Repository<GameHistory>,
+		@InjectRepository(Friend) public friendsRepository:
+			Repository<Friend>,
 		@InjectRepository(User) public userRepository:
-		Repository<User>, 
-	) {}
+			Repository<User>,
+	) { }
 
-	// constructor(
-	// 	private userService: UserService,
-	// 	@InjectRepository(Membership) public membershipRepo:
-	// 	Repository<Membership>,
-	// ) {}
-	/* Find functions */
-	async findUserById(idArg: number): Promise<User>
-	{
+	async findUserById(idArg: number): Promise<User> {
 		const user = await this.userRepository.findOneBy({
-			id:idArg
+			id: idArg
 		});
 		return user;
 	}
-	async findUserByUsername(usernameArg: string): Promise<User>
-	{
+	async findUserByUsername(usernameArg: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({
-			username:usernameArg
+			username: usernameArg
 		});
 		return user;
 
 	}
-	async findUserByIdUsername(idArg:number, usernameArg: string): Promise<User>
-	{
+	async findUserByIdUsername(idArg: number, usernameArg: string): Promise<User> {
 		const user = await this.userRepository.findOneBy({
 			id: idArg,
-			username:usernameArg
+			username: usernameArg
 		});
 		return user;
 	}

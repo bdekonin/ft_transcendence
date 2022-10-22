@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Param, ParseIntPipe } from "@nestjs/common";
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
@@ -8,15 +8,23 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 
-	@Get('all')
-	async all(): Promise<User[]> {
-		return this.userService.all();
+	@Get(':id/addwin')
+	async setWin(
+		@Param('id', ParseIntPipe) id: number
+	) {
+		const user = await this.userService.findUserById(id);
+
+		user.wins++;
+		console.log(user.username + ' has won! [' + user.wins + ']');
+
+		this.userService.userRepository.save(user);
+		return { msg: 'wins is increased by one for ' + id }
 	}
 
-	@Get('test')
-	async test(): Promise<User[]> {
+	@Get('all')
+	async all(): Promise<User[]> {
 		return await this.userService.userRepository.find({
-			relations: ['membership', 'game_history']
+			relations: ['membership', 'game_history', 'friends']
 		});
 	}
 
@@ -26,7 +34,7 @@ export class UserController {
 				where: {
 					username: 'bdekonin',
 				},
-				relations: ['game_history', 'membership']
+				relations: ['game_history']
 			});
 
 		if (!user)
@@ -40,5 +48,27 @@ export class UserController {
 
 		user.game_history.push(savedGame);
 		return this.userService.userRepository.save(user)
+	}
+
+	@Get('addfriend')
+	async addfriend() {
+		const user = await this.userService.userRepository.findOne({
+				where: {
+					username: 'bdekonin',
+				},
+				relations: ['friends']
+			});
+
+		if (!user)
+			return { msg: 'fail' };
+
+		const newFriendRequest = this.userService.friendsRepository.create({
+			sender: user,
+			relationStatus: "Friend",
+			reciever: user,
+		});
+		const savedFriendRequest = await this.userService.friendsRepository.save(newFriendRequest);
+		user.friends.push(savedFriendRequest);
+		return this.userService.userRepository.save(user);
 	}
 }

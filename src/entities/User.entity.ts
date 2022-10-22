@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { GameHistory } from "./GameHistory.entity";
 import { Membership } from "./Membership.entity";
+import { Friend } from "./Friend.entity";
 
 
 // https://www.tutorialspoint.com/typeorm/typeorm_entity.htm
@@ -43,6 +44,7 @@ export class User {
 	@CreateDateColumn()
 	createdAt: Date;
 
-	@Column({ default: 0 }) // One to Many 
-	friends: number; // list of friends(relations)
+	@OneToMany(() => Friend, (relation) => relation.sender)
+	@JoinColumn()
+	friends: Friend[]; // list of friends(relations)
 }
