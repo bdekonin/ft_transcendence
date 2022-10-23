@@ -1,4 +1,4 @@
-import { User } from "src/entities/User.entity";
+import { User as UserObject } from "src/entities/User.entity"
 
 export type UserDetails = {
 	id: number;
@@ -8,10 +8,10 @@ export type UserDetails = {
 
 export {};
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: User;
-    }
-  }
-}
+// declare global {
+//   namespace Express {
+//     export interface Request {
+//       user?: UserObject;
+//     }
+//   }
+// }

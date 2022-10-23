@@ -1,24 +1,37 @@
 import { Controller, Get, Req, UseGuards } from "@nestjs/common";
 import { Request } from "express";
 import { AuthService } from "./auth.service";
-import { AuthenticateGuard, FortyTwoAuthGuard } from './utils/Guards'
+import { FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
 
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	// auth/42/login
-	@Get('login')
+	/* 42 */
+	@Get('42/login')
 	@UseGuards(FortyTwoAuthGuard)
-	handleLogin() {
+	handleLoginFortyTwo() {
 		return { msg: '42 Authentication'}
 	}
 
 	// auth/42/redirect
 	@Get('42/redirect')
 	@UseGuards(FortyTwoAuthGuard)
-	handleRedirect() {
-		return { msg: 'OK'}
+	handleRedirectFortyTwo() {
+		return { msg: 'OK 42'}
+	}
+
+	/* Google */
+	@Get('google/login')
+	@UseGuards(GoogleAuthGuard)
+	handleLoginGoogle() {
+		return { msg: 'Google Authentication'}
+	}
+
+	@Get('google/redirect')
+	@UseGuards(GoogleAuthGuard)
+	handleRedirectGoogle() {
+		return { msg: 'OK GOOGLE'}
 	}
 
 	@Get('status')
@@ -35,7 +48,6 @@ export class AuthController {
 	}
 
 	@Get('destroy')
-	@UseGuards(AuthenticateGuard)
 	destroySession(@Req() request: Request) {
 		console.log('Destroying session')
 		request.session.destroy(function(err) {
@@ -45,7 +57,6 @@ export class AuthController {
 	}
 
 	@Get('clear')
-	@UseGuards(AuthenticateGuard)
 	clear() {
 		this.authService.membershipRepo.clear();
 		this.authService.getPlayerRepository().clear();

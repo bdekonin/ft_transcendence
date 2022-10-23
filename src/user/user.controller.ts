@@ -1,8 +1,9 @@
-import { Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query, Req, UseGuards } from "@nestjs/common";
-import { AuthenticateGuard } from "src/auth/utils/Guards";
+import { Controller, Get, Param, ParseIntPipe, Req, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { Request } from "express";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
-import { query, Request } from "express";
+
 
 @Controller()
 export class UserController {
@@ -23,10 +24,9 @@ export class UserController {
 	}
 
 	@Get('all')
-	@UseGuards(AuthenticateGuard)
 	async all(): Promise<User[]> {
 		return await this.userService.userRepository.find({
-			relations: ['membership', 'game_history']
+			relations: ['membership', 'game_history', 'sentFriendRequests', 'receivedFriendRequests']
 		});
 	}
 
@@ -34,9 +34,12 @@ export class UserController {
 	async addgame(@Req() request: Request) {
 		if (!request.user)
 			return { msg: 'fail' };
+
+		const rUser = (request.user as User);
+			
 		const user = await this.userService.userRepository.findOne({
 				where: {
-					username: request.user.username,
+					username: rUser.username,
 				},
 				relations: ['game_history']
 			});
