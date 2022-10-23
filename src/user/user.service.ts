@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";

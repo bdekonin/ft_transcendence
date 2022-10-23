@@ -1,7 +1,8 @@
-import { Controller, Get, Param, ParseIntPipe } from "@nestjs/common";
-import { AuthService } from "src/auth/auth.service";
+import { Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { AuthenticateGuard } from "src/auth/utils/Guards";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
+import { query, Request } from "express";
 
 @Controller()
 export class UserController {
@@ -22,17 +23,20 @@ export class UserController {
 	}
 
 	@Get('all')
+	@UseGuards(AuthenticateGuard)
 	async all(): Promise<User[]> {
 		return await this.userService.userRepository.find({
-			relations: ['membership', 'game_history', 'friends']
+			relations: ['membership', 'game_history']
 		});
 	}
 
 	@Get('addgame')
-	async addgame() {
+	async addgame(@Req() request: Request) {
+		if (!request.user)
+			return { msg: 'fail' };
 		const user = await this.userService.userRepository.findOne({
 				where: {
-					username: 'bdekonin',
+					username: request.user.username,
 				},
 				relations: ['game_history']
 			});
@@ -48,27 +52,5 @@ export class UserController {
 
 		user.game_history.push(savedGame);
 		return this.userService.userRepository.save(user)
-	}
-
-	@Get('addfriend')
-	async addfriend() {
-		const user = await this.userService.userRepository.findOne({
-				where: {
-					username: 'bdekonin',
-				},
-				relations: ['friends']
-			});
-
-		if (!user)
-			return { msg: 'fail' };
-
-		const newFriendRequest = this.userService.friendsRepository.create({
-			sender: user,
-			relationStatus: "Friend",
-			reciever: user,
-		});
-		const savedFriendRequest = await this.userService.friendsRepository.save(newFriendRequest);
-		user.friends.push(savedFriendRequest);
-		return this.userService.userRepository.save(user);
 	}
 }

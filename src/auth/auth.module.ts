@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AppModule } from "src/app.module";
 import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
 import { Membership } from "src/entities/Membership.entity";

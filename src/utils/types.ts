@@ -1,3 +1,5 @@
+import { User } from "src/entities/User.entity";
+
 export type UserDetails = {
 	id: number;
 	username: string;
@@ -9,7 +11,7 @@ export {};
 declare global {
   namespace Express {
     interface Request {
-      user: string;
+      user: User;
     }
   }
 }

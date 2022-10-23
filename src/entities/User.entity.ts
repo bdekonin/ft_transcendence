@@ -34,9 +34,6 @@ export class User {
 	@Column({ default: false})
 	twofa: boolean;
 
-	// @Column({ default: 0 }) // One to Many
-	// game_history: number; // history of games
-
 	@ManyToMany(() => GameHistory)
 	@JoinTable()
 	game_history: GameHistory[];
@@ -44,7 +41,10 @@ export class User {
 	@CreateDateColumn()
 	createdAt: Date;
 
-	@OneToMany(() => Friend, (relation) => relation.sender)
-	@JoinColumn()
-	friends: Friend[]; // list of friends(relations)
+	@OneToMany(() => Friend, (friend) => friend.sender) // Applicant
+	sentFriendRequests: Friend[];
+
+	@OneToMany(() => Friend, (friend) => friend.reciever) // Recipient
+    receivedFriendRequests: Friend[];
+
 }
