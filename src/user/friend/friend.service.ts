@@ -31,15 +31,6 @@ export class FriendService {
 		return this.repo.save(friendship);
 	}
 
-	async accept(friend: Friend): Promise<Friend> {
-		friend.status = 'accepted';
-		return await this.repo.save(friend);
-	}
-
-	async remove(friend: Friend): Promise<Friend> {
-		return await this.repo.remove(friend);
-	}
-
 	async doesFriendShipExist(senderID: number, recieverID: number): Promise<boolean> {
 		const sender = await this.userService.findUserById(senderID);
 		const reciever = await this.userService.findUserById(recieverID);
@@ -80,15 +71,15 @@ export class FriendService {
 	async getSentRequests(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
 		const pendings = await this.repo.find({
+			relations: ['sender', 'reciever'],
 			where: [
-				{ sender: user, status: 'pending' }
-			],
-			relations: ['sender', 'reciever']
+				{ sender: { id: user.id }, status: 'pending' }
+			]
 		});
 		return pendings;
 	}
 
-	async acceptFriendRequest(senderID: number, recieverID: number): Promise<Friend> {
+	async accept(senderID: number, recieverID: number): Promise<Friend> {
 		const sender = await this.userService.findUserById(senderID);
 		const reciever = await this.userService.findUserById(recieverID);
 		const friendship = await this.repo.findOne({
@@ -98,10 +89,40 @@ export class FriendService {
 				{ reciever: { id: reciever.id }, status: 'pending' },
 			],
 		});
-		console.log(friendship)
 		if (!friendship)
 			throw new BadRequestException;
-		return await this.accept(friendship);
+		friendship.status = 'accepted';
+		return await this.repo.save(friendship);
+	}
+	async unfollow(senderID: number, recieverID: number): Promise<Friend> {
+		const sender = await this.userService.findUserById(senderID);
+		const reciever = await this.userService.findUserById(recieverID);
+		const friendship = await this.repo.findOne({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender:  { id: sender.id }, reciever: { id: reciever.id } },
+				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
+			],
+		});
+		if (!friendship)
+			throw new BadRequestException;
+		return await this.repo.remove(friendship);
+	}
+
+	async decline(senderID: number, recieverID: number): Promise<Friend> {
+		const sender = await this.userService.findUserById(senderID);
+		const reciever = await this.userService.findUserById(recieverID);
+		const friendship = await this.repo.findOne({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender:  { id: sender.id }, reciever: { id: reciever.id }, status: 'pending' },
+				{ sender:  { id: reciever.id }, reciever: { id: sender.id }, status: 'pending' },
+			],
+		});
+		if (!friendship) {
+			throw new BadRequestException;
+		}
+		return await this.repo.remove(friendship);
 	}
 
 	// async accept(friendship: Friendship): Promise<Friendship>
