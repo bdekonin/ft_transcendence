@@ -11,7 +11,7 @@ export class User {
 	@PrimaryColumn()
 	id: number; // unique ID of User
 
-	@PrimaryColumn()
+	@PrimaryColumn() // @Column({unique: true})
 	username: string; // Unique username
 
 	@Column({ default: 'https://cdn.intra.42.fr/users/medium_default.png' })
