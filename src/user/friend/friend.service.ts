@@ -36,38 +36,40 @@ export class FriendService {
 		return await this.repo.remove(friend);
 	}
 
-    async getFriends(id: number): Promise<Friend[]> {
-        const user = await this.userService.findUserById(id);
-        const friends = await this.repo.find({
-            where: [
-                { sender: user, status: 'accepted' },
-                { reciever: user, status: 'accepted' },
-            ],
-            relations: ['sender', 'reciever']
-        });
-        return friends;
-    }
-
-    async getPendings(id: number): Promise<Friend[]> {
+	async getFriends(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
-        const requests = await this.repo.find({
-            relations: ['sender', 'reciever']
-        });
+		const friends = await this.repo.find({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender: { id: user.id }, status: 'accepted' },
+				{ reciever: { id: user.id }, status: 'accepted' },
+			],
+		});
+		return friends;
+	}
 
-		console.log(requests)
-        return requests;
-    }
+	async getPendings(id: number): Promise<Friend[]> {
+		const user = await this.userService.findUserById(id);
+		const requests = await this.repo.find({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender: { id: user.id }, status: 'pending' },
+				{ reciever: { id: user.id }, status: 'pending' },
+			],
+		});
+		return requests;
+	}
 
-    async getSentRequests(id: number): Promise<Friend[]> {
-        const user = await this.userService.findUserById(id);
-        const pendings = await this.repo.find({
-            where: [
+	async getSentRequests(id: number): Promise<Friend[]> {
+		const user = await this.userService.findUserById(id);
+		const pendings = await this.repo.find({
+			where: [
 				{ sender: user, status: 'pending' }
 			],
-            relations: ['sender', 'reciever']
-        });
-        return pendings;
-    }
+			relations: ['sender', 'reciever']
+		});
+		return pendings;
+	}
 
 	// async accept(friendship: Friendship): Promise<Friendship>
 	// 	async remove(friendship: Friendship): Promise<Friendship>

@@ -27,11 +27,11 @@ export class FriendController {
 		): Promise<Friend[]> {
 			console.log(status)
 			if (status === 'accepted')
-				return await this.friendService.getFriends(userId);
+				return this.friendService.getFriends(userId);
 			else if (status === 'pending')
 				return await this.friendService.getPendings(userId);
 			else if (status === 'sent')
 				return await this.friendService.getSentRequests(userId);
-			throw BadRequestException;
+			throw new BadRequestException;
 	}
 }
