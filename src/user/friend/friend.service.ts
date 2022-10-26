@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { send } from 'process';
 import { Friend } from 'src/entities/Friend.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '../user.service';
@@ -16,6 +15,11 @@ export class FriendService {
 	async create(senderID: number, recieverID: number): Promise<Friend> {
 		if (senderID == recieverID)
 			throw new BadRequestException;
+
+		/* Check for Duplicate friendship */
+		const exist = await this.doesFriendShipExist(senderID, recieverID);
+		if (exist == true)
+			throw new BadRequestException; // Already exist
 		
 		const sender = await this.userService.findUserById(senderID);
 		const reciever = await this.userService.findUserById(recieverID);
@@ -34,6 +38,19 @@ export class FriendService {
 
 	async remove(friend: Friend): Promise<Friend> {
 		return await this.repo.remove(friend);
+	}
+
+	async doesFriendShipExist(senderID: number, recieverID: number): Promise<boolean> {
+		const sender = await this.userService.findUserById(senderID);
+		const reciever = await this.userService.findUserById(recieverID);
+		const friendship = await this.repo.findOne({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender:  { id: sender.id }, reciever: { id: reciever.id } },
+				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
+			],
+		});
+		return friendship ? true : false;
 	}
 
 	async getFriends(id: number): Promise<Friend[]> {
@@ -69,6 +86,22 @@ export class FriendService {
 			relations: ['sender', 'reciever']
 		});
 		return pendings;
+	}
+
+	async acceptFriendRequest(senderID: number, recieverID: number): Promise<Friend> {
+		const sender = await this.userService.findUserById(senderID);
+		const reciever = await this.userService.findUserById(recieverID);
+		const friendship = await this.repo.findOne({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender: { id: sender.id }, status: 'pending' },
+				{ reciever: { id: reciever.id }, status: 'pending' },
+			],
+		});
+		console.log(friendship)
+		if (!friendship)
+			throw new BadRequestException;
+		return await this.accept(friendship);
 	}
 
 	// async accept(friendship: Friendship): Promise<Friendship>
