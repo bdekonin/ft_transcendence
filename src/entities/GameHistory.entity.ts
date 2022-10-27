@@ -17,6 +17,9 @@ export class GameHistory {
 	@JoinColumn()
 	loser: User;
 
+	@Column({ default: false })
+	draw: boolean;
+
 	@Column({ default: 0 })
 	winnerScore: number;
 

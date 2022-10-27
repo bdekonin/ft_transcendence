@@ -26,7 +26,7 @@ export class UserController {
 	@Get('all')
 	async all(): Promise<User[]> {
 		return await this.userService.userRepository.find({
-			relations: ['membership', 'game_history', 'sentFriendRequests', 'receivedFriendRequests']
+			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests']
 		});
 	}
 }

@@ -34,17 +34,11 @@ export class User {
 	@Column({ default: false})
 	twofa: boolean;
 
-
-
-
 	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.winner)
 	games_won: GameHistory[];
 
 	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.loser)
 	games_lost: GameHistory[];
-
-
-
 
 	@OneToMany(() => Friend, (friend) => friend.sender) // Applicant
 	sentFriendRequests: Friend[];

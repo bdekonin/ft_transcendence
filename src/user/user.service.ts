@@ -37,6 +37,10 @@ export class UserService {
 		return user;
 	}
 
+	async save(user: User): Promise<User> {
+		return await this.userRepository.save(user);
+	}
+
 	async all(): Promise<User[]> {
 		// this.GamesRepository.clear();
 		return this.userRepository.find();
