@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./User.entity";
 
 export enum UserRole {
 	OWNER = 'owner',
@@ -10,6 +11,9 @@ export enum UserRole {
 export class Membership {
 	@PrimaryGeneratedColumn()
 	id: number
+
+	@OneToOne(() => User, (user) => user.membership)
+	user: User; // extends to .role .banned .muted
 
 	@Column({
 		type: "enum",

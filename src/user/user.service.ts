@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
@@ -8,10 +8,6 @@ import { Repository } from "typeorm";
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectRepository(GameHistory) public GamesRepository:
-			Repository<GameHistory>,
-		@InjectRepository(Friend) public friendsRepository:
-			Repository<Friend>,
 		@InjectRepository(User) public userRepository:
 			Repository<User>,
 	) { }
@@ -42,7 +38,6 @@ export class UserService {
 	}
 
 	async all(): Promise<User[]> {
-		// this.GamesRepository.clear();
 		return this.userRepository.find();
 	}
 }

@@ -18,7 +18,7 @@ export class User {
 	avatar: string; // Link to image || or file path to image
 
 	// @Column() // One to One
-	@OneToOne(() => Membership )
+	@OneToOne(() => Membership, (membership) => membership.user)
 	@JoinColumn()
 	membership: Membership; // extends to .role .banned .muted
 

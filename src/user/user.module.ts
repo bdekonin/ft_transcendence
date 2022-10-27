@@ -10,22 +10,27 @@ import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 import { GameController } from './game/game.controller';
 import { GameService } from './game/game.service';
+import { MembershipController } from './membership/membership.controller';
+import { MembershipService } from './membership/membership.service';
+import { Membership } from "src/entities/Membership.entity";
 
 @Module({
 	imports: [
 		UserModule,
-		TypeOrmModule.forFeature([User, GameHistory, Friend]),
+		TypeOrmModule.forFeature([User, GameHistory, Friend, Membership]),
 		forwardRef(() => AppModule)
 	],
 	controllers: [
 		UserController,
 		FriendController,
-		GameController
+		GameController,
+		MembershipController
 	],
 	providers: [
 		UserService,
 		FriendService,
-		GameService
+		GameService,
+		MembershipService
 	]
 })
 export class UserModule {}

@@ -1,6 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Req, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { Request } from "express";
+import { Controller, Get, Param, ParseIntPipe } from "@nestjs/common";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
 
