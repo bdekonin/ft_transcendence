@@ -8,6 +8,8 @@ import { FriendController } from "./friend/friend.controller";
 import { FriendService } from "./friend/friend.service";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
+import { GameController } from './game/game.controller';
+import { GameService } from './game/game.service';
 
 @Module({
 	imports: [
@@ -17,11 +19,13 @@ import { UserService } from "./user.service";
 	],
 	controllers: [
 		UserController,
-		FriendController
+		FriendController,
+		GameController
 	],
 	providers: [
 		UserService,
-		FriendService
+		FriendService,
+		GameService
 	]
 })
 export class UserModule {}

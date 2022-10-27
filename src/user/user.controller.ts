@@ -29,31 +29,4 @@ export class UserController {
 			relations: ['membership', 'game_history', 'sentFriendRequests', 'receivedFriendRequests']
 		});
 	}
-
-	@Get('addgame')
-	async addgame(@Req() request: Request) {
-		if (!request.user)
-			return { msg: 'fail' };
-
-		const rUser = (request.user as User);
-			
-		const user = await this.userService.userRepository.findOne({
-				where: {
-					username: rUser.username,
-				},
-				relations: ['game_history']
-			});
-
-		if (!user)
-			return { msg: 'fail' };
-		const newGame = this.userService.GamesRepository.create({
-			winnerScore: Math.floor(Math.random() * 10),
-			loserScore: Math.floor(Math.random() * 10),
-		});
-
-		const savedGame = await this.userService.GamesRepository.save(newGame);
-
-		user.game_history.push(savedGame);
-		return this.userService.userRepository.save(user)
-	}
 }

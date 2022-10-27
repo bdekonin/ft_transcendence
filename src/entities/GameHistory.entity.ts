@@ -1,18 +1,21 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./User.entity";
 
 @Entity()
 export class GameHistory {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	// @Column()
-	// mode: string; // TODO Change to Enum?
+	@Column()
+	mode: string; // TODO Change to Enum?
 
-	// @Column()
-	// winner: User
+	@ManyToOne(() => User, (user) => user.games_won, {	eager: true, onDelete: 'CASCADE'})
+	@JoinColumn()
+	winner: User;
 
-	// @Column()
-	// loser: User
+	@ManyToOne(() => User, (user) => user.games_lost, {	eager: true, onDelete: 'CASCADE'})
+	@JoinColumn()
+	loser: User;
 
 	@Column({ default: 0 })
 	winnerScore: number;
@@ -20,6 +23,6 @@ export class GameHistory {
 	@Column({ default: 0 })
 	loserScore: number;
 
-	@CreateDateColumn()
+	@CreateDateColumn({ type: 'timestamp' })
 	createdAt: Date;
 }

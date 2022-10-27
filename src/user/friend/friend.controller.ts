@@ -8,6 +8,7 @@ export class FriendController {
 		private friendService: FriendService,
 	) {}
 
+	// /user/:senderID/friend/follow/:recieverID
 	// Send a friend request
 	@Get('follow/:recieverID') // CHANGE TO POST
 	async followFriend(
@@ -18,6 +19,7 @@ export class FriendController {
 		return friendship;
 	}
 	
+	// /user/:senderID/friend/unfollow/:recieverID
 	@Delete('unfollow/:recieverID') // CHANGE TO DELETE
 	async unfollowFriend(
 		@Param('senderID', ParseIntPipe) senderID: number,
@@ -26,22 +28,7 @@ export class FriendController {
 		return await this.friendService.unfollow(senderID, recieverID);
 	}
 
-	@Get('block/:recieverID') // CHANGE TO POST
-	async blockFriend(
-		@Param('senderID', ParseIntPipe) senderID: number,
-		@Param('recieverID', ParseIntPipe) recieverID: number,
-	): Promise<Friend> {
-		return null;
-	}
-
-	@Get('block/:recieverID') // CHANGE TO POST
-	async unblockFriend(
-		@Param('senderID', ParseIntPipe) senderID: number,
-		@Param('recieverID', ParseIntPipe) recieverID: number,
-	): Promise<Friend> {
-		return null;
-	}
-
+	// /user/:senderID/friend/accept/:recieverID
 	// Accept a friend request from 'pending' to 'accepted'
 	@Get('accept/:recieverID') // CHANGE TO PUT
 	async accept(
@@ -51,6 +38,7 @@ export class FriendController {
 		return await this.friendService.accept(senderID, recieverID);
 	}
 
+	// /user/:senderID/friend/decline/:recieverID
 	@Delete('decline/:recieverID') // CHANGE TO DELETE
 	async decline(
 		@Param('senderID', ParseIntPipe) senderID: number,
@@ -59,6 +47,7 @@ export class FriendController {
 		return await this.friendService.decline(senderID, recieverID);
 	}
 
+	// /user/:senderID/friend/list?status=
 	// Get all friendships belonging to senderID
 	@Get('list') // ? Query Parameters
 	async list(

@@ -17,6 +17,6 @@ export class Friend {
 	@Column({default: 'pending'})
 	status: string;
 
-	@CreateDateColumn()
+	@CreateDateColumn({ type: 'timestamp' })
 	createdOn: Date;
 }

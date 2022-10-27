@@ -34,17 +34,24 @@ export class User {
 	@Column({ default: false})
 	twofa: boolean;
 
-	@ManyToMany(() => GameHistory)
-	@JoinTable()
-	game_history: GameHistory[];
 
-	@CreateDateColumn()
-	createdAt: Date;
+
+
+	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.winner)
+	games_won: GameHistory[];
+
+	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.loser)
+	games_lost: GameHistory[];
+
+
+
 
 	@OneToMany(() => Friend, (friend) => friend.sender) // Applicant
 	sentFriendRequests: Friend[];
-
+	
 	@OneToMany(() => Friend, (friend) => friend.reciever) // Recipient
-    receivedFriendRequests: Friend[];
-
+	receivedFriendRequests: Friend[];
+	
+	@CreateDateColumn({ type: 'timestamp' })
+	createdAt: Date;
 }
