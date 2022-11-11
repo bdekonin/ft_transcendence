@@ -1,0 +1,96 @@
+openapi: '3.0.2'
+info:
+  title: API Title
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+        membership:
+          $ref: '#/components/schemas/Membership'
+        level:
+          type: integer
+          minimum: 0
+          default: 0
+        wins:
+          type: integer
+          minimum: 0
+          default: 0
+        loses:
+          type: integer
+          minimum: 0
+          default: 0
+        twofa:
+          type: boolean
+          default: false
+        sentFriendRequests:
+          type:  array
+          items:
+            $ref: '#/components/schemas/User'
+        receivedFriendRequests:
+          type:  array
+          items:
+            $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date
+    UserRole:
+      type: string
+      enum:
+        - owner
+        - admin
+        - user
+      default:
+        - user
+    Membership:
+      type: object
+      properties:
+        id:
+          type: number
+        user:
+          $ref: '#/components/schemas/User'
+        role:
+          type: string
+          $ref: '#/components/schemas/UserRole'
+        banned:
+          type: boolean
+          default: false
+        muted:
+          type: boolean
+          default: false
+    Friend:
+      type: object
+      properties:
+        id:
+          type: number
+        sender:
+          $ref: '#/components/schemas/User'
+          
+
+
+
+
+
+
+
+
+paths:
+  /name:
+    get:
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: OK
+        
