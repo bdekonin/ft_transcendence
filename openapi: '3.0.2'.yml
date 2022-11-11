@@ -1,15 +1,19 @@
 openapi: '3.0.2'
 info:
-  title: API Title
-  version: '1.0'
+  title: Ft_transcendence
+  version: '2.0'
   description: "Sources: https://restfulapi.net/resource-naming/"
 servers:
   - url: https://api.server.test/v1
 
 
 tags:
-  - name: game
-    description: Everything about getting, posting, deleting games
+  - name: user
+    description: Everything about the user
+  - name: chat
+    description: Everything about the chat 
+
+
 paths:
   /game/userID/{userID}:
     get:
@@ -79,22 +83,624 @@ paths:
           description: OK
         '404':
           description: Game Not Found
+  
+  /user/:
+    get:
+      tags:
+        - user
+      summary: Returns all the users of the server
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/arrayOfGames'
+ 
+  /user/{userID}/matches/:
+     get:
+      tags:
+        - user
+      summary: Returns all games
+      description: Returns all games that have happend
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: filter
+        schema:
+          type: string
+          enum:
+            - won
+            - lost
+            - draw
+        description: Filter by games that have been won, lost or draw
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/arrayOfGames'
+        '404':
+          description: ID Not Found
+        '400':
+          description: Query parameter is not valid
+  /user/{userID}/follow/{otherID}/:
+    put:
+      tags:
+        - user
+      summary: Creates a 'pending' friendship between {userID} and {otherID}
+      description: If called in reverse the relationship is changed to 'Accepted'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: otherID
+        in: path
+        description: the id of the other user
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/friendshipModel'
+      responses:
+        '201':
+          description: Created
+  /user/{userID}/block/{otherID}/:
+    put:
+      tags:
+        - user
+      summary: Blocks 2 users from eachother
+      description: Blocks eachother. This is always One to One. User 1 cant see User 2 and 2 also cannot see User 1. No need to send data as there is already 2 path parameters
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: otherID
+        in: path
+        description: the id of the other user
+        required: true
+        schema:
+          type: integer
+      responses:
+        '201':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+    delete:
+      tags:
+        - user
+      summary: Unblocks 2 people from eachother
+      description: Unblocks 2 people from eachother. No need to send data as there is already 2 path parameters
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: otherID
+        in: path
+        description: the id of the other user
+        required: true
+        schema:
+          type: integer
+      responses:
+        '201':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+  /user/{userID}/status/{otherID}/:
+    get:
+      tags:
+        - user
+      summary: Returns the relationship object between {userID} and {otherID}
+      description: The status of the return can be either Blocked, Accepted, Pending
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: otherID
+        in: path
+        description: the id of the other user
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/userProperties'
+                  status:
+                    type: string
+                    example: 'Accepted'
+        '404':
+          description: One of the ID is not Found
+  /user/{userID}/status/:
+    get:
+      tags:
+        - user
+      summary: Returns the relationship object between {userID} and {otherID}
+      description: The status of the return can be either Blocked, Accepted, Pending
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: filter
+        schema:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - blocked
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/userProperties'
+                  status:
+                    type: string
+                    example: pending
+        '404':
+          description: One of the ID is not Found
+  /user/{userID}/avatar/:
+    get:
+      tags:
+        - user
+      summary: 'Returns the avatar of {me}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  properties:
+                    url:
+                      type: string
+                      example:
+                        'localhost/avatars/rkieboom.jpg'
+          '404':
+            description: One of the ID is not Found
+    put:
+      tags:
+        - user
+      summary: 'updates the avatar of {me}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                url:
+                  type: string
+                  example:
+                    'localhost/avatars/rkieboom.jpg'
+      responses:
+        '204':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: You are not allowed to update this avatar
+  /user/{userID}/2fa/:
+    get:
+      tags:
+        - user
+      summary: 'Returns the 2fa of {userID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  properties:
+                    has2fa:
+                      type: boolean
+                      example:
+                        'true'
+          '404':
+            description: One of the ID is not Found
+    put:
+      tags:
+        - user
+      summary: 'updates the 2fa of {userID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                has2fa:
+                  type: boolean
+                  example:
+                    'true'
+      responses:
+        '204':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: You are not allowed to update this avatar
+  /user/{userID}/:
+    get:
+      tags:
+        - user
+      summary: 'Returns the user object of {userID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/userProperties'
+          '404':
+            description: One of the ID is not Found
+    put:
+      tags:
+        - user
+      summary: 'updates the user object of {userID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userProperties'
+      responses:
+        '204':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: You are not allowed to update this avatar
+  
 
 
 
 
 
 
+  /chat/{userID}/rooms/{roomID}/:
+    get:
+      tags:
+        - chat
+      summary: 'Returns the chat object of {roomID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: roomID
+        in: path
+        description: the id of the room
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/chatProperties'
+          '404':
+            description: One of the ID is not Found
+    put:
+      tags:
+        - chat
+      summary: 'updates the chat object of {roomID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: roomID
+        in: path
+        description: the id of the room
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/chatProperties'
+      responses:
+        '204':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: You are not allowed to update this avatar
+  /chat/{userID}/rooms/:
+    get:
+      tags:
+        - chat
+      summary: 'Returns the chat object of {roomID}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/chatProperties'
+          '404':
+            description: One of the ID is not Found
+    post:
+      tags:
+        - chat
+      summary: 'Creates a new chat room'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                channeltype:
+                  type: string
+                  enum:
+                    - private
+                    - public
+                    - protected
+                  example:
+                    'private'
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: Forbidden
+  /chat/{userID}/privates/{otherID}/invitegame/:
+    post:
+      tags:
+        - chat
+      summary: Sends invite to {otherID} if not blocked
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+        - name: otherID
+          in: path
+          description: the id of the other user
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                message:
+                  type: string
+                  example: 'Hello World'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Chat Not Found
+        '403':
+          description: Forbidden
+  /chat/{userID}/privates/{otherID}/send/:
+    post:
+      tags:
+        - chat
+      summary: Sends message to {otherID} if not blocked
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+        - name: otherID
+          in: path
+          description: the id of the other user
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                message:
+                  type: string
+                  example: 'Hello World'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Chat Not Found
+        '403':
+          description: Forbidden
+  /chat/{userID}/privates/{otherID}/:
+    get:
+      tags:
+        - chat
+      summary: Returns messages between {userID} and {otherID}
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+        - name: otherID
+          in: path
+          description: the id of the other user
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: User Not Found
+  /chat/{userID}/privates/:
+    get:
+      tags:
+        - chat
+      summary: Get all the active private chats
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+      responses:
+          '200':
+            description: OK
 
-
-
-
-
-
-
-
-
-
+    post:
+      tags:
+        - chat
+      summary: Starts a private chat with the otherID. OtherID is in the body.
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                otherID:
+                  type: integer
+                  example:
+                    "42"
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: User Not Found
+        '403':
+          description: Blocked by User
+  /chat/{userID}/:
+    get:
+      tags:
+        - chat
+      summary: Returns all active group chats and private chats
+      parameters:
+        - name: userID
+          in: path
+          description: the id of the user
+          required: true
+          schema:
+            type: integer
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  anyOf:
+                  - $ref: '#/components/schemas/chatPersonalProperties'
+                  - $ref: '#/components/schemas/chatGroupProperties'
+          '404':
+            description: User Not Found
+          '403':
+            description: Blocked by User
 
 
 
@@ -141,33 +747,33 @@ paths:
   #       - game
   #     summary: Create a new game
   #     description: Creates a new game and returns the ID
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             properties:
-  #               mode:
-  #                 type: string
-  #                 example:
-  #                   "1v1"
-  #               winner:
-  #                 type: integer
-  #                 description: ID of the winning player
-  #                 example:
-  #                   16379
-  #               loser:
-  #                 type: integer
-  #                 description: ID of the losing player
-  #                 example:
-  #                   12092
-  #               winnerScore:
-  #                 type: integer
-  #                 example:
-  #                   8
-  #               loserScore:
-  #                 type: integer
-  #                 example:
-  #                   5
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         properties:
+      #           mode:
+      #             type: string
+      #             example:
+      #               "1v1"
+      #           winner:
+      #             type: integer
+      #             description: ID of the winning player
+      #             example:
+      #               16379
+      #           loser:
+      #             type: integer
+      #             description: ID of the losing player
+      #             example:
+      #               12092
+      #           winnerScore:
+      #             type: integer
+      #             example:
+      #               8
+      #           loserScore:
+      #             type: integer
+      #             example:
+      #               5
   #     responses:
   #       '200':
   #         description: OK
@@ -293,109 +899,87 @@ components:
       items:
         $ref: '#/components/schemas/singleGame'
 
-
-
-
-    User:
+    userProperties:
       type: object
       properties:
         id:
-          type: integer
+          type: number
+          example: 42
         username:
           type: string
+          example: bdekonin
         avatar:
           type: string
-        membership:
-          $ref: '#/components/schemas/Membership'
-        level:
-          type: integer
-          minimum: 0
-          default: 0
-        wins:
-          type: integer
-          minimum: 0
-          default: 0
-        loses:
-          type: integer
-          minimum: 0
-          default: 0
-        twofa:
-          type: boolean
-          default: false
-        games_won:
-          $ref: '#/components/schemas/GameHistory'
-        games_lost:
-          $ref: '#/components/schemas/GameHistory'
-        sentFriendRequests:
-          type:  array
-          items:
-            $ref: '#/components/schemas/User'
-        receivedFriendRequests:
-          type:  array
-          items:
-            $ref: '#/components/schemas/User'
-        createdAt:
-          type: string
-          format: date
-    UserRole:
-      type: string
-      enum:
-        - owner
-        - admin
-        - user
-      default:
-        - user
-    Membership:
+          example: 'example.jpg'
+
+
+
+    chatPersonalProperties:
       type: object
       properties:
-        id:
+        otherid:
           type: number
-        user:
-          $ref: '#/components/schemas/User'
-        role:
+          example: 42
+        otherusername:
           type: string
-          $ref: '#/components/schemas/UserRole'
-        banned:
-          type: boolean
-          default: false
-        muted:
-          type: boolean
-          default: false
-    Friend:
+          example: bdekonin
+        otheravatar:
+          type: string
+          example: 'example.jpg'
+
+
+
+    chatGroupProperties:
       type: object
       properties:
-        id:
-          type: number
+        groupID:
+          type: integer
+        groupName:
+          type: string
+          example: "Welvaart"
+        allUsers:
+          type: array
+          items:
+            type: integer
+
+    friendshipModel:
+      type: object
+      properties:
         sender:
-          $ref: '#/components/schemas/User'
+          type: string
+          example: "bdekonin"
         reciever:
-          $ref: '#/components/schemas/User'
-        status:
           type: string
-          default: pending
-        createdOn:
-          type: string
-          format: date
-    GameHistory:
+          example: "rkieboom"
+
+    chatProperties:
       type: object
       properties:
         id:
-          type: number
-        mode:
-          type: string
-        winner:
-          $ref: '#/components/schemas/User'
-        loser:
-          $ref: '#/components/schemas/User'
-        draw:
-          type: boolean
-          default: false
-        winnerScore:
           type: integer
-          default: 0
-        loserScore:
-          type: integer
-          default: 0
-        createdAt:
+        name:
           type: string
-          format: date
+          example: "Welvaart"
+        admins:
+          type: array
+          items:
+            type: integer
+        users:
+          type: array
+          items:
+            type: integer
+        messages:
+          type: array
+          items:
+            type: integer
+            
+    chatMessageProperty:
+      type: object
+      properties:
+        id:
+          type: integer
+        messages:
+          type: string
+        user:
+          type: integer
+
