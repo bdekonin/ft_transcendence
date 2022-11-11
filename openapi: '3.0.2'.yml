@@ -4,7 +4,120 @@ info:
   version: '1.0'
 servers:
   - url: https://api.server.test/v1
+paths:
+  /game/{userID}:
+    get:
+      summary: Get games for user
+      description: Returns a list of games for a user
+      parameters:
+      - in: path
+        name: userID
+        schema:
+          type: integer
+          description: ID of the user to return the games for
+        required: true
+      - in: query
+        name: filter
+        schema:
+          type: string
+          enum:
+            - won
+            - lost
+            - draw
+        description: Filter the games by the result
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                   type: number
+                   example:
+                    25
+                  mode:
+                    type: string
+                    example:
+                      "1v1"
+                  winner:
+                    type: integer
+                    description: ID of the winning player
+                    example:
+                      16379
+                  loser:
+                    type: integer
+                    description: ID of the losing player
+                    example:
+                      12092
+                  winnerScore:
+                    type: integer
+                    example:
+                      8
+                  loserScore:
+                    type: integer
+                    example:
+                      5
+                  date:
+                    type: string
+                    example:
+                      1668172775
 
+        '404':
+          description: ID Not Found
+  /game/:
+    post:
+      summary: Create a new game
+      description: Creates a new game and returns the ID
+      operationId: createGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                mode:
+                  type: string
+                  example:
+                    "1v1"
+                winner:
+                  type: integer
+                  description: ID of the winning player
+                  example:
+                    16379
+                loser:
+                  type: integer
+                  description: ID of the losing player
+                  example:
+                    12092
+                winnerScore:
+                  type: integer
+                  example:
+                    8
+                loserScore:
+                  type: integer
+                  example:
+                    5
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: number
+                    example:
+                      42
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example:
+                      "Invalid request body"
 
 components:
   schemas:
@@ -34,6 +147,10 @@ components:
         twofa:
           type: boolean
           default: false
+        games_won:
+          $ref: '#/components/schemas/GameHistory'
+        games_lost:
+          $ref: '#/components/schemas/GameHistory'
         sentFriendRequests:
           type:  array
           items:
@@ -76,21 +193,34 @@ components:
           type: number
         sender:
           $ref: '#/components/schemas/User'
-          
-
-
-
-
-
-
-
-
-paths:
-  /name:
-    get:
-      description: ''
-      parameters: []
-      responses:
-        '200':
-          description: OK
-        
+        reciever:
+          $ref: '#/components/schemas/User'
+        status:
+          type: string
+          default: pending
+        createdOn:
+          type: string
+          format: date
+    GameHistory:
+      type: object
+      properties:
+        id:
+          type: number
+        mode:
+          type: string
+        winner:
+          $ref: '#/components/schemas/User'
+        loser:
+          $ref: '#/components/schemas/User'
+        draw:
+          type: boolean
+          default: false
+        winnerScore:
+          type: integer
+          default: 0
+        loserScore:
+          type: integer
+          default: 0
+        createdAt:
+          type: string
+          format: date
