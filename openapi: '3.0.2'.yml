@@ -13,6 +13,7 @@ tags:
   - name: chat
     description: Everything about the chat 
 
+
 paths:
   /game/userID/{userID}:
     get:
@@ -82,7 +83,8 @@ paths:
           description: OK
         '404':
           description: Game Not Found
-  
+
+  # User endpoints
   /user/:
     get:
       tags:
@@ -96,8 +98,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/arrayOfGames'
- 
+                  $ref: '#/components/schemas/userProperties'
   /user/{userID}/matches/:
      get:
       tags:
@@ -133,12 +134,13 @@ paths:
           description: ID Not Found
         '400':
           description: Query parameter is not valid
+  
   /user/{userID}/follow/{otherID}/:
     put:
       tags:
         - user
       summary: Creates a 'pending' friendship between {userID} and {otherID}
-      description: If called in reverse the relationship is changed to 'Accepted'
+      description: If called in reverse the relationship is changed to 'Accepted'. The body will be ignored and not be used.
       parameters:
       - name: userID
         in: path
@@ -152,20 +154,42 @@ paths:
         required: true
         schema:
           type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/friendshipModel'
       responses:
         '201':
-          description: Created
+          description: Created a pending friendship
+        '204':
+          description: Users are now friends
+        '404':
+          description: ID Not Found
+  /user/{userID}/unfollow/{otherID}/:
+    delete:
+      tags:
+        - user
+      summary: Deletes a friendship between {userID} and {otherID}
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      - name: otherID
+        in: path
+        description: the id of the other user
+        required: true
+        schema:
+          type: integer
+      responses:
+        '202':
+          description: OK
+        '404':
+          description: Not Found
   /user/{userID}/block/{otherID}/:
     put:
       tags:
         - user
       summary: Blocks 2 users from eachother
-      description: Blocks eachother. This is always One to One. User 1 cant see User 2 and 2 also cannot see User 1. No need to send data as there is already 2 path parameters
+      description: Blocks eachother. This is always One to One. User 1 cant see User 2 and 2 also cannot see User 1. No need to send data as there is already 2 path parameters. The body will be ignored and not be used.
       parameters:
       - name: userID
         in: path
@@ -184,6 +208,7 @@ paths:
           description: Created
         '404':
           description: One of the ID is not Found
+  /user/{userID}/unblock/{otherID}/:
     delete:
       tags:
         - user
@@ -207,6 +232,7 @@ paths:
           description: Created
         '404':
           description: One of the ID is not Found
+  
   /user/{userID}/status/{otherID}/:
     get:
       tags:
@@ -232,12 +258,21 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/userProperties'
+                type: object
+                properties:
+                  sender:
+                    type: integer
+                    example: 53123
+                  receiver:
+                    type: integer
+                    example: 12345
                   status:
                     type: string
-                    example: 'Accepted'
+                    enum:
+                      - Blocked
+                      - Accepted
+                      - Pending
+                    example: Accepted
         '404':
           description: One of the ID is not Found
   /user/{userID}/status/:
@@ -245,7 +280,7 @@ paths:
       tags:
         - user
       summary: Returns the relationship object between {userID} and {otherID}
-      description: The status of the return can be either Blocked, Accepted, Pending
+      description: The status of the return can be either Blocked, Accepted, sent, recieved
       parameters:
       - name: userID
         in: path
@@ -258,23 +293,36 @@ paths:
         schema:
           type: string
           enum:
-            - pending
             - accepted
             - blocked
+            - sent
+            - received
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/userProperties'
+                type: object
+                properties:
+                  sender:
+                    type: integer
+                    example: 53123
+                  receiver:
+                    type: integer
+                    example: 12345
                   status:
                     type: string
-                    example: pending
+                    enum:
+                    - accepted
+                    - blocked
+                    - sent
+                    - received
+                    example: Accepted
         '404':
           description: One of the ID is not Found
+        '400':
+          description: Query parameter is not valid
   /user/{userID}/avatar/:
     get:
       tags:
@@ -297,7 +345,7 @@ paths:
                     url:
                       type: string
                       example:
-                        'localhost/avatars/rkieboom.jpg'
+                        'rkieboom.jpg'
           '404':
             description: One of the ID is not Found
     put:
@@ -424,12 +472,7 @@ paths:
         '403':
           description: You are not allowed to update this avatar
   
-
-
-
-
-
-
+  # Chat endpoints
   /chat/{userID}/rooms/{roomID}/:
     get:
       tags:
@@ -736,6 +779,7 @@ components:
           type: string
           example:
             1668172775
+   
     arrayOfGames:
       type: array
       items:
@@ -753,8 +797,23 @@ components:
         avatar:
           type: string
           example: 'example.jpg'
-
-
+          default: 'default.jpg'
+        level:
+          type: number
+          example: 03
+          minimum: 0
+        wins:
+          type: number
+          example: 4
+          minimum: 0
+        losses:
+          type: number
+          example: 2
+          minimum: 0
+        createdAT:
+          type: string
+          format: date-time
+          example: '2020-01-01 00:00:00'
 
     chatPersonalProperties:
       type: object
@@ -768,8 +827,6 @@ components:
         otheravatar:
           type: string
           example: 'example.jpg'
-
-
 
     chatGroupProperties:
       type: object
