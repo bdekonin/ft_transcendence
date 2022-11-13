@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, Param, ParseIntPipe, Put, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, Param, ParseIntPipe, Patch, Put, Query, Res } from "@nestjs/common";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
 
@@ -7,6 +7,7 @@ import { UserService } from "./user.service";
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
+	// General
 	@Get()
 	async getAllUsers()
 	{
@@ -22,6 +23,8 @@ export class UserController {
 			}
 		  ];
 	}
+
+	// Games
 	@Get(':userID/matches')
 	async getUsersGames(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -64,7 +67,9 @@ export class UserController {
 			  }
 		  ];
 	}
-	@Put(':userID/follow/:otherID')
+
+	// Socials
+	@Put(':userID/social/:otherID/follow')
 	async followUser(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('otherID', ParseIntPipe) otherID: number
@@ -75,7 +80,7 @@ export class UserController {
 			"status": "pending"
 		};
 	}
-	@Delete(':userID/unfollow/:otherID')
+	@Delete(':userID/social/:otherID/unfollow')
 	async unfollowUser(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('otherID', ParseIntPipe) otherID: number
@@ -85,7 +90,7 @@ export class UserController {
 			"success": true
 		};
 	}
-	@Put(':userID/block/:otherID')
+	@Put(':userID/social/:otherID/block')
 	async blockUser(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('otherID', ParseIntPipe) otherID: number
@@ -95,7 +100,7 @@ export class UserController {
 			"success": true
 		};
 	}
-	@Delete(':userID/unblock/:otherID')
+	@Delete(':userID/social/:otherID/unblock')
 	async unblockUser(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('otherID', ParseIntPipe) otherID: number
@@ -105,25 +110,13 @@ export class UserController {
 			"success": true
 		};
 	}
-	@Get(':userID/status/:otherID')
-	async getUserStatus(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"sender": userID,
-			"receiver": otherID,
-			"status": "following"
-		};
-	}
-	@Get(':userID/status')
-	async getUserStatuses(
+	@Get(':userID/social')
+	async getSocial(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Query('filter') filter: string
 	)
 	{
-		if (filter != 'following' && filter != 'blocked' && filter != undefined)
+		if (filter != 'pending' && filter != 'following' && filter != 'blocked')
 			throw new BadRequestException('Query parameter is not valid');
 		return [
 			{
@@ -143,6 +136,20 @@ export class UserController {
 			}
 		]
 	}
+	@Get(':userID/social/:otherID')
+	async getSocialStatus(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Param('otherID', ParseIntPipe) otherID: number
+	)
+	{
+		return {
+			"sender": 564652,
+			"receiver": userID,
+			"status": "following"
+		}
+	}
+
+	// Profile settings
 	@Get(':userID/avatar')
 	async getUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -151,7 +158,7 @@ export class UserController {
 	{
 		return res.sendFile('rkieboom.jpeg', { root: 'tmpsrc/assets' });
 	}
-	@Put(':userID/avatar')
+	@Patch(':userID/avatar')
 	async setUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
 	)
@@ -166,7 +173,7 @@ export class UserController {
 	)
 	{
 		return {
-			"success": false
+			"success": true
 		};
 	}
 	@Get(':userID/2fa/')
@@ -178,7 +185,7 @@ export class UserController {
 			"enabled": false
 		};
 	}
-	@Put(':userID/2fa/')
+	@Patch(':userID/2fa/')
 	async setUser2FA(
 		@Param('userID', ParseIntPipe) userID: number
 	)
@@ -238,7 +245,7 @@ export class UserController {
 			"createdAt": "2020-01-01 00:00:00"
 		  }
 	}
-	@Put(':userID')
+	@Patch(':userID')
 	async updateUser(
 		@Param('userID', ParseIntPipe) userID: number
 	)
