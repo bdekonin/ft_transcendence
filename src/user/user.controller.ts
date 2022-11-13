@@ -20,7 +20,16 @@ export class UserController {
 			  "wins": 4,
 			  "losses": 2,
 			  "createdAt": "2020-01-01 00:00:00"
-			}
+			},
+			{
+				"id": 42,
+				"username": "bdekonin",
+				"avatar": "example.jpg",
+				"level": 3,
+				"wins": 4,
+				"losses": 2,
+				"createdAt": "2020-01-01 00:00:00"
+			  }
 		  ];
 	}
 
@@ -113,7 +122,8 @@ export class UserController {
 	@Get(':userID/social')
 	async getSocial(
 		@Param('userID', ParseIntPipe) userID: number,
-		@Query('filter') filter: string
+		@Query('filter') filter: string,
+		@Query('otherID', ParseIntPipe) otherID: number
 	)
 	{
 		if (filter != 'pending' && filter != 'following' && filter != 'blocked')
@@ -135,18 +145,6 @@ export class UserController {
 				"status": "blocked"
 			}
 		]
-	}
-	@Get(':userID/social/:otherID')
-	async getSocialStatus(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"sender": 564652,
-			"receiver": userID,
-			"status": "following"
-		}
 	}
 
 	// Profile settings
@@ -176,6 +174,7 @@ export class UserController {
 			"success": true
 		};
 	}
+
 	@Get(':userID/2fa/')
 	async getUser2FA(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -194,6 +193,7 @@ export class UserController {
 			"success": true
 		};
 	}
+
 	@Get(':userID')
 	async getUser(
 		@Param('userID', ParseIntPipe) userID: number
@@ -254,6 +254,8 @@ export class UserController {
 			"success": true
 		};
 	}
+
+	// Etc
 
 
 
