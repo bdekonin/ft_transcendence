@@ -11,26 +11,47 @@ export class UserController {
 	@Get()
 	async getAllUsers()
 	{
+		const users = await this.userService.userRepository.find({
+			// relations: ['membership']
+			relations: ['membership']
+		});
+		// loop through users and remove if two is enabled
+		for (let i = 0; i < users.length; i++) {
+			delete users[i].twofa;
+		}
+		return users;
 		return [
 			{
-			  "id": 42,
+			  "id": 60939,
 			  "username": "bdekonin",
-			  "avatar": "example.jpg",
-			  "level": 3,
-			  "wins": 4,
-			  "losses": 2,
-			  "createdAt": "2020-01-01 00:00:00"
+			  "avatar": "https://cdn.intra.42.fr/users/0135610cd6a33554bf913d0193ba3eb6/bdekonin.jpg",
+			  "level": 0,
+			  "wins": 0,
+			  "loses": 0,
+			  "createdAt": "2022-10-26T16:08:01.650Z",
+			  "membership": {
+				"id": 1,
+				"role": "user",
+				"banned": false,
+				"muted": false
+			  }
 			},
 			{
-				"id": 42,
-				"username": "bdekonin",
-				"avatar": "example.jpg",
-				"level": 3,
-				"wins": 4,
-				"losses": 2,
-				"createdAt": "2020-01-01 00:00:00"
+			  "id": 116054,
+			  "username": "Dopee",
+			  "avatar": "https://cdn.intra.42.fr/users/medium_default.png",
+			  "level": 0,
+			  "wins": 0,
+			  "loses": 0,
+			  "createdAt": "2022-10-26T16:08:42.243Z",
+			  "membership": {
+				"id": 2,
+				"role": "user",
+				"banned": false,
+				"muted": false
 			  }
-		  ];
+			}
+		  ]
 	}
 
 	// Games
@@ -75,76 +96,6 @@ export class UserController {
 				"date": "1668172775"
 			  }
 		  ];
-	}
-
-	// Socials
-	@Put(':userID/social/:otherID/follow')
-	async followUser(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"success": true,
-			"status": "pending"
-		};
-	}
-	@Delete(':userID/social/:otherID/unfollow')
-	async unfollowUser(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"success": true
-		};
-	}
-	@Put(':userID/social/:otherID/block')
-	async blockUser(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"success": true
-		};
-	}
-	@Delete(':userID/social/:otherID/unblock')
-	async unblockUser(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Param('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		return {
-			"success": true
-		};
-	}
-	@Get(':userID/social')
-	async getSocial(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Query('filter') filter: string,
-		@Query('otherID', ParseIntPipe) otherID: number
-	)
-	{
-		if (filter != 'pending' && filter != 'following' && filter != 'blocked')
-			throw new BadRequestException('Query parameter is not valid');
-		return [
-			{
-				"sender": 564652,
-				"receiver": userID,
-				"status": "pending"
-			},
-			{
-				"sender": userID,
-				"receiver": 456468,
-				"status": "following"
-			},
-			{
-				"sender": 13216,
-				"receiver": userID,
-				"status": "blocked"
-			}
-		]
 	}
 
 	// Profile settings

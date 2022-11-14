@@ -13,6 +13,8 @@ import { GameService } from './game/game.service';
 import { MembershipController } from './membership/membership.controller';
 import { MembershipService } from './membership/membership.service';
 import { Membership } from "src/entities/Membership.entity";
+import { SocialService } from './social/social.service';
+import { SocialController } from './social/social.controller';
 
 @Module({
 	imports: [
@@ -24,13 +26,15 @@ import { Membership } from "src/entities/Membership.entity";
 		UserController,
 		FriendController,
 		GameController,
-		MembershipController
+		MembershipController,
+		SocialController
 	],
 	providers: [
 		UserService,
 		FriendService,
 		GameService,
-		MembershipService
+		MembershipService,
+		SocialService
 	]
 })
 export class UserModule {}
