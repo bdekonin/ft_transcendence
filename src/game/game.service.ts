@@ -51,7 +51,7 @@ export class GameService {
 		return this.gameRepo.save(game);
 	}
 
-	async getMatchByUser(userID: number, filter: string) {
+	async getMatchByUser(userID: number, filter: string): Promise<GameHistory[]> {
 		const user = await this.userService.findUserById(userID);
 		if (!user) {
 			throw new NotFoundException(`User Not Found`);

@@ -7,7 +7,8 @@ export class CreateGameDTO {
 	@IsString()
 	@ApiProperty({
 		description: 'The name of the game',
-		example: 'Game 1'
+		example: '1v1',
+		default: '1v1',
 	})
 	public mode : string;
 
