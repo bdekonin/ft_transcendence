@@ -19,9 +19,19 @@ async function bootstrap() {
     })
   );
 
+  app.setGlobalPrefix("api/v2");
+
+  const config = new DocumentBuilder()
+    .setTitle('ft_transcendence backend API')
+    .setDescription('The last common core project of 42. This is the backend which is used by the frontend to communicate with the database.')
+    .setVersion('1.0')
+    .addTag('NestJS')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/v2', app, document);
+
   app.use(passport.initialize());
   app.use(passport.session());
-
   app.enableCors();
 
   await app.listen(3000);

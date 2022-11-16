@@ -126,7 +126,45 @@ export class SocialService
 		return await this.repo.remove(friendship);
 	}
 
+	async getSocial(senderID: number, filter: string): Promise<Friend[]> {
+		if (filter === 'accepted')
+			return await this.getFriends(senderID);
+		else if (filter === 'pending')
+			return await this.getPendings(senderID);
+		else if (filter === 'sent')
+			return await this.getSentRequests(senderID);
+		else if (filter === 'blocked')
+			return await this.getBlocked(senderID);
+		throw new BadRequestException('Invalid filter');
+	}
+	async getSocialOf(senderID: number, otherID: number): Promise<Friend> {
+		const sender = await this.userService.findUserById(senderID);
+		const reciever = await this.userService.findUserById(otherID);
 
+		if (!sender || !reciever)
+			throw new NotFoundException('User not found');
+		const friendship = await this.repo.findOne({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender:  { id: sender.id }, reciever: { id: reciever.id } },
+				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
+			],
+		});
+		return friendship;
+	}
+	async getAllFriends(id: number): Promise<Friend[]> {
+		const user = await this.userService.findUserById(id);
+		if (!user)
+			throw new NotFoundException('User not found');
+		const friends = await this.repo.find({
+			relations: ['sender', 'reciever'],
+			where: [
+				{ sender: { id: user.id } },
+				{ reciever: { id: user.id } },
+			],
+		});
+		return friends;
+	}
 
 
 
@@ -143,33 +181,10 @@ export class SocialService
 		});
 		return friendship ? true : false;
 	}
-	
-	async getSocial(senderID: number, filter: string): Promise<Friend[]> {
-		if (filter === 'accepted')
-			return await this.getFriends(senderID);
-		else if (filter === 'pending')
-			return await this.getPendings(senderID);
-		else if (filter === 'sent')
-			return await this.getSentRequests(senderID);
-		else if (filter === 'blocked')
-			return await this.getBlocked(senderID);
-		throw new BadRequestException('Invalid filter');
-	}
-
-	async getSocialOf(senderID: number, otherID: number): Promise<Friend> {
-		const sender = await this.userService.findUserById(senderID);
-		const reciever = await this.userService.findUserById(otherID);
-		const friendship = await this.repo.findOne({
-			relations: ['sender', 'reciever'],
-			where: [
-				{ sender:  { id: sender.id }, reciever: { id: reciever.id } },
-				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
-			],
-		});
-		return friendship;
-	}
 	private async getFriends(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
+		if (!user)
+			throw new NotFoundException('User not found');
 		const friends = await this.repo.find({
 			relations: ['sender', 'reciever'],
 			where: [
@@ -181,6 +196,8 @@ export class SocialService
 	}
 	private async getPendings(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
+		if (!user)
+			throw new NotFoundException('User not found');
 		const requests = await this.repo.find({
 			relations: ['sender', 'reciever'],
 			where: [
@@ -192,6 +209,8 @@ export class SocialService
 	}
 	private async getSentRequests(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
+		if (!user)
+			throw new NotFoundException('User not found');
 		const pendings = await this.repo.find({
 			relations: ['sender', 'reciever'],
 			where: [
@@ -202,6 +221,8 @@ export class SocialService
 	}
 	private async getBlocked(id: number): Promise<Friend[]> {
 		const user = await this.userService.findUserById(id);
+		if (!user)
+			throw new NotFoundException('User not found');
 		const pendings = await this.repo.find({
 			relations: ['sender', 'reciever'],
 			where: [
@@ -209,16 +230,5 @@ export class SocialService
 			]
 		});
 		return pendings;
-	}
-	public async getAllFriends(id: number): Promise<Friend[]> {
-		const user = await this.userService.findUserById(id);
-		const friends = await this.repo.find({
-			relations: ['sender', 'reciever'],
-			where: [
-				{ sender: { id: user.id } },
-				{ reciever: { id: user.id } },
-			],
-		});
-		return friends;
 	}
 }
