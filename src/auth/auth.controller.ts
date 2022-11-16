@@ -2,7 +2,9 @@ import { Controller, Get, Req, UseGuards } from "@nestjs/common";
 import { Request } from "express";
 import { AuthService } from "./auth.service";
 import { FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
+import { ApiTags } from "@nestjs/swagger";
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService) {}
