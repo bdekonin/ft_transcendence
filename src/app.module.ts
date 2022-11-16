@@ -9,9 +9,12 @@ import { GameHistory } from './entities/GameHistory.entity';
 import { Membership } from './entities/Membership.entity';
 import { User } from './entities/User.entity';
 import { UserModule } from './user/user.module';
+import { GameController } from './game/game.controller';
+import { GameService } from './game/game.service';
+import { GameModule } from './game/game.module';
 
 @Module({
-  imports: [AuthModule, UserModule,
+  imports: [AuthModule, UserModule, GameModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -23,6 +26,7 @@ import { UserModule } from './user/user.module';
       synchronize: true,
     }),
     PassportModule.register({ session: true}),
+    GameModule,
   ],
   controllers: [AppController],
   providers: [AppService],

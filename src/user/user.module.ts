@@ -8,8 +8,6 @@ import { FriendController } from "./friend/friend.controller";
 import { FriendService } from "./friend/friend.service";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
-import { GameController } from './game/game.controller';
-import { GameService } from './game/game.service';
 import { MembershipController } from './membership/membership.controller';
 import { MembershipService } from './membership/membership.service';
 import { Membership } from "src/entities/Membership.entity";
@@ -25,14 +23,12 @@ import { SocialController } from './social/social.controller';
 	controllers: [
 		UserController,
 		FriendController,
-		GameController,
 		MembershipController,
 		SocialController
 	],
 	providers: [
 		UserService,
 		FriendService,
-		GameService,
 		MembershipService,
 		SocialService
 	]
