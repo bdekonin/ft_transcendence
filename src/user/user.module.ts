@@ -11,12 +11,19 @@ import { MembershipService } from './membership/membership.service';
 import { Membership } from "src/entities/Membership.entity";
 import { SocialService } from './social/social.service';
 import { SocialController } from './social/social.controller';
+import { MulterModule } from "@nestjs/platform-express";
 
 @Module({
 	imports: [
 		UserModule,
 		TypeOrmModule.forFeature([User, GameHistory, Friend, Membership]),
-		forwardRef(() => AppModule)
+		forwardRef(() => AppModule),
+		MulterModule.registerAsync({ useFactory: () => ({ dest: './uploads' }) }),
+		// MulterModule.registerAsync({
+		// 	useFactory: () => ({
+		// 	  dest: './uploads',
+		// 	}),
+		//   });
 	],
 	controllers: [
 		UserController,

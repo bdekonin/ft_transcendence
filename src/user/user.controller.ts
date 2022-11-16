@@ -1,18 +1,20 @@
-import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, Param, ParseIntPipe, Patch, Put, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, NotFoundException, Param, ParseFilePipe, ParseIntPipe, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
+import { ApiTags, ApiBadRequestResponse, ApiNotFoundResponse, ApiForbiddenResponse, ApiOkResponse, ApiParam } from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
 
-
+@ApiTags('user')
 @Controller('/user/')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	// General
 	@Get()
+		@ApiOkResponse({ description: 'Returns all users', type: User })
 	async getAllUsers()
 	{
 		const users = await this.userService.userRepository.find({
-			// relations: ['membership']
 			relations: ['membership']
 		});
 		// loop through users and remove if two is enabled
@@ -20,82 +22,6 @@ export class UserController {
 			delete users[i].twofa;
 		}
 		return users;
-		return [
-			{
-			  "id": 60939,
-			  "username": "bdekonin",
-			  "avatar": "https://cdn.intra.42.fr/users/0135610cd6a33554bf913d0193ba3eb6/bdekonin.jpg",
-			  "level": 0,
-			  "wins": 0,
-			  "loses": 0,
-			  "createdAt": "2022-10-26T16:08:01.650Z",
-			  "membership": {
-				"id": 1,
-				"role": "user",
-				"banned": false,
-				"muted": false
-			  }
-			},
-			{
-			  "id": 116054,
-			  "username": "Dopee",
-			  "avatar": "https://cdn.intra.42.fr/users/medium_default.png",
-			  "level": 0,
-			  "wins": 0,
-			  "loses": 0,
-			  "createdAt": "2022-10-26T16:08:42.243Z",
-			  "membership": {
-				"id": 2,
-				"role": "user",
-				"banned": false,
-				"muted": false
-			  }
-			}
-		  ]
-	}
-
-	// Games
-	@Get(':userID/matches')
-	async getUsersGames(
-		@Param('userID', ParseIntPipe) userID: number,
-		@Query('filter') filter: string
-	)
-	{
-		if (filter != 'won' && filter != 'lost' && filter != 'draw' && filter != undefined)
-			throw new BadRequestException('Query parameter is not valid');
-
-		return   [
-			{
-			  "id": 25,
-			  "mode": "1v1",
-			  "winner": userID,
-			  "loser": 12092,
-			  "winnerScore": 8,
-			  "loserScore": 5,
-			  "draw": false,
-			  "date": "1668172775"
-			},
-			{
-				"id": 27,
-				"mode": "1v1",
-				"winner": 16379,
-				"loser": userID,
-				"winnerScore": 1,
-				"loserScore": 5,
-				"draw": false,
-				"date": "1668172775"
-			  },
-			  {
-				"id": 37,
-				"mode": "1v1",
-				"winner": 15975,
-				"loser": userID,
-				"winnerScore": 10,
-				"loserScore": 10,
-				"draw": true,
-				"date": "1668172775"
-			  }
-		  ];
 	}
 
 	// Profile settings
@@ -105,16 +31,45 @@ export class UserController {
 		@Res() res
 	)
 	{
-		return res.sendFile('rkieboom.jpeg', { root: 'tmpsrc/assets' });
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		const split = user.avatar.split('.');
+		const extension = split[split.length - 1];
+		res.set({
+			'Content-Type': `image/${extension}`
+		});
+		return res.sendFile(split[0], { root: 'uploads' });
 	}
-	@Patch(':userID/avatar')
+	@Post(':userID/avatar')
+	@UseInterceptors(FileInterceptor('image'))
 	async setUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
+		@UploadedFile(
+			new ParseFilePipe({
+				validators: [
+					new MaxFileSizeValidator({ maxSize: 1048576 })
+				]
+			})
+		)
+		file: Express.Multer.File
 	)
 	{
-		return {
-			"success": false
-		};
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		if (file.mimetype === 'image/jpeg') {
+			user.avatar = file.filename + '.jpeg';
+		}
+		else if (file.mimetype === 'image/png') {
+			user.avatar = file.filename + '.png';
+		}
+		else {
+			throw new BadRequestException('Invalid file type. Only jpeg and png are allowed');
+		}
+		await this.userService.save(user);
 	}
 	@Delete(':userID/avatar')
 	async deleteUserAvatar(
@@ -125,7 +80,6 @@ export class UserController {
 			"success": true
 		};
 	}
-
 	@Get(':userID/2fa/')
 	async getUser2FA(
 		@Param('userID', ParseIntPipe) userID: number,
