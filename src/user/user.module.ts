@@ -4,8 +4,6 @@ import { AppModule } from "src/app.module";
 import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
 import { User } from "src/entities/User.entity";
-import { FriendController } from "./friend/friend.controller";
-import { FriendService } from "./friend/friend.service";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 import { MembershipController } from './membership/membership.controller';
@@ -22,13 +20,11 @@ import { SocialController } from './social/social.controller';
 	],
 	controllers: [
 		UserController,
-		FriendController,
 		MembershipController,
 		SocialController
 	],
 	providers: [
 		UserService,
-		FriendService,
 		MembershipService,
 		SocialService
 	]
