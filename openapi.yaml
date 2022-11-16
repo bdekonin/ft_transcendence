@@ -11,7 +11,10 @@ tags:
   - name: user
     description: Everything about the user
   - name: chat
-    description: Everything about the chat 
+    description: Everything about the chat
+
+  - name: General
+  - name: Socials
 
 
 paths:
@@ -84,11 +87,12 @@ paths:
         '404':
           description: Game Not Found
 
+
   # User endpoints
   /user/:
     get:
       tags:
-        - user
+        - General
       summary: Returns all the users of the server
       responses:
         '200':
@@ -99,6 +103,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/userProperties'
+
+  # Games
   /user/{userID}/matches/:
      get:
       tags:
@@ -134,13 +140,14 @@ paths:
           description: ID Not Found
         '400':
           description: Query parameter is not valid
-  
-  /user/{userID}/follow/{otherID}/:
+
+  # Social
+  /user/{userID}/social/{otherID}/follow:
     put:
       tags:
         - user
       summary: Creates a 'pending' friendship between {userID} and {otherID}
-      description: If called in reverse the relationship is changed to 'Accepted'. The body will be ignored and not be used.
+      description: If called in reverse the relationship is changed to 'Accepted'
       parameters:
       - name: userID
         in: path
@@ -161,11 +168,12 @@ paths:
           description: Users are now friends
         '404':
           description: ID Not Found
-  /user/{userID}/unfollow/{otherID}/:
+  /user/{userID}/social/{otherID}/unfollow:
     delete:
       tags:
         - user
-      summary: Deletes a friendship between {userID} and {otherID}
+      summary: Blocks 2 users from eachother
+      description: Blocks eachother. This is always One to One. User 1 cant see User 2 and 2 also cannot see User 1. No need to send data as there is already 2 path parameters
       parameters:
       - name: userID
         in: path
@@ -184,7 +192,7 @@ paths:
           description: OK
         '404':
           description: Not Found
-  /user/{userID}/block/{otherID}/:
+  /user/{userID}/social/{otherID}/block:
     put:
       tags:
         - user
@@ -208,7 +216,7 @@ paths:
           description: Created
         '404':
           description: One of the ID is not Found
-  /user/{userID}/unblock/{otherID}/:
+  /user/{userID}/social/{otherID}/unblock:
     delete:
       tags:
         - user
@@ -232,13 +240,12 @@ paths:
           description: Created
         '404':
           description: One of the ID is not Found
-  
-  /user/{userID}/status/{otherID}/:
+  /user/{userID}/social:
     get:
       tags:
         - user
-      summary: Returns the relationship object between {userID} and {otherID}
-      description: The status of the return can be either Blocked, Accepted, Pending
+      summary: Returns all the friends of the user
+      description: Returns all the friends of the user and the status of the friendship
       parameters:
       - name: userID
         in: path
@@ -246,83 +253,37 @@ paths:
         required: true
         schema:
           type: integer
-      - name: otherID
-        in: path
-        description: the id of the other user
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  sender:
-                    type: integer
-                    example: 53123
-                  receiver:
-                    type: integer
-                    example: 12345
-                  status:
-                    type: string
-                    enum:
-                      - Blocked
-                      - Accepted
-                      - Pending
-                    example: Accepted
-        '404':
-          description: One of the ID is not Found
-  /user/{userID}/status/:
-    get:
-      tags:
-        - user
-      summary: Returns the relationship object between {userID} and {otherID}
-      description: The status of the return can be either Blocked, Accepted, sent, recieved
-      parameters:
-      - name: userID
-        in: path
-        description: the id of the user
-        required: true
-        schema:
-          type: integer
-      - in: query
-        name: filter
+      - name: filter
+        in: query
+        description: Filter by friends that are pending, accepted or blocked
         schema:
           type: string
           enum:
             - accepted
             - blocked
-            - sent
-            - received
+      - name: otherID
+        in: query
+        description: Filter by a specific user
+        schema:
+          type: integer
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  sender:
-                    type: integer
-                    example: 53123
-                  receiver:
-                    type: integer
-                    example: 12345
+                type: array
+                items:
+                  $ref: '#/components/schemas/userProperties'
                   status:
                     type: string
-                    enum:
-                    - accepted
-                    - blocked
-                    - sent
-                    - received
-                    example: Accepted
+                    example: pending
         '404':
-          description: One of the ID is not Found
-        '400':
-          description: Query parameter is not valid
+          description: ID Not Found
+
+
+
+# Profile
   /user/{userID}/avatar/:
     get:
       tags:
@@ -345,10 +306,10 @@ paths:
                     url:
                       type: string
                       example:
-                        'rkieboom.jpg'
+                        'localhost/avatars/rkieboom.jpg'
           '404':
             description: One of the ID is not Found
-    put:
+    patch:
       tags:
         - user
       summary: 'updates the avatar of {me}'
@@ -375,6 +336,24 @@ paths:
           description: One of the ID is not Found
         '403':
           description: You are not allowed to update this avatar
+    delete:
+      tags:
+        - user
+      summary: 'Deletes the avatar of {me}'
+      parameters:
+      - name: userID
+        in: path
+        description: the id of the user
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Created
+        '404':
+          description: One of the ID is not Found
+        '403':
+          description: You are not allowed to delete this avatar
   /user/{userID}/2fa/:
     get:
       tags:
@@ -400,7 +379,7 @@ paths:
                         'true'
           '404':
             description: One of the ID is not Found
-    put:
+    patch:
       tags:
         - user
       summary: 'updates the 2fa of {userID}'
@@ -448,7 +427,7 @@ paths:
                   $ref: '#/components/schemas/userProperties'
           '404':
             description: One of the ID is not Found
-    put:
+    patch:
       tags:
         - user
       summary: 'updates the user object of {userID}'
@@ -471,7 +450,12 @@ paths:
           description: One of the ID is not Found
         '403':
           description: You are not allowed to update this avatar
-  
+
+
+
+
+
+
   # Chat endpoints
   /chat/{userID}/rooms/{roomID}/:
     get:
@@ -779,7 +763,7 @@ components:
           type: string
           example:
             1668172775
-   
+
     arrayOfGames:
       type: array
       items:
@@ -871,7 +855,7 @@ components:
           type: array
           items:
             type: integer
-            
+
     chatMessageProperty:
       type: object
       properties:
