@@ -15,7 +15,7 @@ export class AuthService {
 	) {}
 
 	async validateUser(details: UserDetails) {
-		const user = await this.getPlayerRepository().findOneBy({id: details.id})
+		const user = await this.getPlayerRepository().findOneBy({username: details.username})
 
 		if (user)
 			return user;

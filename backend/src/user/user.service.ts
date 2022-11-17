@@ -22,6 +22,7 @@ export class UserService {
 	) { }
 	/* Endpoints */
 
+	/* Avatar */
 	async getAvatar(userID: number, res: any) {
 		const user = await this.findUserById(userID);
 		if (!user) {
@@ -57,6 +58,8 @@ export class UserService {
 		this.save(user)
 		return 204;
 	}
+
+	/* TwoFA */
 
 
 
