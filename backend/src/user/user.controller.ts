@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, NotFoundException, Param, ParseFilePipe, ParseIntPipe, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, FileTypeValidator, Get, HttpCode, MaxFileSizeValidator, NotFoundException, Param, ParseFilePipe, ParseIntPipe, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
 import { ApiTags, ApiBadRequestResponse, ApiNotFoundResponse, ApiForbiddenResponse, ApiOkResponse, ApiParam } from "@nestjs/swagger";
@@ -31,14 +31,7 @@ export class UserController {
 		@Res() res
 	)
 	{
-		const user = await this.userService.findUserById(userID);
-		if (!user) {
-			throw new NotFoundException('User not found');
-		}
-		res.set({
-			'Content-Type': `image/jpeg`
-		});
-		return res.sendFile(user.avatar, { root: 'uploads' });
+		return await this.userService.getAvatar(userID, res);
 	}
 	@Post(':userID/avatar')
 	@UseInterceptors(FileInterceptor('image'))
@@ -47,7 +40,7 @@ export class UserController {
 		@UploadedFile(
 			new ParseFilePipe({
 				validators: [
-					new MaxFileSizeValidator({ maxSize: 30000 }),
+					new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 1 /* 1 mb */ }),
 					new FileTypeValidator({ fileType: 'jpeg'}),
 				]
 			})
@@ -55,29 +48,20 @@ export class UserController {
 		file: Express.Multer.File
 	)
 	{
-		const user = await this.userService.findUserById(userID);
-		if (!user) {
-			throw new NotFoundException('User not found');
-		}
-		user.avatar = file.filename;
-		return await this.userService.save(user);
+		return this.userService.postAvatar(userID, file.filename);
 	}
 	@Delete(':userID/avatar')
+	@HttpCode(204)
 	async deleteUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
 	)
 	{
-		const user = await this.userService.findUserById(userID);
-		if (!user) {
-			throw new NotFoundException('User not found');
-		}
-		user.avatar = null;
-		return await this.userService.save(user);
-
-		return {
-			"success": true
-		};
+		return this.userService.deleteAvatar(userID);
 	}
+
+
+
+
 
 	@Get(':userID/2fa/')
 	async getUser2FA(
