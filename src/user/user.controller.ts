@@ -35,12 +35,10 @@ export class UserController {
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		const split = user.avatar.split('.');
-		const extension = split[split.length - 1];
 		res.set({
-			'Content-Type': `image/${extension}`
+			'Content-Type': `image/jpeg`
 		});
-		return res.sendFile(split[0], { root: 'uploads' });
+		return res.sendFile(user.avatar, { root: 'uploads' });
 	}
 	@Post(':userID/avatar')
 	@UseInterceptors(FileInterceptor('image'))
@@ -49,7 +47,8 @@ export class UserController {
 		@UploadedFile(
 			new ParseFilePipe({
 				validators: [
-					new MaxFileSizeValidator({ maxSize: 1048576 })
+					new MaxFileSizeValidator({ maxSize: 30000 }),
+					new FileTypeValidator({ fileType: 'jpeg'}),
 				]
 			})
 		)
@@ -60,26 +59,26 @@ export class UserController {
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		if (file.mimetype === 'image/jpeg') {
-			user.avatar = file.filename + '.jpeg';
-		}
-		else if (file.mimetype === 'image/png') {
-			user.avatar = file.filename + '.png';
-		}
-		else {
-			throw new BadRequestException('Invalid file type. Only jpeg and png are allowed');
-		}
-		await this.userService.save(user);
+		user.avatar = file.filename;
+		return await this.userService.save(user);
 	}
 	@Delete(':userID/avatar')
 	async deleteUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
 	)
 	{
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		user.avatar = null;
+		return await this.userService.save(user);
+
 		return {
 			"success": true
 		};
 	}
+
 	@Get(':userID/2fa/')
 	async getUser2FA(
 		@Param('userID', ParseIntPipe) userID: number,

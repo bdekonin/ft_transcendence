@@ -1,9 +1,9 @@
 import { User as UserObject } from "src/entities/User.entity"
 
 export type UserDetails = {
-	id: number;
-	username: string;
-	avatar: string;
+	id?: number;
+	username?: string;
+	avatar?: string;
 }
 
 export {};

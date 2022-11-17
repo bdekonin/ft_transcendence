@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GameHistory } from "./GameHistory.entity";
 import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
@@ -10,15 +10,15 @@ import { ApiProperty, getSchemaPath} from '@nestjs/swagger';
 @Entity()
 export class User {
 	@ApiProperty({ description: 'The id of the user', example: 1 })
-	@PrimaryColumn()
+	@PrimaryGeneratedColumn()
 	id: number; // unique ID of User
 
 	@ApiProperty({ description: 'The username of the user', example: 'rkieboom' })
-	@PrimaryColumn() // @Column({unique: true})
+	@PrimaryColumn({ unique: true }) // @Column({unique: true})
 	username: string; // Unique username
 
-	@ApiProperty({ description: 'The email of the user', example: 'rkieboom.png' })
-	@Column({ default: 'https://cdn.intra.42.fr/users/medium_default.png' })
+	@ApiProperty({ description: 'The avatar of the user', example: 'default.jpeg' })
+	@Column({ default: 'default.jpeg' })
 	avatar: string; // Link to image || or file path to image
 
 	// @Column() // One to One

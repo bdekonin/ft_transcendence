@@ -19,7 +19,7 @@ async function bootstrap() {
     })
   );
 
-  app.setGlobalPrefix("api/v2");
+  // app.setGlobalPrefix("api/v2");
 
   const config = new DocumentBuilder()
     .setTitle('ft_transcendence backend API')
@@ -28,7 +28,7 @@ async function bootstrap() {
     .addTag('NestJS')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/v2', app, document);
+  SwaggerModule.setup('', app, document);
 
   app.use(passport.initialize());
   app.use(passport.session());
