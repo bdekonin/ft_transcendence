@@ -19,11 +19,6 @@ import { MulterModule } from "@nestjs/platform-express";
 		TypeOrmModule.forFeature([User, GameHistory, Friend, Membership]),
 		forwardRef(() => AppModule),
 		MulterModule.registerAsync({ useFactory: () => ({ dest: './uploads' }) }),
-		// MulterModule.registerAsync({
-		// 	useFactory: () => ({
-		// 	  dest: './uploads',
-		// 	}),
-		//   });
 	],
 	controllers: [
 		UserController,

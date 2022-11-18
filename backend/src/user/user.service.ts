@@ -1,10 +1,9 @@
 import { ArgumentMetadata, BadRequestException, Injectable, NotFoundException, PipeTransform } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Friend } from "src/entities/Friend.entity";
-import { GameHistory } from "src/entities/GameHistory.entity";
 import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
 import * as fs from 'fs'
+import { updateUserDto } from "./user.dto";
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -59,7 +58,38 @@ export class UserService {
 		return 204;
 	}
 
-	/* TwoFA */
+	/* twofa */
+	async getTwoFA(userID: number): Promise<boolean> {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return user.twofa;
+	}
+
+	/* user */
+	async getUser(id: number): Promise<User> {
+		const user = await this.findUserById(id);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return user;
+	}
+
+	// patch user
+	async updateUser(userID: number, dto: updateUserDto): Promise<User> {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		this.userRepository.update(
+			{ id: userID },
+			{
+				username: dto.username ? dto.username : user.username,
+			 	twofa: dto.twofa ? dto.twofa : user.twofa
+			});
+		return user;
+	}
 
 
 
