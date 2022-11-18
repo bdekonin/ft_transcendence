@@ -1,8 +1,9 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";
 import { Request } from "express";
 import { AuthService } from "./auth.service";
 import { FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
 import { ApiTags } from "@nestjs/swagger";
+import { Response } from 'express'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -12,8 +13,11 @@ export class AuthController {
 	/* 42 */
 	@Get('42/login')
 	@UseGuards(FortyTwoAuthGuard)
-	handleLoginFortyTwo() {
-		return { msg: '42 Authentication'}
+	handleLoginFortyTwo(
+		// @Req req: Request,
+		@Res({passthrough: true}) res: Response,
+	) {
+		res.redirect('http://localhost:3006');
 	}
 
 	// auth/42/redirect
@@ -32,13 +36,16 @@ export class AuthController {
 
 	@Get('google/redirect')
 	@UseGuards(GoogleAuthGuard)
-	handleRedirectGoogle() {
-		return { msg: 'OK GOOGLE'}
+	handleRedirectGoogle(
+		// @Req req: Request,
+		@Res({passthrough: false}) res: Response,
+	) {
+		res.redirect('http://localhost:3006');
 	}
 
 	@Get('status')
 	user(@Req() request: Request) {
-		var user = request.user;
+		const user = request.user;
 		console.log("userfunction");
 		console.log(user);
 
