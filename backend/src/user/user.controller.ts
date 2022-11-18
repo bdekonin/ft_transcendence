@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, FileTypeValidator, Get, HttpCode, MaxFileSizeValidator, Param, ParseFilePipe, ParseIntPipe, Patch, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, FileTypeValidator, Get, HttpCode, MaxFileSizeValidator, NotFoundException, Param, ParseFilePipe, ParseIntPipe, Patch, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { User } from "src/entities/User.entity";
 import { UserService } from "./user.service";
-import { ApiTags, ApiOkResponse } from "@nestjs/swagger";
+import { ApiTags, ApiOkResponse, ApiNotFoundResponse, ApiParam, ApiBody, ApiNoContentResponse } from "@nestjs/swagger";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { updateUserDto } from "./user.dto";
 
@@ -27,6 +27,9 @@ export class UserController {
 
 	// Profile settings
 	@Get(':userID/avatar')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns the image of the userID'})
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user' })
 	async getUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Res() res
@@ -35,6 +38,9 @@ export class UserController {
 		return await this.userService.getAvatar(userID, res);
 	}
 	@Post(':userID/avatar')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns the image of the userID'})
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	@UseInterceptors(FileInterceptor('image'))
 	async setUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -52,6 +58,9 @@ export class UserController {
 		return this.userService.postAvatar(userID, file.filename);
 	}
 	@Delete(':userID/avatar')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiNoContentResponse({ description: 'Delete current image and reverts to default.jpeg'})
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	@HttpCode(204)
 	async deleteUserAvatar(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -62,6 +71,9 @@ export class UserController {
 
 	/* twoFactor */
 	@Get(':userID/twofa/')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns if the user has 2fa enables', type: Boolean })
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async getUsertwoFA(
 		@Param('userID', ParseIntPipe) userID: number,
 	)
@@ -71,15 +83,27 @@ export class UserController {
 
 	/* Profile */
 	@Get(':userID')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async getUser(
 		@Param('userID', ParseIntPipe) userID: number
-	): Promise<User[]> {
-		return await this.userService.userRepository.find({
+	): Promise<User> {
+
+		const user = await this.userService.userRepository.findOne({
 			where: {id: userID},
 			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests']
 		});
+		if(!user) {
+			throw new NotFoundException('User Not Found');
+		}
+		return user;
 	}
 	@Patch(':userID')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'returns the updates user object', type: User })
+		@ApiBody({ type: updateUserDto })
+		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async updateUser(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() body: updateUserDto
