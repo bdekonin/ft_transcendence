@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -32,7 +33,15 @@ async function bootstrap() {
 
   app.use(passport.initialize());
   app.use(passport.session());
-  app.enableCors();
+  // app.enableCors({ origin: 'http://localhost:3006', credentials: true });
+  app.enableCors({
+    origin: [
+      "http://localhost:3006",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+    exposedHeaders: ['randomStringLol', 'X-XSRF-TOKEN'],
+  });
 
   await app.listen(3000);
 }
