@@ -9,9 +9,9 @@ import { GameHistory } from './entities/GameHistory.entity';
 import { Membership } from './entities/Membership.entity';
 import { User } from './entities/User.entity';
 import { UserModule } from './user/user.module';
-import { GameController } from './game/game.controller';
-import { GameService } from './game/game.service';
 import { GameModule } from './game/game.module';
+import { Chat } from './entities/Chat.entity';
+import { Message } from './entities/Message.entity';
 
 @Module({
   imports: [AuthModule, UserModule, GameModule,
@@ -22,7 +22,7 @@ import { GameModule } from './game/game.module';
       username: 'root',
       password: 'root',
       database: 'ft_trans',
-      entities: [User, Membership, GameHistory, Friend],
+      entities: [User, Membership, GameHistory, Friend, Chat, Message],
       synchronize: true,
     }),
     PassportModule.register({ session: true}),

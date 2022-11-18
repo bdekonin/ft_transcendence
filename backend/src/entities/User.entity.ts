@@ -2,7 +2,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, Ma
 import { GameHistory } from "./GameHistory.entity";
 import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
-import { ApiProperty, getSchemaPath} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Chat } from "./Chat.entity";
 
 
 // https://www.tutorialspoint.com/typeorm/typeorm_entity.htm
@@ -58,6 +59,10 @@ export class User {
 	@ApiProperty({ description: 'List of friends that the user has recieved', type: () => Friend })
 	@OneToMany(() => Friend, (friend) => friend.reciever) // Recipient
 	receivedFriendRequests: Friend[];
+
+	@ApiProperty({ description: 'List of chats connected to the user', type: () => Chat })
+	@ManyToMany(() => Chat, (chat) => chat.users)
+	chats: Chat[];
 	
 	@ApiProperty({ description: 'Creation Date', example: '2021-01-01T00:00:00.000Z' })
 	@CreateDateColumn({ type: 'timestamp' })
