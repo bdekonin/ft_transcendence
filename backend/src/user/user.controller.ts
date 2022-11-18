@@ -81,6 +81,8 @@ export class UserController {
 		return await this.userService.getTwoFA(userID);
 	}
 
+	// @Get('/me')
+
 	/* Profile */
 	@Get(':userID')
 		@ApiNotFoundResponse({description: 'User not found'})
