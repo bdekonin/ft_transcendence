@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from "@nestjs/common";
+import { ExecutionContext, Injectable, CanActivate, UnauthorizedException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 
@@ -24,11 +24,14 @@ export class GoogleAuthGuard extends AuthGuard('google') {
 
 /* This function checks if there is a session and returns true if is correct. Else false.
 // Can be used to check if the incoming request if authenticated or not */
-export class AuthenticateGuard extends AuthGuard('42') {
-	async canActivate(context: ExecutionContext) {
+@Injectable()
+export class AuthenticateGuard implements CanActivate {
+	canActivate(
+		context: ExecutionContext,
+	  ): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
 		if (request.user)
 			return true;
-		return false;
+		throw new UnauthorizedException('The access token is expired, revoked, malformed, or invalid.');
 	}
 }
