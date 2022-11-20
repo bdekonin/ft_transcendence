@@ -21,12 +21,12 @@ export class AuthController {
 	}
 
 	// auth/42/redirect
-	@Get('42/redirect')
+	@Get('42/callback')
 	@UseGuards(FortyTwoAuthGuard)
 	handleRedirectFortyTwo(
 		@Res({passthrough: false}) res: Response,
 	) {
-		res.redirect(process.env.CALLBACK_URL);
+		res.redirect(process.env.FRONTEND_REDIRECT_URL);
 	}
 
 	/* Google */
@@ -36,13 +36,13 @@ export class AuthController {
 		return { msg: 'Google Authentication'}
 	}
 
-	@Get('google/redirect')
+	@Get('google/callback')
 	@UseGuards(GoogleAuthGuard)
 	handleRedirectGoogle(
 		// @Req req: Request,
 		@Res({passthrough: false}) res: Response,
 	) {
-		res.redirect(process.env.CALLBACK_URL);
+		res.redirect(process.env.FRONTEND_REDIRECT_URL);
 	}
 
 	@Get('status')
