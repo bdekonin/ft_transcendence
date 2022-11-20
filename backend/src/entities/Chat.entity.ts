@@ -35,15 +35,6 @@ export class Chat {
 	@JoinColumn()
 	messages: Message[];
 
-	@Column()
-	isGroup: boolean;
-
-	@Column()
-	isPrivate: boolean;
-
-	@Column()
-	isPrivateProtected: boolean;
-
 	@Column({ nullable: true })
 	password: string;
 

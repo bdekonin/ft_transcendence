@@ -7,7 +7,7 @@ import { ChatType } from 'src/entities/Chat.entity';
 /* Private chat */
 /*
 {
-	"type": "PRIVATE",
+	"type": PRIVATE,
 	"users": [
 		'{userID}',
 		'{userID}',
@@ -19,7 +19,7 @@ import { ChatType } from 'src/entities/Chat.entity';
 /*
 {
 	"name": "Group Chat Name",
-	"type": "GROUP",
+	"type": GROUP,
 	"users": [
 		'{userID}',
 		'{userID}',
@@ -33,15 +33,8 @@ import { ChatType } from 'src/entities/Chat.entity';
 /*
 {
 	"name": "Group Chat Name",
-	"type": "GROUP",
-	"users": [
-		'{userID}',
-		'{userID}',
-		'{userID}',
-		'{userID}',
-	],
-	"isGroup": true,
-	"isPrivate": false,
+	"type": GROUP_PROTECTED,
+	"password": "password",
 }
 */
 
@@ -49,9 +42,6 @@ export class createChatDto {
 	name?: string;
 	type: ChatType;
 	users: number[];
-	isGroup: boolean;
-	isPrivate: boolean;
-	isPrivateProtected: boolean;
 	password?: string;
 }
 
