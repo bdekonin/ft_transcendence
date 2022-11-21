@@ -15,8 +15,8 @@ export class User {
 	id: number; // unique ID of User
 
 	@ApiProperty({ description: 'The username of the user', example: 'rkieboom' })
-	@PrimaryColumn({ unique: true }) // @Column({unique: true})
-	username: string; // Unique username
+	@Column({ unique: true, nullable: true }) // @Column({unique: true})
+	username?: string; // Unique username
 
 	@ApiProperty({ description: 'The avatar of the user', example: 'default.jpeg' })
 	@Column({ default: 'default.jpeg' })

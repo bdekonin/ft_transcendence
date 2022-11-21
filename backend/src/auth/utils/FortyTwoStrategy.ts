@@ -21,7 +21,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		console.log(refreshToken);
 		console.log(profile);
 		const user = await this.authService.validateUser({
-			username: profile.username
+			// username: profile.username
 		});
 		console.log('Validate');
 		console.log(user);
