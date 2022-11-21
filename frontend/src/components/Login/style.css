@@ -45,15 +45,16 @@
 	 box-sizing: border-box;
 }
  body {
-	 font-family: 'Playfair Display', serif;
+	 /* font-family: 'Playfair Display', serif;
 	 color: rgba(172, 170, 190, 1);
 	 text-rendering: optimizeLegibility;
 	 font-smooth: always;
 	 -webkit-font-smoothing: antialiased;
-	 -moz-osx-font-smoothing: grayscale;
+	 -moz-osx-font-smoothing: grayscale; */
 	 background-color: #3b3d54;
-	 font-size: 14px;
-	 overflow: hidden;
+	 /* background-color: #323232; */
+	 /* font-size: 14px;
+	 overflow: hidden; */
 }
  .wrap {
 	 perspective-origin: 50% 50%;
