@@ -1,6 +1,7 @@
-import { ExecutionContext, Injectable, CanActivate, UnauthorizedException } from "@nestjs/common";
+import { ExecutionContext, Injectable, CanActivate, UnauthorizedException, ImATeapotException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
+import { User } from "src/entities/User.entity";
 
 @Injectable()
 export class FortyTwoAuthGuard extends AuthGuard('42') {
@@ -30,8 +31,13 @@ export class AuthenticateGuard implements CanActivate {
 		context: ExecutionContext,
 	  ): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
-		if (request.user)
+		const user: User = request.user;
+		if (user) {
+			if (!user.username || user.username === '')
+				throw new ImATeapotException("Missing information.");
 			return true;
+		}
+
 		throw new UnauthorizedException('The access token is expired, revoked, malformed, or invalid.');
 	}
 }
