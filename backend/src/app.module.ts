@@ -13,7 +13,7 @@ import { GameModule } from './game/game.module';
 import { Chat } from './entities/Chat.entity';
 import { Message } from './entities/Message.entity';
 import { ConfigModule } from '@nestjs/config';
-import { ChatModule } from './chat/chat/chat.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [AuthModule, UserModule, GameModule, ChatModule,
