@@ -19,7 +19,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
 
 	async validate(accessToken: string, refreshToken: string, profile: Profile) {
 		const user = await this.authService.validateUser({
-			username: profile.displayName.replace(' ', ""),
+			// username: profile.displayName.replace(' ', ""),
 		});
 		console.log('Validate Google');
 		console.log(user);
