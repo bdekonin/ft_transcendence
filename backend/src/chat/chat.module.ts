@@ -1,4 +1,4 @@
-import { forwardRef, ForwardReference, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, ForwardReference, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppModule } from 'src/app.module';
 import { Chat } from 'src/entities/Chat.entity';
@@ -14,8 +14,8 @@ import { ChatService } from './chat.service';
 	imports: [
 		UserModule, ChatModule,
 		TypeOrmModule.forFeature([Chat, User, Message]),
-		forwardRef(() => AppModule)
-		
+		forwardRef(() => AppModule),
+		CacheModule.register(),
 	],
 	controllers: [
 		UserController,

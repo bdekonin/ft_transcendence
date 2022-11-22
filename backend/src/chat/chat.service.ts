@@ -1,12 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { setMaxIdleHTTPParsers } from 'http';
 import { Chat, ChatType } from 'src/entities/Chat.entity';
 import { User } from 'src/entities/User.entity';
 import { UserService } from 'src/user/user.service';
 import { UserNotFoundException } from 'src/utils/exceptions';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { createChatDto } from './chat.controller';
+import { Cache } from 'cache-manager';
 
 
 @Injectable()
@@ -15,15 +15,25 @@ export class ChatService {
 	constructor(
 		@InjectRepository(Chat) public chatRepo: Repository<Chat>,
 		private userService: UserService,
+		@Inject(CACHE_MANAGER) private cacheManager: Cache,
 	) { }
+	
 
-	set() {
-		global.inviteCache.set("test", "test");
+
+
+
+	async get() {
+		const value = await this.cacheManager.get('key');
+		if (value)
+			return { value: value };
+		else
+			return { value: 'no value' };
+	}
+	async set() {
+		const seconds = 10; // TODO - change to 600
+		return await this.cacheManager.set('key', 'value', seconds);
 	}
 
-	get() {
-		return global.inviteCache.get("test");
-	}
 
 
 
@@ -33,7 +43,7 @@ export class ChatService {
 
 
 
-	async createChat(userID: number, dto: createChatDto) {
+	async createChat(userID: number, dto: createChatDto): Promise<Chat> {
 		var chat;
 		if (dto.type === ChatType.PRIVATE) {
 			chat = await this.createPrivateChat(userID, dto);
@@ -44,15 +54,14 @@ export class ChatService {
 		} else {
 			throw new BadRequestException("Invalid chat type");
 		}
-		console.log(chat);
-		// console.log(await this.isEveryUserActive(chat.users));
-		return chat;
+		this.chatRepo.create(chat);
+		return await this.chatRepo.save(chat);
 	}
 
 	/* Helper functions - Create Chat */
 	private async createPrivateChat(userID: number, dto: createChatDto) {
 		const {type, users} = dto;
-		// const { name, type, users, password } = creatDto;
+
 		if (!users) {
 			throw new BadRequestException('Must include Users')
 		}
@@ -73,6 +82,12 @@ export class ChatService {
 		}
 		if (!type || !users)
 			throw new BadRequestException('Invalid chat type or users');
+
+		const chatExists = await this.doesPrivateExist(users[0], users[1]);
+		if (chatExists && chatExists.users.length > 1) {
+			throw new BadRequestException('Private chat already exists'); // TODO - Maybe return the chat instead?
+		}
+
 
 		const newChat = {
 			name: null,
@@ -146,5 +161,18 @@ export class ChatService {
 			usersArray.push(user);
 		}
 		return usersArray;
+	}
+
+	private async doesPrivateExist(idOne: number, idTwo: number): Promise<Chat> {
+		return await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				type: ChatType.PRIVATE,
+				// users: In([idOne, idTwo]),
+				users: {
+					id: In([idOne, idTwo]),
+				},
+			}
+		});
 	}
 }

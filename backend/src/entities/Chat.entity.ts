@@ -27,7 +27,9 @@ export class Chat {
 	// @JoinColumn()
 	// admins: User[];
 
-	@ManyToMany(() => User, (user) => user.chats)
+	@ManyToMany(() => User, (user) => user.chats, {
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	users: User[];
 	

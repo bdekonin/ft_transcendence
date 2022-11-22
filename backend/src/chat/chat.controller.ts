@@ -70,10 +70,11 @@ export class ChatController {
 
 	@Get('get')
 	get() {
-
+		return this.chatService.get();
 	}
 
 	@Get('set')
 	set() {
+		return this.chatService.set();
 	}
  }
