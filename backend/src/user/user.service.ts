@@ -1,9 +1,10 @@
-import { ArgumentMetadata, BadRequestException, Injectable, NotFoundException, PipeTransform } from "@nestjs/common";
+import { ArgumentMetadata, BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, PipeTransform } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
 import * as fs from 'fs'
 import { updateUserDto } from "./user.dto";
+import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -77,24 +78,36 @@ export class UserService {
 	}
 
 	// patch user
-	async updateUser(userID: number, dto: updateUserDto): Promise<User> {
+	async updateUser(userID: number, dto: updateUserDto) {
 		const user = await this.findUserById(userID);
 		if (!user) {
-			throw new NotFoundException('User not found');
+			throw new UserNotFoundException();
 		}
-		this.userRepository.update(
-			{ id: userID },
-			{
-				username: dto.username ? dto.username : user.username,
-			 	twofa: dto.twofa ? dto.twofa : user.twofa
+		if (dto.username) {
+			if (user.username == dto.username) {
+				throw new NotModifiedException('Username is already set to ' + dto.username);
+			}
+			const usernameRegex = /^[a-zA-Z0-9]+$/;
+	
+			if (!usernameRegex.test(dto.username))
+				throw new BadRequestException('Username must be between 3 and 20 characters long and can only contain letters, numbers, underscores and dashes');
+	
+			user.username = dto.username;
+			await this.userRepository.save(user).catch((err) => {
+				if (err.code === '23505') {
+					throw new BadRequestException('Username already exists');
+				}
 			});
-		return user;
+		}
+		if (dto.twofa) {
+			if (user.twofa == dto.twofa) {
+				throw new NotModifiedException('twofa is already set to ' + dto.twofa);
+			}
+			user.twofa = dto.twofa;
+			this.userRepository.save(user);
+		}
+		return { msg: "OK" };
 	}
-
-
-
-
-
 
 	/* Helper functions */
 	async deleteFile(filePath: string) {
@@ -104,8 +117,6 @@ export class UserService {
 			}
 		});
 	}
-
-
 	async findUserById(idArg: number): Promise<User> {
 		const user = await this.userRepository.findOneBy({
 			id: idArg

@@ -35,6 +35,8 @@ export class AuthenticateGuard implements CanActivate {
 		if (user) {
 			if (!user.username || user.username === '')
 				throw new ImATeapotException("Missing information.");
+				// if (user.setup == false)
+				// throw new ImATeapotException("Missing information.");
 			return true;
 		}
 

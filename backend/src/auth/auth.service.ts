@@ -2,8 +2,8 @@ import { Injectable} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Membership, UserRole } from "src/entities/Membership.entity";
 import { UserService } from "src/user/user.service";
-import { UserDetails } from "src/utils/types";
 import { Repository } from "typeorm";
+import { UserDetails } from "./utils/types";
 
 @Injectable()
 export class AuthService {
@@ -15,12 +15,15 @@ export class AuthService {
 	) {}
 
 	async validateUser(details: UserDetails) {
-		const user = await this.getPlayerRepository().findOneBy({username: details.username})
+		const user = await this.getPlayerRepository().findOneBy({
+			oauthID: details.oauthID,
+		});
 
 		if (user)
 			return user;
 
 		console.log('User not found. Creating...');
+		console.log(details);
 		
 		const newMembership = this.membershipRepo.create();
 		const savedMembership = await this.membershipRepo.save(newMembership);

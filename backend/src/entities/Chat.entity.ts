@@ -4,9 +4,9 @@ import { User } from "./User.entity";
 import { Message } from "./Message.entity";
 
 export enum ChatType {
-	PRIVATE, // Private chat between two users
-	GROUP, // Group chat between multiple users
-	GROUP_PROTECTED, // Group chat between multiple users with password
+	PRIVATE = "PRIVATE", // Private chat between two users
+	GROUP = "GROUP", // Group chat between multiple users
+	GROUP_PROTECTED = "GROUP_PROTECTED", // Group chat between multiple users with password
 }
 
 @Entity()
@@ -20,7 +20,7 @@ export class Chat {
 	})
 	type: ChatType;
 
-	@Column()
+	@Column({ nullable: true })
 	name: string; /* groupchat name or the other users username */
 
 	// @ManyToOne(() => User)
