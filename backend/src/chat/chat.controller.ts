@@ -1,8 +1,6 @@
-import { Body, Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { type } from 'os';
 import { ChatType } from 'src/entities/Chat.entity';
-import { UserService } from 'src/user/user.service';
 import { ChatService } from './chat.service';
 
 /* Private chat */
@@ -69,4 +67,13 @@ export class ChatController {
 	) {
 		return await this.chatService.createChat(userID, createDto);
 	}
-}
+
+	@Get('get')
+	get() {
+
+	}
+
+	@Get('set')
+	set() {
+	}
+ }

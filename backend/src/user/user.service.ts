@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import * as fs from 'fs'
 import { updateUserDto } from "./user.dto";
 import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
+import { createChatDto } from "src/chat/chat.controller";
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {

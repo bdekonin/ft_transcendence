@@ -1,24 +1,53 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ChatType } from 'src/entities/Chat.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { setMaxIdleHTTPParsers } from 'http';
+import { Chat, ChatType } from 'src/entities/Chat.entity';
+import { User } from 'src/entities/User.entity';
+import { UserService } from 'src/user/user.service';
+import { UserNotFoundException } from 'src/utils/exceptions';
+import { Repository } from 'typeorm';
 import { createChatDto } from './chat.controller';
+
 
 @Injectable()
 export class ChatService {
+	
+	constructor(
+		@InjectRepository(Chat) public chatRepo: Repository<Chat>,
+		private userService: UserService,
+	) { }
 
+	set() {
+		global.inviteCache.set("test", "test");
+	}
 
-	async createChat(userID: number, dto: createChatDto) {
-		if (dto.type === ChatType.PRIVATE) {
-			return this.createPrivateChat(userID, dto);
-		} else if (dto.type === ChatType.GROUP) {
-			return this.createGroupChat(userID, dto);
-		} else if (dto.type === ChatType.GROUP_PROTECTED) {
-			return this.createProtectedGroupChat(userID, dto);
-		}
-		throw new BadRequestException('Invalid Chat Type');
+	get() {
+		return global.inviteCache.get("test");
 	}
 
 
 
+
+
+
+
+
+
+	async createChat(userID: number, dto: createChatDto) {
+		var chat;
+		if (dto.type === ChatType.PRIVATE) {
+			chat = await this.createPrivateChat(userID, dto);
+		} else if (dto.type === ChatType.GROUP) {
+			chat = await this.createGroupChat(userID, dto);
+		} else if (dto.type === ChatType.GROUP_PROTECTED) {
+			chat = await this.createProtectedGroupChat(userID, dto);
+		} else {
+			throw new BadRequestException("Invalid chat type");
+		}
+		console.log(chat);
+		// console.log(await this.isEveryUserActive(chat.users));
+		return chat;
+	}
 
 	/* Helper functions - Create Chat */
 	private async createPrivateChat(userID: number, dto: createChatDto) {
@@ -48,7 +77,7 @@ export class ChatService {
 		const newChat = {
 			name: null,
 			type,
-			users,
+			users: await this.appendUsersToChat(users),
 			password: null,
 		};
 		return newChat;
@@ -68,9 +97,7 @@ export class ChatService {
 		const newChat = {
 			name,
 			type,
-			users: [
-				userID
-			],
+			users: await this.appendUsersToChat(users),
 			password: null,
 		};
 		return newChat;
@@ -89,9 +116,7 @@ export class ChatService {
 		const newChat = {
 			name,
 			type,
-			users: [
-				userID
-			],
+			users: await this.appendUsersToChat(users),
 			password,
 		};
 		return newChat;
@@ -99,5 +124,27 @@ export class ChatService {
 	
 	private hasDuplicates(array: any[]): boolean {
 		return (new Set(array)).size !== array.length;
+	}
+	// This function allows us to check if the users exist in the database when given an array of user IDs e.g. [1, 2, 3, -1]
+	private async isEveryUserActive(users: number[]): Promise<boolean> {
+		for (let i = 0; i < users.length; i++) {
+			const user = await this.userService.findUserById(users[i]);
+			if (!user) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private async appendUsersToChat(users: number[]): Promise<User[]> {
+		const usersArray = [];
+		for (let i = 0; i < users.length; i++) {
+			const user = await this.userService.findUserById(users[i]);
+			if (!user) {
+				throw new UserNotFoundException();
+			}
+			usersArray.push(user);
+		}
+		return usersArray;
 	}
 }
