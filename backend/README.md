@@ -4,6 +4,10 @@ Sources
 
 https://arctype.com/blog/nestjs-2fa/
 
+Invite links
+https://docs.nestjs.com/techniques/caching
+A temp hash is made for the invite link, if the incoming url has a hash that matches the stored hash it joins the user to the roomID
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
