@@ -94,7 +94,7 @@ export class UserController {
 
 		const user = await this.userService.userRepository.findOne({
 			where: {id: userID},
-			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests']
+			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
 		});
 		if(!user) {
 			throw new NotFoundException('User Not Found');
