@@ -60,34 +60,30 @@ export class ChatService {
 
 	/* Helper functions - Create Chat */
 	private async createPrivateChat(userID: number, dto: createChatDto) {
-		const {type, users} = dto;
+		const { name, type, users, password } = dto;
 
-		if (!users) {
-			throw new BadRequestException('Must include Users')
+		if (name || !type || !users || password) {
+			throw new BadRequestException("Invalid private chat request");
 		}
-		if (users.length !== 2) {
-			throw new BadRequestException('Private chat must have exactly 2 users');
+		if (users.length != 2) {
+			throw new BadRequestException("Private chat must have exactly 2 unique users");
 		}
-		if (this.hasDuplicates(users) == true) {
-			throw new BadRequestException('Private chat must have 2 different users');
+		if (this.hasDuplicates(users)) {
+			throw new BadRequestException("Private chat must have exactly 2 unique users");
 		}
-		if (users.includes(userID) == false) {
-			throw new BadRequestException('Private chat must include the user who is creating it');
+		if (!await this.isEveryUserActive(users)) {
+			throw new BadRequestException("One or more users does not exist");
 		}
-		if (dto.password != undefined) {
-			throw new BadRequestException('Private chat doesn\'t need a password');
+		if (!users.includes(userID)) {
+			throw new BadRequestException("Private chat must include the user who is creating it");
 		}
-		if (dto.name != undefined) {
-			throw new BadRequestException('Private chat doesn\'t need a name');
-		}
-		if (!type || !users)
-			throw new BadRequestException('Invalid chat type or users');
-
+		// if ((await this.doesPrivateExist(users[0], users[1])).users.length > 1) {
+			// 	throw new BadRequestException("Private chat already exists");
+			// }
 		const chatExists = await this.doesPrivateExist(users[0], users[1]);
 		if (chatExists && chatExists.users.length > 1) {
-			throw new BadRequestException('Private chat already exists'); // TODO - Maybe return the chat instead?
+			throw new BadRequestException("Private chat already exists");
 		}
-
 
 		const newChat = {
 			name: null,
@@ -101,12 +97,20 @@ export class ChatService {
 	private async createGroupChat(userID: number, dto: createChatDto) {
 		const { name, type, users, password } = dto;
 
-		if (users != undefined && password != undefined) {
-			throw new BadRequestException('Users and password are not needed for a group chat');
+		if (!name || !type || !users || password) {
+			throw new BadRequestException("Invalid group chat request");
 		}
-
-		if (users && users.length == 1 && users[0] != userID) {
-			throw new BadRequestException('Group chat must include the user who is creating it');
+		if (users.length != 1) {
+			throw new BadRequestException("Group chat must have exactly 1 unique user");
+		}
+		if (!users.includes(userID)) {
+			throw new BadRequestException("Group chat must include the user who is creating it");
+		}
+		if (name.length < 3) {
+			throw new BadRequestException("Group chat name must be at least 3 characters long");
+		}
+		if (name.length > 20) {
+			throw new BadRequestException("Group chat name cannot be longer then 20 characters");
 		}
 
 		const newChat = {
@@ -121,11 +125,29 @@ export class ChatService {
 	private async createProtectedGroupChat(userID: number, dto: createChatDto) {
 		const { name, type, users, password } = dto;
 
-		if (users && users.length == 1 && users[0] != userID) {
-			throw new BadRequestException('Group chat must include the user who is creating it');
+		if (!name || !type || !users || !password) {
+			throw new BadRequestException("Invalid protected group chat request");
 		}
-		if (users != undefined) {
-			throw new BadRequestException('users array not allowed for this type')
+		if (users.length != 1) {
+			throw new BadRequestException("Protected group chat must have exactly 1 unique user");
+		}
+		if (!users.includes(userID)) {
+			throw new BadRequestException("Protected group chat must include the user who is creating it");
+		}
+		if (name.length < 3) {
+			throw new BadRequestException("Protected group chat name must be at least 3 characters long");
+		}
+		if (name.length > 20) {
+			throw new BadRequestException("Protected group chat name cannot be longer then 20 characters");
+		}
+		if (password.length < 3) {
+			throw new BadRequestException("Protected group chat password must be at least 3 characters long");
+		}
+		if (password.length > 20) {
+			throw new BadRequestException("Protected group chat password cannot be longer then 20 characters");
+		}
+		if (password.match(/^[a-zA-Z0-9]+$/)) {
+			throw new BadRequestException("Protected group chat password must contain only letters and numbers");
 		}
 
 		const newChat = {
@@ -137,6 +159,10 @@ export class ChatService {
 		return newChat;
 	}
 	
+
+
+
+	/* Helper functions */
 	private hasDuplicates(array: any[]): boolean {
 		return (new Set(array)).size !== array.length;
 	}
