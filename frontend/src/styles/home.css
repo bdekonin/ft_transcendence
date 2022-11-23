@@ -1,8 +1,12 @@
 
+.navigator {
+	align-items: center;
+}
+
 .navigator button {
 	background-color: red;
 	width: 60%;
-	height: 150px;
+	height: 200px;
 
 	border-radius: 120px;
 	border: none;

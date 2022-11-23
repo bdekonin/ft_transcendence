@@ -21,8 +21,8 @@ const Login: FC = () => {
 		});
 	}, []);
 	document.body.style.backgroundColor = '#3b3d54';
-	if (additionalInfo)
-		return (<AdditionalInfo/>);
+	// if (additionalInfo)
+	// 	return (<AdditionalInfo/>); //Display additional info Page!
 	return (
 		<div className='login'>
 			<h1>User login</h1>

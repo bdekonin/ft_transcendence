@@ -10,7 +10,7 @@ const Home: FC = () => {
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
 		.catch(() => {
-			navigate('/login');
+			// navigate('/login');
 		})
 	}, []);
 
