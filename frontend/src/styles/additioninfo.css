@@ -10,6 +10,7 @@
 
 .additionalinfo .avatartext {
 	margin-top: 100px;
+
 }
 
 .additionalinfo input {
@@ -20,7 +21,6 @@
 	color: white;
 }
 
-
 /* width 380 without border*/
 .additionalinfo .avatarlist {
 	width: 400px; 
@@ -28,6 +28,9 @@
 	background-color: darkgray;
 	overflow:hidden;
 	overflow-y:visible; 
+	/* margin: 0; */
+	/* margin-right: 0; */
+	display: inline-block;
 }
 
 .additionalinfo .avatarlist img {
@@ -52,7 +55,15 @@
 }
 
 .additionalinfo button {
-	width: 50px;
-	height: 50px;
+	position: absolute;
+	width: 150px;
+	height: 100px;
 	float: right;
+}
+
+.additionalinfo video {
+	position:fixed;
+
+	width: 50%;
+	height: 50%;
 }
