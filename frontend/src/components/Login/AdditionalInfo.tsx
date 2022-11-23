@@ -36,7 +36,7 @@ const AdditionalInfo: FC = () => {
 	function getAllAvatars() {
 		const image = [];
 
-		for (var i = 1; i < 17; i++)
+		for (var i = 1; i < 16; i++)
 		{
 			const numb = i;
 			if (i === selected)
@@ -54,15 +54,20 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.post('http://localhost:3000/', {
-
-		})
+		axios.patch('http://localhost:3000/user', {username: {userName}}, {withCredentials: true})
 		.then(res => {
 			console.log(res);
 		})
 		.catch(err => {
 			console.log(err);
 		})
+		// axios.post('http://localhost:3000/user/avatar', {image: require('../../avatars/icons8-avatar-64-'+selected+'.png')}, {withCredentials: true})
+		// .then(res => {
+		// 	console.log(res);
+		// })
+		// .catch(err => {
+		// 	console.log(err);
+		// })
 	}
 
 	return (
@@ -82,21 +87,28 @@ const AdditionalInfo: FC = () => {
 
 			<h3 className="avatartext">Pick a Avatar</h3>
 			<div className="avatarlist">
+			{/* <img src={require("../../images/1200px-Plus_symbol.svg.png")}
+				onClick={() => {
+					{input}
+				}} /> */}
+			{/* <input type="file" /> */}
 			{getAllAvatars().map((elem) => {
 				return elem;
 			})}
+			
 			</div>
 		{ confirm ?
-			<button className="bubbly-button">
+			<button className="bubbly-button"
+			onClick={sumbit}>
 				Done
 			</button> : ''}
-			<video
+			{/* <video
 			 muted
 			 autoPlay
 			 loop >
 				<source src={require("../../videos/pongvideo.mp4")}
 				type="video/mp4"/>
-			</video>
+			</video> */}
 		</div>
 	)
 }
