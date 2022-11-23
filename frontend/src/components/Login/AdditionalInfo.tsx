@@ -1,7 +1,7 @@
-import { ClassNames } from "@emotion/react";
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { FC, useEffect, useState } from "react"
+import { Navigate, useNavigate } from "react-router-dom";
 import '../../styles/additioninfo.css'
 
 const AdditionalInfo: FC = () => {
@@ -9,6 +9,7 @@ const AdditionalInfo: FC = () => {
 	const [userName, setUserName] = useState('');
 	const [invalidInput, setInvalidInput] = useState(false);
 	const [confirm, setConfirm] = useState(false);
+	const navigate = useNavigate();
 	
 
 	useEffect(() => {
@@ -18,7 +19,7 @@ const AdditionalInfo: FC = () => {
 	function checkUserNameInput() {
 		const length = userName.length;
 
-		console.log('length = ' + length);
+		// console.log('length = ' + length);
 		if (!isAlphanumeric(userName) && length != 0)
 			setInvalidInput(true);
 		else
@@ -36,7 +37,7 @@ const AdditionalInfo: FC = () => {
 	function getAllAvatars() {
 		const image = [];
 
-		for (var i = 1; i < 17; i++)
+		for (var i = 1; i < 16; i++)
 		{
 			const numb = i;
 			if (i === selected)
@@ -54,15 +55,15 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.post('http://localhost:3000/', {
-
-		})
+		axios.patch('http://localhost:3000/user', { 'username': userName }, { withCredentials: true })
 		.then(res => {
 			console.log(res);
+			navigate('/home');
 		})
 		.catch(err => {
 			console.log(err);
 		})
+		// return user back
 	}
 
 	return (
@@ -80,23 +81,24 @@ const AdditionalInfo: FC = () => {
 				username can only characters or numbers!
 			</p> : ''}
 
-			<h3 className="avatartext">Pick a Avatar</h3>
-			<div className="avatarlist">
-			{getAllAvatars().map((elem) => {
-				return elem;
-			})}
-			</div>
+			{/* <h3 className="avatartext">Pick a Avatar</h3>
+			 <div className="avatarlist">
+				{getAllAvatars().map((elem) => {
+					return elem;
+				})}
+			</div> */}
 		{ confirm ?
-			<button className="bubbly-button">
+			<button className="bubbly-button"
+			onClick={sumbit}>
 				Done
 			</button> : ''}
-			<video
+			{/* <video
 			 muted
 			 autoPlay
 			 loop >
 				<source src={require("../../videos/pongvideo.mp4")}
 				type="video/mp4"/>
-			</video>
+			</video> */}
 		</div>
 	)
 }

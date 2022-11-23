@@ -19,7 +19,7 @@ export class User {
 	username?: string; // Unique username
 
 	@ApiProperty({ description: 'The avatar of the user', example: 'default.jpeg' })
-	@Column({ default: 'default.jpeg' })
+	@Column({ default: 'default.png' })
 	avatar: string; // Link to image || or file path to image
 
 	// @Column() // One to One
