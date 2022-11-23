@@ -1,0 +1,57 @@
+.additionalinfo h1 {
+	text-align: center;
+	font-size: 80px;
+}
+
+.additionalinfo h3{
+	font-size: 40px;
+	margin: 0;
+}
+
+.additionalinfo .avatartext {
+	margin-top: 100px;
+}
+
+.additionalinfo input {
+	width: 200px;
+	font-size: 20px;
+	background-color: gray;
+	outline: none;
+	color: white;
+}
+
+
+/* width 380 without border*/
+.additionalinfo .avatarlist {
+	width: 400px; 
+	height: 400px;
+	background-color: darkgray;
+	overflow:hidden;
+	overflow-y:visible; 
+}
+
+.additionalinfo .avatarlist img {
+	margin: 20px;
+	width: 150px;
+	height: 150px;
+	/* border: 5px solid red; */
+}
+
+.additionalinfo .avatarlist .selected {
+	/* border: 5px solid red; */
+	outline-color: red;
+	outline-width: 5px;
+	outline-style: solid;
+}
+
+.additionalinfo .invalidinput {
+	font-size: 12px;
+	color:red;
+	margin: 0;
+}
+
+.additionalinfo button {
+	width: 50px;
+	height: 50px;
+	float: right;
+}

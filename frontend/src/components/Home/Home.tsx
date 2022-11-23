@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { FC, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './style.css';
+import '../../styles/home.css';
 
 const Home: FC = () => {
 

@@ -1,10 +1,10 @@
-.block1 h1 {
+.login h1 {
 	color:	white;
 	text-align: center;
 	font-size: 100px;
 }
 
-.image1 {
+.login .image1 {
 	height: 220px;
 	width: 220px;
 	
@@ -12,7 +12,7 @@
 	border-radius: 50%;
 }
 
-.image2 {
+.login .image2 {
 	height: 200px;
 	width: 200px;
 	
@@ -21,16 +21,16 @@
 	border-radius: 50%;
 }
 
-.image1, .image2 {
+.login .image1, .login .image2 {
 	filter: grayscale(1);
 	transition: 1s;
 }
 
-.image1:hover, .image2:hover {
+.login .image1:hover, .login .image2:hover {
 	filter: none;
 }
 
-.block1 {
+.login {
 	margin: auto;
 	margin-top: 10%;
 	width: 50%;
@@ -40,23 +40,7 @@
 	border-radius: 150px;
 }
 
-@import 'https://fonts.googleapis.com/css?family=Playfair+Display:400,700i,900i';
- * {
-	 box-sizing: border-box;
-}
- body {
-	 /* font-family: 'Playfair Display', serif;
-	 color: rgba(172, 170, 190, 1);
-	 text-rendering: optimizeLegibility;
-	 font-smooth: always;
-	 -webkit-font-smoothing: antialiased;
-	 -moz-osx-font-smoothing: grayscale; */
-	 background-color: #3b3d54;
-	 /* background-color: #323232; */
-	 /* font-size: 14px;
-	 overflow: hidden; */
-}
- .wrap {
+ /* .wrap {
 	 perspective-origin: 50% 50%;
 }
 
@@ -212,6 +196,4 @@
 		 bottom: 150vh;
 		 transform: scale(2.4) rotate(324deg);
 	}
-}
-
-
+} */
