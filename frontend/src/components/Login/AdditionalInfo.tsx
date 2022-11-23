@@ -1,4 +1,3 @@
-import { ClassNames } from "@emotion/react";
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { FC, useEffect, useState } from "react"
@@ -18,7 +17,7 @@ const AdditionalInfo: FC = () => {
 	function checkUserNameInput() {
 		const length = userName.length;
 
-		console.log('length = ' + length);
+		// console.log('length = ' + length);
 		if (!isAlphanumeric(userName) && length != 0)
 			setInvalidInput(true);
 		else
@@ -54,20 +53,33 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.patch('http://localhost:3000/user', {username: {userName}}, {withCredentials: true})
-		.then(res => {
-			console.log(res);
-		})
-		.catch(err => {
-			console.log(err);
-		})
-		// axios.post('http://localhost:3000/user/avatar', {image: require('../../avatars/icons8-avatar-64-'+selected+'.png')}, {withCredentials: true})
+		// axios.patch('http://localhost:3000/user', { 'username': userName }, { withCredentials: true })
 		// .then(res => {
 		// 	console.log(res);
 		// })
 		// .catch(err => {
 		// 	console.log(err);
 		// })
+
+		const file = new File([''], "../../avatars/icons8-avatar-64-"+selected+".png");
+		
+		var form = new FormData();
+		form.append('file', file);
+
+		console.log(file);
+
+		axios.post('http://localhost:3000/user/avatar', form, {
+			headers: {
+				'Content-Type': 'image/png'
+			},
+			withCredentials: true
+		})
+		.then(res => {
+			console.log(res);
+		})
+		.catch(err => {
+			console.log(err);
+		})
 	}
 
 	return (
