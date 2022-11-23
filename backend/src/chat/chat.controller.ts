@@ -1,8 +1,7 @@
-import { Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { type } from 'os';
 import { ChatType } from 'src/entities/Chat.entity';
-import { UserService } from 'src/user/user.service';
+import { ChatService } from './chat.service';
 
 /* Private chat */
 /*
@@ -21,11 +20,8 @@ import { UserService } from 'src/user/user.service';
 	"name": "Group Chat Name",
 	"type": GROUP,
 	"users": [
-		'{userID}',
-		'{userID}',
-		'{userID}',
-		'{userID}',
-	],
+		'{userID}', # Only the creator of the chat
+	]
 }
 */
 
@@ -34,6 +30,9 @@ import { UserService } from 'src/user/user.service';
 {
 	"name": "Group Chat Name",
 	"type": GROUP_PROTECTED,
+	"users": [
+		'{userID}', # Only the creator of the chat
+	]
 	"password": "password",
 }
 */
@@ -46,6 +45,7 @@ export class createChatDto {
 	@IsEnum(ChatType)
 	type: ChatType;
 
+	@IsOptional()
 	@IsArray()
 	@IsNumber({}, { each: true })
 	users: number[];
@@ -58,12 +58,23 @@ export class createChatDto {
 @Controller('/chat/:userID/')
 export class ChatController {
 
+	constructor(private readonly chatService: ChatService) {}
+
 	@Post('create')
 	async create(
 		@Param('userID', ParseIntPipe) userID: number,
-		createChatDto: createChatDto,
+		@Body() createDto: createChatDto,
 	) {
-		const { name, type, users, password } = createChatDto;
-		return { name, type, users, password };
+		return await this.chatService.createChat(userID, createDto);
 	}
-}
+
+	@Get('get')
+	get() {
+		return this.chatService.get();
+	}
+
+	@Get('set')
+	set() {
+		return this.chatService.set();
+	}
+ }

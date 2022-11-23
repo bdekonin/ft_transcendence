@@ -63,6 +63,14 @@ export class User {
 	@ApiProperty({ description: 'List of chats connected to the user', type: () => Chat })
 	@ManyToMany(() => Chat, (chat) => chat.users)
 	chats: Chat[];
+
+	// @ApiProperty({ description: 'Has the user setup their account', example: false })
+	// @Column({ default: false })
+	// setup: boolean;
+
+	@ApiProperty({ description: 'the id of the oath parent', example: 216532132 })
+	@Column({ default: '' })
+	oauthID: string;
 	
 	@ApiProperty({ description: 'Creation Date', example: '2021-01-01T00:00:00.000Z' })
 	@CreateDateColumn({ type: 'timestamp' })

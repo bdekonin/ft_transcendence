@@ -4,6 +4,7 @@ export type UserDetails = {
 	id?: number;
 	username?: string;
 	avatar?: string;
+	oauthID?: string;
 }
 
 export {};
