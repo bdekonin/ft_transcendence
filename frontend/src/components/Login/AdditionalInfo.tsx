@@ -1,4 +1,5 @@
 import { ClassNames } from "@emotion/react";
+import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { FC, useEffect, useState } from "react"
 import '../../styles/additioninfo.css'
@@ -52,6 +53,18 @@ const AdditionalInfo: FC = () => {
 		return image;
 	}
 
+	function sumbit() {
+		axios.post('http://localhost:3000/', {
+
+		})
+		.then(res => {
+			console.log(res);
+		})
+		.catch(err => {
+			console.log(err);
+		})
+	}
+
 	return (
 		<div className="additionalinfo">
 			<h1>Additional info</h1>
@@ -74,9 +87,16 @@ const AdditionalInfo: FC = () => {
 			})}
 			</div>
 		{ confirm ?
-			<button>
-				
+			<button className="bubbly-button">
+				Done
 			</button> : ''}
+			<video
+			 muted
+			 autoPlay
+			 loop >
+				<source src={require("../../videos/pongvideo.mp4")}
+				type="video/mp4"/>
+			</video>
 		</div>
 	)
 }
