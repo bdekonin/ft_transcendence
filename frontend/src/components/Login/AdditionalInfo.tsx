@@ -1,6 +1,7 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { FC, useEffect, useState } from "react"
+import { Navigate, useNavigate } from "react-router-dom";
 import '../../styles/additioninfo.css'
 
 const AdditionalInfo: FC = () => {
@@ -8,6 +9,7 @@ const AdditionalInfo: FC = () => {
 	const [userName, setUserName] = useState('');
 	const [invalidInput, setInvalidInput] = useState(false);
 	const [confirm, setConfirm] = useState(false);
+	const navigate = useNavigate();
 	
 
 	useEffect(() => {
@@ -53,33 +55,15 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		// axios.patch('http://localhost:3000/user', { 'username': userName }, { withCredentials: true })
-		// .then(res => {
-		// 	console.log(res);
-		// })
-		// .catch(err => {
-		// 	console.log(err);
-		// })
-
-		const file = new File([''], "../../avatars/icons8-avatar-64-"+selected+".png");
-		
-		var form = new FormData();
-		form.append('file', file);
-
-		console.log(file);
-
-		axios.post('http://localhost:3000/user/avatar', form, {
-			headers: {
-				'Content-Type': 'image/png'
-			},
-			withCredentials: true
-		})
+		axios.patch('http://localhost:3000/user', { 'username': userName }, { withCredentials: true })
 		.then(res => {
 			console.log(res);
+			navigate('/home');
 		})
 		.catch(err => {
 			console.log(err);
 		})
+		// return user back
 	}
 
 	return (
@@ -97,18 +81,12 @@ const AdditionalInfo: FC = () => {
 				username can only characters or numbers!
 			</p> : ''}
 
-			<h3 className="avatartext">Pick a Avatar</h3>
-			<div className="avatarlist">
-			{/* <img src={require("../../images/1200px-Plus_symbol.svg.png")}
-				onClick={() => {
-					{input}
-				}} /> */}
-			{/* <input type="file" /> */}
-			{getAllAvatars().map((elem) => {
-				return elem;
-			})}
-			
-			</div>
+			{/* <h3 className="avatartext">Pick a Avatar</h3>
+			 <div className="avatarlist">
+				{getAllAvatars().map((elem) => {
+					return elem;
+				})}
+			</div> */}
 		{ confirm ?
 			<button className="bubbly-button"
 			onClick={sumbit}>

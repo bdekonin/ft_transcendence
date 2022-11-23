@@ -56,11 +56,9 @@ export class UserController {
 				]
 			})
 		)
-		file: Express.Multer.File,
-		@Req() req: Request
+		file: Express.Multer.File
 	)
 	{
-		console.log(file);
 		return this.userService.postAvatar(user.id, file.filename);
 	}
 	@Delete('avatar')
