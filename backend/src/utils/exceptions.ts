@@ -11,3 +11,9 @@ export class UserNotFoundException extends HttpException{
 		super("User Not Found", 404); 
 	} 
 }
+
+export class UnauthorizedTokenException extends HttpException{
+	constructor() { 
+		super('The access token is expired, revoked, malformed, or invalid.', 401); 
+	} 
+}
