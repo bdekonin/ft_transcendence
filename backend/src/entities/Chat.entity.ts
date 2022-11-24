@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, BeforeInsert, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from "./User.entity";
 import { Message } from "./Message.entity";
@@ -40,7 +40,13 @@ export class Chat {
 	@Column({ nullable: true })
 	password: string;
 
-	@ApiProperty({ description: 'Creation Date', example: '2021-01-01T00:00:00.000Z' })
-	@CreateDateColumn({ type: "timestamp" })
-	createdAt: Date;
+	@ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })
+	@Column()
+	createdAt: string;
+
+	@BeforeInsert()
+	updateDates() {
+		const date = new Date().valueOf() + 3600;
+		this.createdAt = date.toString();
+	}
 }

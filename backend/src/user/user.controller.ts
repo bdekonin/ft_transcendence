@@ -112,6 +112,13 @@ export class UserController {
 		if(!foundUser) {
 			throw new NotFoundException('User Not Found');
 		}
+
+		// combine games_won and games_lost
+		// foundUser['games'] = foundUser.games_lost.concat(foundUser.games_won).sort((a, b) => {
+		// 	return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+		// });
+		// delete foundUser.games_won;
+		// delete foundUser.games_lost;
 		return foundUser;
 	}
 	@Get(':username')

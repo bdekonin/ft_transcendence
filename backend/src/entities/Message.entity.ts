@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, BeforeInsert, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Chat } from "./Chat.entity";
 import { User } from "./User.entity";
 
@@ -17,6 +17,13 @@ export class Message {
 	@ManyToOne(() => Chat, (chat) => chat.messages)
 	parent: Chat;
 
-	@CreateDateColumn({ type: "timestamp" })
-	createdAt: Date;
+	// @ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })
+	@Column()
+	createdAt: string;
+
+	@BeforeInsert()
+	updateDates() {
+		const date = new Date().valueOf() + 3600;
+		this.createdAt = date.toString();
+	}
 }
