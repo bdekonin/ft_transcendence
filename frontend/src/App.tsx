@@ -7,6 +7,8 @@ import Home from "./components/Home/Home";
 import Login from "./components/Login/Login";
 import Friends from "./components/Friends/Friends";
 import Social from "./components/Socials/Social";
+import Profile from "./components/Profile/Profile";
+
 
 
 const App:React.FC = () =>
@@ -21,7 +23,6 @@ const App:React.FC = () =>
 				<Route path='/social' element={<Social />}/>
 				<Route path='/Settings' element={<Login />}/>
 				<Route path='/aboutus' element={<Login />}/>
-		
 			</Routes>
 		</Router>
 	);

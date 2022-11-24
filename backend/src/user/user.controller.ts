@@ -26,14 +26,27 @@ export class UserController {
 		for (let i = 0; i < users.length; i++) {
 			delete users[i].twofa;
 		}
+		for (let i = 0; i < users.length; i++) {
+			delete users[i].oauthID;
+		}
 		return users;
 	}
 
 	// Profile settings
-	@Get('avatar')
+	@Get(':userID/avatar')
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user' })
+	async getUserAvatarByID(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Res() res
+	)
+	{
+		return await this.userService.getAvatar(userID, res);
+	}
+
+	@Get('/avatar')
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns the image of the userID'})
 	async getUserAvatar(
 		@UserRequest() user: User,
 		@Res() res
@@ -44,7 +57,6 @@ export class UserController {
 	@Post('avatar')
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	@UseInterceptors(FileInterceptor('file'))
 	async setUserAvatar(
 		@UserRequest() user: User,
@@ -64,7 +76,6 @@ export class UserController {
 	@Delete('avatar')
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiNoContentResponse({ description: 'Delete current image and reverts to default.jpeg'})
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	@HttpCode(204)
 	async deleteUserAvatar(
 		@UserRequest() user: User,
@@ -77,7 +88,6 @@ export class UserController {
 	@Get('twofa/')
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns if the user has 2fa enables', type: Boolean })
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async getUsertwoFA(
 		@UserRequest() user: User,
 	)
@@ -95,21 +105,28 @@ export class UserController {
 		@UserRequest() user: User
 	): Promise<User> {
 
-		// const user = await this.userService.userRepository.findOne({
-		// 	where: {id: userID},
-		// 	relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+		const foundUser = await this.userService.userRepository.findOne({
+			where: {id: user.id},
+			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+		});
+		if(!foundUser) {
+			throw new NotFoundException('User Not Found');
+		}
+
+		// combine games_won and games_lost
+		// foundUser['games'] = foundUser.games_lost.concat(foundUser.games_won).sort((a, b) => {
+		// 	return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 		// });
-		// if(!user) {
-		// 	throw new NotFoundException('User Not Found');
-		// }
-		return user;
+		// delete foundUser.games_won;
+		// delete foundUser.games_lost;
+		return foundUser;
 	}
 	@Get(':username')
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
+		@ApiParam({ name: 'username', type: 'string', required: true })
 	async getUserbyID(
-		@Param('userID') username: string
+		@Param('username') username: string
 	): Promise<User> {
 
 		const user = await this.userService.userRepository.findOne({
@@ -126,7 +143,6 @@ export class UserController {
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'returns the updates user object', type: User })
 		@ApiBody({ type: updateUserDto })
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async updateUser(
 		@UserRequest() user: User,
 		@Body() body: updateUserDto
