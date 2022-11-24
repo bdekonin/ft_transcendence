@@ -1,6 +1,7 @@
 import axios from "axios";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/socials.css";
 
 interface User {
 	id: number;
@@ -11,59 +12,63 @@ interface User {
 	loses: number;
 }
 
+interface Avatars {
+	id: number;
+	avatar: string;
+}
+
 const Social: FC = () => {
 	const navigate = useNavigate();
 	const [users, setUsers] = useState<User[]>([]);
+	const [avatars, setAvatars] = useState<Avatars[]>([]);
 
-	document.body.style.backgroundColor = "#1a1a1a";
+	document.body.style.backgroundColor = "#474E68"; //very nice color
 
+	//Getting the users details
 	useEffect(() => {
 		axios.get("http://localhost:3000/user/all", {withCredentials: true})
-		.then((response) => {
-			setUsers(response.data);
-			// setAvatar(response.data.avatar);
-			// console.log(users);
+		.then(res => {
+			setUsers(res.data);
 		})
 		.catch((error) => {
 			console.log(error);
 			navigate("/login");
-		})
+		});
 	}, []);
 
+	//Getting the avatars
 	useEffect(() => {
 		users.map(elem => {
-			axios.get("http://localhost:3000/user/"+elem.id+"/avatar", {withCredentials: true, responseType: 'blob', headers: { 'Content-Type': 'multipart/form-data' }})
+			axios.get("http://localhost:3000/user/"+elem.id+"/avatar", {withCredentials: true, responseType: 'blob'})
 			.then((res) => {
 				const imageObjectURL = URL.createObjectURL(res.data);
-				// elem.avatar_src = imageObjectURL;
-				
+				setAvatars(prev => [...prev, {id: elem.id, avatar: imageObjectURL}]);
 			})
 		})
-		console.log(users);
 	}, [users]);
 
 	function getUsers() {
-
 		return users.map((user) => {
-			
-			
 			return (
-				<div key={user.id}>
-					<img src={user.avatar_src} alt="Avatar" />
-					<h1>{user.username}</h1>
-					<h2>{user.wins} Wins</h2>
-					<h2>{user.loses} Loses</h2>
+				<div key={user.id} className='userblock'>
+					<div className="data">
+						<h1>{user.username}</h1>
+						<img src={avatars.find(elem => elem.id == user.id)?.avatar} alt="avatar" />
+					</div>
+					<div className="data">
+						<h2>{user.wins} Wins</h2>
+						<h2>{user.loses} Loses</h2>
+					</div>
 				</div>
 			);
 		});
 	}
 
 	return (
-		<>
-			<h1>Socials</h1>
+		<div className="socials">
+			<h1 className="header">Socials</h1>
 			{getUsers()}
-			<h2>test</h2>
-		</>
+		</div>
 	);
 }
 
