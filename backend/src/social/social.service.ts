@@ -1,8 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Res } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Friend } from 'src/entities/Friend.entity';
+import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
-import { UserService } from '../user.service';
 
 @Injectable()
 export class SocialService 

@@ -9,9 +9,9 @@ import { UserService } from "./user.service";
 import { MembershipController } from './membership/membership.controller';
 import { MembershipService } from './membership/membership.service';
 import { Membership } from "src/entities/Membership.entity";
-import { SocialService } from './social/social.service';
-import { SocialController } from './social/social.controller';
 import { MulterModule } from "@nestjs/platform-express";
+import { SocialController } from "src/social/social.controller";
+import { SocialService } from "src/social/social.service";
 
 @Module({
 	imports: [

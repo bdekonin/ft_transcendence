@@ -91,7 +91,6 @@ export class UserController {
 	@Get()
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
-		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async getUser(
 		@UserRequest() user: User
 	): Promise<User> {
