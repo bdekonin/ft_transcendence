@@ -1,16 +1,17 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import './style.css'
 
 interface Game {
 	id: number;
 	mode: string;
 	winner: User;
 	loser: User;
+	draw: boolean;
 	winnerScore: number;
 	loserScore: number;
-	createdAt: Date;
+	createdAt: string;
 }
 
 interface User {
@@ -22,6 +23,9 @@ interface User {
 	loses: string;
 	games_won: Game[];
 	games_lost: Game[];
+
+	games: Game[]; // This is the newly created property
+
 // sentFriendRequests*	{...}
 // receivedFriendRequests*	{...}
 // chats*	{...}
@@ -33,11 +37,16 @@ const Profile:React.FC = () =>
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	// const [avatar, setAvatar] = useState<string>();
+
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
 			console.log(res);
 			setUser(res.data);
+			res.data['games'] = res.data['games_won'].concat(res.data['games_lost']);
+			res.data['games'].sort((a:Game, b:Game) => {
+				return new Date(parseInt(a.createdAt)).getTime() - new Date(parseInt(b.createdAt)).getTime();
+			});
 		})
 		.catch(err => {
 			navigate('/login');
@@ -46,15 +55,20 @@ const Profile:React.FC = () =>
 
 	function gameRow(game: Game)
 	{
+		// string to int
+		var class_name = game.winner.id === user?.id ? 'won' : 'lost';
+		if (game?.draw == true)
+			class_name = 'draw';
 		return (
-			<tr>
+			<tr key={game.id} className={class_name}>
 				<td>{game.id}</td>
 				<td>{game.mode}</td>
 				<td><a href="#">{game.winner.username}</a></td>
 				<td><a href="#">{game.loser.username}</a></td>
 				<td>{game.winnerScore}</td>
 				<td>{game.loserScore}</td>
-				<td>2313</td>
+				{/* string to int */}
+				<td>{new Date(parseInt(game.createdAt)).toLocaleString()}</td>
 			</tr>
 		);
 	}
@@ -81,7 +95,7 @@ const Profile:React.FC = () =>
 			<div className='friend-href'>
 				<ul>
 					<li>
-						<a href='/login'>Friends</a>
+						<a href='/home'>Friends</a>
 					</li>
 				</ul>
 			</div>
@@ -103,7 +117,7 @@ const Profile:React.FC = () =>
 						<th>Loser score</th>
 						<th>Date</th>
 					</tr>
-					{ user?.games_won?.map(game => gameRow(game)) }
+					{ user?.games?.map(game => gameRow(game)) }
 				</table>
 			</div>
 		</div>

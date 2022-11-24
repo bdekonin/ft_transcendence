@@ -1,0 +1,21 @@
+.games th {
+	background-color: #616161;
+	color: white;
+  }
+
+.games th, td {
+	padding: 15px;
+	text-align: left;
+}
+
+.won {
+	background-color: #2ecc71;
+}
+
+.lost {
+	background-color: #c0392b;
+}
+
+.draw {
+	background-color: #3498db;
+}
