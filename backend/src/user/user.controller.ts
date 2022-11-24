@@ -26,6 +26,9 @@ export class UserController {
 		for (let i = 0; i < users.length; i++) {
 			delete users[i].twofa;
 		}
+		for (let i = 0; i < users.length; i++) {
+			delete users[i].oauthID;
+		}
 		return users;
 	}
 
@@ -95,14 +98,14 @@ export class UserController {
 		@UserRequest() user: User
 	): Promise<User> {
 
-		// const user = await this.userService.userRepository.findOne({
-		// 	where: {id: userID},
-		// 	relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
-		// });
-		// if(!user) {
-		// 	throw new NotFoundException('User Not Found');
-		// }
-		return user;
+		const foundUser = await this.userService.userRepository.findOne({
+			where: {id: user.id},
+			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+		});
+		if(!foundUser) {
+			throw new NotFoundException('User Not Found');
+		}
+		return foundUser;
 	}
 	@Get(':username')
 		@ApiNotFoundResponse({description: 'User not found'})
