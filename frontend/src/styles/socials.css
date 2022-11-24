@@ -1,0 +1,24 @@
+.socials .header{
+	text-align: center;
+	font-size: 75px;
+}
+
+
+.socials .userblock
+{
+	outline-color: red;
+	outline-width: 5px;
+	outline-style: solid;
+
+}
+
+.socials .data
+{
+	display: inline-block;
+}
+
+.socials .data img
+{
+	width: 100px;
+	height: 100px;
+}

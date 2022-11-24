@@ -18,13 +18,13 @@ const Home: FC = () => {
 		<>
 			<h1>This is the HomePage!</h1>
 			<div className='navigator'>
-				<button></button>
+				<button>Game</button>
 				<br />
-				<button></button>
+				<button onClick={() => {navigate('/friends')}}>Friends</button>
 				<br />
-				<button></button>
+				<button onClick={() => {navigate('/social')}}>Socials</button>
 				<br />
-				<button></button>
+				<button onClick={() => {navigate('/settings')}}>Settings</button>
 				<br />
 			</div>
 		</>

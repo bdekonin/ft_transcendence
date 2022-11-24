@@ -1,7 +1,7 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
-import { FC, useEffect, useState } from "react"
-import { Navigate, useNavigate } from "react-router-dom";
+import { ChangeEvent, FC, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom";
 import '../../styles/additioninfo.css'
 
 const AdditionalInfo: FC = () => {
@@ -10,7 +10,9 @@ const AdditionalInfo: FC = () => {
 	const [invalidInput, setInvalidInput] = useState(false);
 	const [confirm, setConfirm] = useState(false);
 	const navigate = useNavigate();
-	
+	const [image, setImage] = useState<File>();
+	const [previewImage, setPreviewImage] = useState('');
+
 
 	useEffect(() => {
 		checkUserNameInput();
@@ -55,15 +57,27 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.patch('http://localhost:3000/user', { 'username': userName }, { withCredentials: true })
+		axios.patch('http://localhost:3000/user', { username: userName }, { withCredentials: true })
 		.then(res => {
 			console.log(res);
-			navigate('/home');
+			navigate('/');
 		})
 		.catch(err => {
 			console.log(err);
 		})
-		// return user back
+		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
+		.then(res => {
+			console.log(res);
+			navigate('/');
+		})
+		.catch(err => {
+			console.log(err);
+		})
+	}
+
+	function onImgChange(event: ChangeEvent<HTMLInputElement>) {
+		setImage(event.target.files![0]);
+		setPreviewImage(URL.createObjectURL(event.target.files![0]));
 	}
 
 	return (
@@ -92,6 +106,13 @@ const AdditionalInfo: FC = () => {
 			onClick={sumbit}>
 				Done
 			</button> : ''}
+
+			<br />
+			<h3>Upload avatar:</h3>
+			<form>
+				<input type="file" id="img" name="img" accept="image/*" onChange={onImgChange}/>
+			</form>
+			{previewImage ? <img src={previewImage} className='previewimage' /> : ''}
 			{/* <video
 			 muted
 			 autoPlay
