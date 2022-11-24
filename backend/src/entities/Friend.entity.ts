@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, BeforeInsert, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User.entity";
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -23,7 +23,13 @@ export class Friend {
 	@Column({default: 'pending'})
 	status: string;
 
-	@ApiProperty({ description: 'the date the friendship was created', example: '2021-01-01T00:00:00.000Z' })
-	@CreateDateColumn({ type: 'timestamp' })
-	createdOn: Date;
+	@ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })
+	@Column()
+	createdAt: string;
+
+	@BeforeInsert()
+	updateDates() {
+		const date = new Date().valueOf() + 3600;
+		this.createdAt = date.toString();
+	}
 }
