@@ -59,6 +59,15 @@ const Social: FC = () => {
 						<h2>{user.wins} Wins</h2>
 						<h2>{user.loses} Loses</h2>
 					</div>
+					<button onClick={() => {
+						axios.put("http://localhost:3000/social/"+user.id+"/follow", {}, {withCredentials: true})
+						.then(res => {
+							console.log(res.data);
+						})
+						.catch((error) => {
+							console.log(error);
+						});
+					}}>Follow</button>
 				</div>
 			);
 		});

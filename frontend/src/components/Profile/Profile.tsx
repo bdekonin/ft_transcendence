@@ -21,37 +21,65 @@ interface User {
 	level: string;
 	wins: string;
 	loses: string;
-	games_won: Game[];
-	games_lost: Game[];
-
-	games: Game[]; // This is the newly created property
-
-// sentFriendRequests*	{...}
-// receivedFriendRequests*	{...}
 // chats*	{...}
 	createdAt: string;
 }
+
+
 
 const Profile:React.FC = () =>
 {
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	// const [avatar, setAvatar] = useState<string>();
+	const [games, setGames] = useState<Game[]>();
+	const [friendAmount, setFriendAmount] = useState<number>(0);
 
+
+	/* For user object */
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
-			console.log(res);
 			setUser(res.data);
-			res.data['games'] = res.data['games_won'].concat(res.data['games_lost']);
-			res.data['games'].sort((a:Game, b:Game) => {
-				return new Date(parseInt(a.createdAt)).getTime() - new Date(parseInt(b.createdAt)).getTime();
-			});
 		})
 		.catch(err => {
 			navigate('/login');
 		});
 	}, []);
+
+	/* For games */
+	useEffect(() => {
+		if (user) {
+			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
+			.then(res => {
+				console.log(res);
+				setGames(res.data);
+				games?.sort((a, b) => {
+					return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+				});
+			})
+			.catch(err => {
+				console.log(err);
+				navigate('/login');
+			});
+		}
+	}, [user]);
+
+	/* For friends */
+	useEffect(() => {
+		if (user) {
+			axios.get('http://localhost:3000/social/' + user?.id, { withCredentials: true })
+			.then(res => {
+				console.log(res);
+				setFriendAmount(res.data.length);
+			})
+			.catch(err => {
+				console.log(err);
+				navigate('/login');
+			});
+		}
+	}, [user]);
+
 
 	function gameRow(game: Game)
 	{
@@ -68,18 +96,9 @@ const Profile:React.FC = () =>
 				<td>{game.winnerScore}</td>
 				<td>{game.loserScore}</td>
 				{/* string to int */}
-				<td>{new Date(parseInt(game.createdAt)).toLocaleString()}</td>
+				<td>{new Date(parseInt(game.createdAt)).toUTCString()}</td>
 			</tr>
 		);
-	}
-
-	function getGameTable()
-	{
-		// return (
-		// 		{
-		// 			user?.games_won?.map(game => gameRow(game))
-		// 		}
-		// );
 	}
 
 	return (
@@ -95,7 +114,7 @@ const Profile:React.FC = () =>
 			<div className='friend-href'>
 				<ul>
 					<li>
-						<a href='/home'>Friends</a>
+						<a href='/home'>Friends {friendAmount}</a> 
 					</li>
 				</ul>
 			</div>
@@ -117,7 +136,7 @@ const Profile:React.FC = () =>
 						<th>Loser score</th>
 						<th>Date</th>
 					</tr>
-					{ user?.games?.map(game => gameRow(game)) }
+					{ games?.map(game => gameRow(game)) }
 				</table>
 			</div>
 		</div>
