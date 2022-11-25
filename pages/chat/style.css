@@ -1,23 +1,12 @@
-/* body {
+body {
   margin: 0 auto;
   max-width: 800px;
   padding: 0 20px;
-} */
-
-main-container{
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    grid-gap: 20px; 
-    border: 1px solid black; 
-    width: 50%; 
 }
 
-.chat-messages {
-    margin: 10px; 
-    border: 1px solid red; 
-}
 
-/* .rooms {
+
+.rooms {
   padding: 0;
   text-align: left;
 }
@@ -88,4 +77,4 @@ main-container{
   border-radius: 4px;
   cursor: pointer;
   float: right;
-} */
+}
