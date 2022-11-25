@@ -49,9 +49,6 @@ export class AuthController {
 	@UseGuards(AuthenticateGuard)
 	user(@Req() request: Request) {
 		const user = request.user;
-		console.log("userfunction");
-		console.log(user);
-
 		if (user) {
 			return { msg: 'Authenticated' };
 		} else {

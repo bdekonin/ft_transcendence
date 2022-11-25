@@ -21,9 +21,6 @@ export class AuthService {
 
 		if (user)
 			return user;
-
-		console.log('User not found. Creating...');
-		console.log(details);
 		
 		const newMembership = this.membershipRepo.create();
 		const savedMembership = await this.membershipRepo.save(newMembership);
