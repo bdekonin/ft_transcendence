@@ -18,10 +18,10 @@ const App:React.FC = () =>
 			<Routes>
 				<Route path='/' element={<Home/>}/>
 				<Route path='/login' element={<Login />}/>
-				<Route path='/profile' element={<Login />}/>
+				<Route path='/profile' element={<Profile />}/>
 				<Route path='/friends' element={<Friends />}/>
 				<Route path='/social' element={<Social />}/>
-				<Route path='/Settings' element={<Login />}/>
+				<Route path='/settings' element={<Login />}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>

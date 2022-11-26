@@ -1,6 +1,7 @@
 import axios from "axios";
+import { stringify } from "querystring";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import './style.css'
 
 interface Game {
@@ -15,7 +16,7 @@ interface Game {
 }
 
 interface User {
-	id: string;
+	id: number;
 	username: string;
 	avatar: string;
 	level: string;
@@ -32,16 +33,23 @@ interface User {
 	createdAt: string;
 }
 
+interface Avatar {
+	id: number;
+	avatar: string;
+}
+
 const Profile:React.FC = () =>
 {
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
-	// const [avatar, setAvatar] = useState<string>();
+	const [avatar, setAvatar] = useState<Avatar>();
+	let [searchParams, setSearchParams] = useSearchParams();
+	const query = searchParams.get('user');
 
 	useEffect(() => {
-		axios.get('http://localhost:3000/user', { withCredentials: true })
+		// console.log('Param user=' + searchParams.get('user'));
+		axios.get('http://localhost:3000/user/' + (query ? query : ''), { withCredentials: true })
 		.then(res => {
-			console.log(res);
 			setUser(res.data);
 			res.data['games'] = res.data['games_won'].concat(res.data['games_lost']);
 			res.data['games'].sort((a:Game, b:Game) => {
@@ -51,7 +59,19 @@ const Profile:React.FC = () =>
 		.catch(err => {
 			navigate('/login');
 		});
-	}, []);
+	}, [searchParams]);
+
+	//getting the Avatars
+	useEffect(() => {
+		axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
+		.then(res => {
+			const imageObjectURL = URL.createObjectURL(res.data);
+			setAvatar({id: user?.id as number, avatar: imageObjectURL});
+		})
+		.catch(err => {
+			console.log(err);
+		});
+	}, [user]);
 
 	function gameRow(game: Game)
 	{
@@ -63,8 +83,8 @@ const Profile:React.FC = () =>
 			<tr key={game.id} className={class_name}>
 				<td>{game.id}</td>
 				<td>{game.mode}</td>
-				<td><a href="#">{game.winner.username}</a></td>
-				<td><a href="#">{game.loser.username}</a></td>
+				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.winner.username)}}>{game.winner.username}</td>
+				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.loser.username)}}>{game.loser.username}</td>
 				<td>{game.winnerScore}</td>
 				<td>{game.loserScore}</td>
 				{/* string to int */}
@@ -73,20 +93,12 @@ const Profile:React.FC = () =>
 		);
 	}
 
-	function getGameTable()
-	{
-		// return (
-		// 		{
-		// 			user?.games_won?.map(game => gameRow(game))
-		// 		}
-		// );
-	}
-
 	return (
-		<div>
+		<div className="profile">
 			<h1>Profile</h1>
 			<div className='profile'>
-				<img className="profile-pic" src="https://bootdey.com/img/Content/avatar/avatar6.png" alt="profile"></img>
+
+				<img className="profile-pic" src={avatar?.avatar} alt="profile"></img>
 				 <p>{user?.username}</p>
 			</div>
 			<div className='edit-profile'>

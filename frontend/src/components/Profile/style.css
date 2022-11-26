@@ -1,21 +1,37 @@
-.games th {
+.profile .games th {
 	background-color: #616161;
 	color: white;
-  }
-
-.games th, td {
-	padding: 15px;
-	text-align: left;
 }
 
-.won {
+  .profile .games th, td {
+	padding: 15px;
+	text-align: center;
+}
+
+.profile .won {
 	background-color: #2ecc71;
 }
 
-.lost {
+.profile .lost {
 	background-color: #c0392b;
 }
 
-.draw {
+.profile .draw {
 	background-color: #f1c40f;
+}
+
+.profile .clickable {
+	color: blue;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.profile .profile-pic {
+	/* max-width: 800px;
+	max-height: 800px; */
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	outline: 3px solid black;
+
 }
