@@ -22,8 +22,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
 			// username: profile.displayName.replace(' ', ""),
 			oauthID: profile.id,
 		});
-		console.log('Validate Google');
-		console.log(user);
 		return user || null;
 	}
 }

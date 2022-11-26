@@ -24,7 +24,7 @@ const Home: FC = () => {
 				<br />
 				<button onClick={() => {navigate('/social')}}>Socials</button>
 				<br />
-				<button onClick={() => {navigate('/settings')}}>Settings</button>
+				<button onClick={() => {navigate('/profile')}}>Profile</button>
 				<br />
 			</div>
 		</>

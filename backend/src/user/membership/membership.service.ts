@@ -35,7 +35,6 @@ export class MembershipService {
 		const temp = await this.repo.findBy({
 			
 		})
-		console.log((await user).membership);
 		return (await user).membership;
 	}
 }

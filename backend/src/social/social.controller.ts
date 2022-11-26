@@ -69,14 +69,14 @@ export class SocialController {
 		return await this.socialService.unblock(user.id, otherID);
 	}
 
-	@Get()
+	@Get(':userID')
 		@ApiBadRequestResponse({description: 'Bad Request'})
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'All friendships', type: Friend, isArray: true })
 		@ApiQuery({ name: 'filter', type: 'string', required: false, description: 'The type of friendships to get (pending, accepted, blocked, sent)' })
 		@ApiQuery({ name: 'otherID', type: 'number', required: false, description: 'The friendship between userID and otherID' })
 	async getSocial(
-		@UserRequest() user: User,
+		@Param('userID', ParseIntPipe) userID: number,
 		@Query('filter') filter: string,
 		@Query('otherID') otherID: string
 	)
@@ -86,15 +86,15 @@ export class SocialController {
 
 		/* if filter exist return all friends with that filter */
 		if (filter) {
-			return await this.socialService.getSocial(user.id, filter);
+			return await this.socialService.getSocial(userID, filter);
 		}
 		/* if otherid exist return that friendship */
 		else if (otherID) {
-			return await this.socialService.getSocialOf(user.id, Number(otherID));
+			return await this.socialService.getSocialOf(userID, Number(otherID));
 		}
 		/* now return all friends */
 		else {
-			return await this.socialService.getAllFriends(user.id);
+			return await this.socialService.getAllFriends(userID);
 		}
 	}
 }
