@@ -1,0 +1,18 @@
+.settings .header{
+	font-size: 75px;
+	text-align: center;
+
+}
+
+.settings .block1 {
+	width: 70%;
+	height: 700px;
+	background-color: white;
+	margin: auto;
+	/* border-radius: 45%; */
+}
+
+.settings .avatar {
+	width: 150px;
+	height: 150px;
+}

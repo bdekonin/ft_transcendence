@@ -8,11 +8,14 @@ import Login from "./components/Login/Login";
 import Friends from "./components/Friends/Friends";
 import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
+import Settings from "./components/Settings/Settings";
 
 
 
 const App:React.FC = () =>
 {
+
+	document.body.style.background = "#474E68";
 	return (
 		<Router>
 			<Routes>
@@ -21,7 +24,7 @@ const App:React.FC = () =>
 				<Route path='/profile' element={<Profile />}/>
 				<Route path='/friends' element={<Friends />}/>
 				<Route path='/social' element={<Social />}/>
-				<Route path='/settings' element={<Login />}/>
+				<Route path='/settings' element={<Settings />}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>

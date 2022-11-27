@@ -124,6 +124,7 @@ const Profile:React.FC = () =>
 
 	return (
 		<div className="profile">
+			<button onClick={() => {navigate('/')}}>Home</button>
 			<h1>Profile</h1>
 			<div className='profile'>
 
