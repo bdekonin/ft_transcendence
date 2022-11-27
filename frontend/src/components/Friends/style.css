@@ -56,16 +56,46 @@
 	transition: 0.3s;
 }
 
-.friends .friendblock .accept:active, .friends .friendblock .denied:active {
+.friends .friendblock .accept:active, .friends .friendblock .denied:active, .friends .friendblock .status .remove:active {
 	transform: translateY(4px);
 }
 
 .friends .friendblock .pending {
 	position: absolute;
 	background-color: darkgray;
-	width: 100%;
+	width: 185px;
 	height: 100%;
 	border-radius: 5px;
+}
+
+.friends .friendblock .status .remove {
+	position: absolute;
+	right: 0px;
+	background-color: #e74c3c;
+	width: 50px;
+	height: 100%;
+	border-radius: 5px;
+}
+
+.friends .friendblock .status .active {
+	position: absolute;
+	background-color: #332FD0;
+	color: white;
+	width: 185px;
+	height: 100%;
+	border-radius: 5px;
+}
+
+.friends .friendblock .status .remove:hover {
+	transition: 0.3s;
+	background-color: #b94a30;
+}
+
+.friends .friendblock .status .remove img {
+	margin-top: 10px;
+	width: 30px;
+	height: 30px;
+
 }
 
 .friends .friendblock .accept img, .friends .friendblock .denied img, .friends .friendblock .pending img {

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import './style.css'
 
 interface User {
@@ -23,17 +23,18 @@ interface Avatar {
 }
 
 const Friends:React.FC = () => {
-
+	
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	const [users, setUsers] = useState<User[]>([]);
 	const [avatars, setAvatars] = useState<Avatar[]>([]);
-
-	function goHome(){ navigate("/"); }
-
+	
 	document.body.style.backgroundColor = "#474E68";
+	function goHome(){ navigate("/"); }
+	function goToProfile(otherUser: User) {	navigate('/profile?user=' + otherUser.username); }
 
 	useEffect(() => {
+		console.log('just loaded again');
 			axios.get('http://localhost:3000/user', {withCredentials: true})
 			.then(res => {
 				setUser(res.data);
@@ -45,6 +46,7 @@ const Friends:React.FC = () => {
 			return ;
 		axios.get('http://localhost:3000/social', {withCredentials: true})
 		.then(res => {
+			console.log(res.data);
 			res.data.map((elem: Friend) => {
 				let newUser: User;
 				if (elem.sender.id === user?.id)
@@ -69,7 +71,6 @@ const Friends:React.FC = () => {
 			})
 		})
 	}, [user])
-	
 
 	useEffect(() => {
 		if (users === undefined)
@@ -86,6 +87,21 @@ const Friends:React.FC = () => {
 	}, [users])
 
 
+
+	function acceptFriend(otherUser: User) {
+		axios.put('http://localhost:3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
+		.then(() => {
+			window.location.reload();
+		})
+	}
+
+	function denyFriend(otherUser: User) {
+		axios.delete('http://localhost:3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
+		.then(() => {
+			window.location.reload();
+		})
+	}
+
 	function displayUsers() {
 		function getButtons(elem: User) {
 			if (elem.status === 'pending')
@@ -93,21 +109,35 @@ const Friends:React.FC = () => {
 				if (elem.isReceiver)
 					return (
 						<>
-							<div className="accept">
+							<div className="accept" onClick={() => acceptFriend(elem)}>
 								<img src={require("../../images/checkmark.png")} />
 							</div>
-							<div className="denied">
+							<div className="denied" onClick={() => denyFriend(elem)}>
 								<img src={require("../../images/cross.png")} />
 							</div>
 						</>
 					);
 				return (
+					<>
 					<div className="pending">
 						<img className="option" src={require('../../images/hourglass.png')} />
 					</div>
+					<div className="remove" onClick={() => denyFriend(elem)}>
+						<img  src={require('../../images/trashcan.png')} />
+					</div>
+					</>
 				);
 			}
-			return (<>hello</>);
+			return (
+				<>
+				<div className="active" onClick={() => {goToProfile(elem)}}>
+					<p>View profile</p>
+				</div>
+				<div className="remove" onClick={() => denyFriend(elem)}>
+					<img  src={require('../../images/trashcan.png')} />
+				</div>
+				</>
+			);
 		}
 
 		return users.map(elem => {
