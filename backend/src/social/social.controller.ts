@@ -97,4 +97,18 @@ export class SocialController {
 			return await this.socialService.getAllFriends(userID);
 		}
 	}
+	@Get()
+		@ApiBadRequestResponse({description: 'Bad Request'})
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'All friendships', type: Friend, isArray: true })
+		@ApiQuery({ name: 'filter', type: 'string', required: false, description: 'The type of friendships to get (pending, accepted, blocked, sent)' })
+		@ApiQuery({ name: 'otherID', type: 'number', required: false, description: 'The friendship between userID and otherID' })
+	async getSocialByRequest(
+		@UserRequest() user: User,
+		@Query('filter') filter: string,
+		@Query('otherID') otherID: string
+	)
+	{
+		return await this.getSocial(user.id, filter, otherID);
+	}
 }
