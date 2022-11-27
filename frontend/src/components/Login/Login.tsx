@@ -20,7 +20,7 @@ const Login: FC = () => {
 				console.log(err.response.data.error);
 		});
 	}, []);
-	document.body.style.backgroundColor = 'lightgray';
+	document.body.style.backgroundColor = 'black';
 	if (additionalInfo)
 		return (<AdditionalInfo/>); //Display additional info Page!
 	return (

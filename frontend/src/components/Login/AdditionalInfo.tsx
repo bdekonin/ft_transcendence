@@ -13,6 +13,7 @@ const AdditionalInfo: FC = () => {
 	const [image, setImage] = useState<File>();
 	const [previewImage, setPreviewImage] = useState('');
 
+	document.body.style.backgroundColor = "#474E68"; //very nice color
 
 	useEffect(() => {
 		checkUserNameInput();
@@ -79,6 +80,7 @@ const AdditionalInfo: FC = () => {
 		setImage(event.target.files![0]);
 		setPreviewImage(URL.createObjectURL(event.target.files![0]));
 	}
+
 
 	return (
 		<div className="additionalinfo">

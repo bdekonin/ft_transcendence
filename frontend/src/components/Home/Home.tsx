@@ -14,6 +14,8 @@ const Home: FC = () => {
 		})
 	}, []);
 
+	// document.body.style.background = 'black';
+
 	return (
 		<>
 			<h1>This is the HomePage!</h1>
