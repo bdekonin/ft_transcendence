@@ -94,7 +94,15 @@ export class SocialController {
 		}
 		/* now return all friends */
 		else {
-			return await this.socialService.getAllFriends(userID);
+			const allFriends = await this.socialService.getAllFriends(userID);
+
+			// sort friends by status
+			const pending = allFriends.filter(friend => friend.status == 'pending');
+			const friends = allFriends.filter(friend => friend.status == 'accepted');
+			// const sent = allFriends.filter(friend => friend.status == 'sent');
+			// const blocked = allFriends.filter(friend => friend.status == 'blocked');
+			return [...pending, ...friends];
+			// return { pending, friends };
 		}
 	}
 	@Get()
