@@ -70,8 +70,8 @@ export class SocialService
 		});
 		if (!friendship)
 			throw new NotFoundException('Friendship not found');
-		if (friendship.status != 'accepted')
-			throw new BadRequestException('You are not friends with this user');
+		// if (friendship.status != 'accepted')
+		// 	throw new BadRequestException('You are not friends with this user');
 		return await this.repo.remove(friendship);
 	}
 	async block(senderID: number, recieverID: number): Promise<Friend> {
