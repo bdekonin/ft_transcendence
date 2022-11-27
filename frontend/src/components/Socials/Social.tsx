@@ -28,6 +28,7 @@ const Social: FC = () => {
 	useEffect(() => {
 		axios.get("http://localhost:3000/user/all", {withCredentials: true})
 		.then(res => {
+			console.log(res.data);
 			setUsers(res.data);
 		})
 		.catch((error) => {
@@ -46,6 +47,8 @@ const Social: FC = () => {
 			})
 		})
 	}, [users]);
+
+	function goHome(){ navigate("/"); }
 
 	function getUsers() {
 		return users.map((user) => {
@@ -76,6 +79,7 @@ const Social: FC = () => {
 	return (
 		<div className="socials">
 			<h1 className="header">Socials</h1>
+			<button onClick={goHome}>Home</button>
 			{getUsers()}
 		</div>
 	);
