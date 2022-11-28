@@ -12,7 +12,6 @@ import { FortyTwoStrategy } from "./utils/FortyTwoStrategy";
 import { GoogleStrategy } from "./utils/GoogleStrategy";
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from "./utils/constants";
-import { SessionSerializer } from "./utils/Serializer";
 import { JwtAuthGuard } from "./utils/jwt-auth.guard";
 import { JwtStrategy } from "./utils/jwt.strategy";
 import { PassportModule } from "@nestjs/passport";
@@ -28,12 +27,11 @@ import { PassportModule } from "@nestjs/passport";
 	],
 	controllers: [AuthController],
 	providers: [
-		UserService, FortyTwoStrategy, GoogleStrategy, AuthService, SessionSerializer, JwtStrategy,
 		{
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,
 		},
-		
+		UserService, FortyTwoStrategy, GoogleStrategy, AuthService, JwtStrategy,
 	],
 })
 export class AuthModule {}

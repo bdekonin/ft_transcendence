@@ -12,6 +12,8 @@ import { Membership } from "src/entities/Membership.entity";
 import { MulterModule } from "@nestjs/platform-express";
 import { SocialController } from "src/social/social.controller";
 import { SocialService } from "src/social/social.service";
+import { AuthService } from "src/auth/auth.service";
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
 	imports: [
@@ -26,6 +28,11 @@ import { SocialService } from "src/social/social.service";
 		SocialController
 	],
 	providers: [
+		{
+			provide: 'AUTH_SERVICE',
+			useClass: AuthService,
+		},
+		JwtService,
 		UserService,
 		MembershipService,
 		SocialService

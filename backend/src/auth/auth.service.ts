@@ -5,6 +5,8 @@ import { UserService } from "src/user/user.service";
 import { Repository } from "typeorm";
 import { UserDetails } from "./utils/types";
 import { JwtService } from '@nestjs/jwt';
+import { User } from "src/entities/User.entity";
+import { jwtConstants } from "./utils/constants";
 
 @Injectable()
 export class AuthService {
@@ -52,19 +54,26 @@ export class AuthService {
 
 	/* Jwt */
 
-	createToken(userID: number) {
-		const payload = { id: userID };
-		console.log('payload', payload);
-		return this.jwtService.sign({
-			sub: userID,
-			test: 'Hi!'
-		});
+	createToken(user: User) {		
+		return {
+			// expiresIn: 3600,
+			accessToken: this.jwtService.sign({ sub: user.id, oauthID: user.oauthID }),
+			// user,
+		}
+
+
 	}
 
-	verifyJWT(token: string): any {
+	async verifyJWT(token: string): Promise<any> {
+		const options = { secret: jwtConstants.secret };
+		// if (!token)
+			// console.log('token', token);
+			// catch error
+
 		try {
-			return this.jwtService.verify(token);
-		} catch {
+			return await this.jwtService.verify(token, options);
+		} catch (error) {
+			console.log('error', error);
 			return null;
 		}
 	}

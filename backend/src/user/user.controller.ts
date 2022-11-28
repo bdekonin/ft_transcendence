@@ -7,6 +7,8 @@ import { updateUserDto } from "./user.dto";
 import { UserRequest } from "./user.decorator";
 import { AuthenticateGuard } from "src/auth/utils/Guards";
 import { Request } from "express";
+import { AuthGuard } from "@nestjs/passport";
+import { JwtAuthGuard } from "src/auth/utils/jwt-auth.guard";
 
 @ApiTags('user')
 @Controller('/user/')
@@ -15,8 +17,9 @@ export class UserController {
 
 	// General
 	@Get('all')
+	@UseGuards(JwtAuthGuard)
 		@ApiOkResponse({ description: 'Returns all users', type: User })
-	@UseGuards(AuthenticateGuard)
+	// @UseGuards(AuthenticateGuard)
 	async getAllUsers()
 	{
 		const users = await this.userService.userRepository.find({
@@ -34,6 +37,7 @@ export class UserController {
 
 	// Profile settings
 	@Get(':userID/avatar')
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
 	async getUserAvatarByID(
@@ -45,8 +49,11 @@ export class UserController {
 	}
 
 	@Get('/avatar')
+	@UseGuards(JwtAuthGuard)
+
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
+
 	async getUserAvatar(
 		@UserRequest() user: User,
 		@Res() res
@@ -54,7 +61,9 @@ export class UserController {
 	{
 		return await this.userService.getAvatar(user.id, res);
 	}
+
 	@Post('avatar')
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
 	@UseInterceptors(FileInterceptor('file'))
@@ -74,6 +83,7 @@ export class UserController {
 		return this.userService.postAvatar(user.id, file.filename);
 	}
 	@Delete('avatar')
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiNoContentResponse({ description: 'Delete current image and reverts to default.jpeg'})
 	@HttpCode(204)
@@ -86,6 +96,7 @@ export class UserController {
 
 	/* twoFactor */
 	@Get('twofa/')
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns if the user has 2fa enables', type: Boolean })
 	async getUsertwoFA(
@@ -99,6 +110,7 @@ export class UserController {
 
 	/* Profile */
 	@Get()
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
 	async getUser(
@@ -122,6 +134,7 @@ export class UserController {
 		return foundUser;
 	}
 	@Get(':username')
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
 		@ApiParam({ name: 'username', type: 'string', required: true })
@@ -140,6 +153,7 @@ export class UserController {
 	}
 
 	@Patch()
+	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'returns the updates user object', type: User })
 		@ApiBody({ type: updateUserDto })

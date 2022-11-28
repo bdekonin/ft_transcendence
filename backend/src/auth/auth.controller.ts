@@ -50,7 +50,7 @@ export class AuthController {
 	}
 
 	@Get('status')
-	@UseGuards(AuthenticateGuard)
+	@UseGuards(JwtAuthGuard)
 	user(@Req() request: Request) {
 		const user = request.user;
 		if (user) {
@@ -78,23 +78,18 @@ export class AuthController {
 	@Get('jwt')
 	@UseGuards(JwtAuthGuard)
 	jwt(@Req() req: Request) {
-		console.log('jwt')
-		console.log(req.header)
-		console.log('jwt', req.headers.authorization);
-
-		// console.log
-		if (!req.headers.authorization) return false;
-		const token = req.headers.authorization.split(' ')[1];
-		const payload = this.authService.verifyJWT(token);
-		return !!payload;
+		return req.user;
 	}
 
 
 	private doCallback(req: Request, res: Response) {
 		const user = req.user as User;
-		if (!user)
+		if (!user) {
+			console.log('No user found in doCallback');
 			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
-		const token = this.authService.createToken(user.id);
+		}
+		console.log('user doCallback', user)
+		const token = this.authService.createToken(user);
 		res.cookie('jwt', token, { httpOnly: true });
 		res.header('Authorization', 'JWT ' + token);
 		
