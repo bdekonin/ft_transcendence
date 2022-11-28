@@ -10,10 +10,17 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { FortyTwoStrategy } from "./utils/FortyTwoStrategy";
 import { GoogleStrategy } from "./utils/GoogleStrategy";
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from "./utils/constants";
 import { SessionSerializer } from "./utils/Serializer";
 
 @Module({
-	imports: [UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory, Friend])],
+	imports: [UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory, Friend]),
+	JwtModule.register({
+		secret: jwtConstants.secret,
+		signOptions: { expiresIn: '1d' },
+	}),
+	],
 	controllers: [AuthController],
 	providers: [
 		UserService, FortyTwoStrategy, GoogleStrategy, AuthService, SessionSerializer,

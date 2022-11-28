@@ -4,12 +4,14 @@ import { Membership, UserRole } from "src/entities/Membership.entity";
 import { UserService } from "src/user/user.service";
 import { Repository } from "typeorm";
 import { UserDetails } from "./utils/types";
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
 
 	constructor(
 		private userService: UserService,
+		private jwtService: JwtService,
 		@InjectRepository(Membership) public membershipRepo:
 		Repository<Membership>,
 	) {}
@@ -46,5 +48,19 @@ export class AuthService {
 	{
 		return await this.userService.findUserByIdUsername(idArg, usernameArg)
 	}
+
+
+	/* Jwt */
+
+	async createToken(user: any) {
+		const token = this.jwtService.sign({
+			id: user.id,
+			username: user.username,
+		});
+		return token;
+	}
+
+	async validateJwtUser(id: number) {
+	};
 }
 

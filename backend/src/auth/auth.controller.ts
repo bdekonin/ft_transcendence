@@ -24,8 +24,13 @@ export class AuthController {
 	@Get('42/callback')
 	@UseGuards(FortyTwoAuthGuard)
 	handleRedirectFortyTwo(
+		@Req() req: Request,
 		@Res({passthrough: false}) res: Response,
 	) {
+		const user = req.user;
+		if (!user)
+			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
+		res.cookie('jwt', this.authService.createToken(user), { httpOnly: true });
 		res.redirect(process.env.FRONTEND_REDIRECT_URL);
 	}
 
