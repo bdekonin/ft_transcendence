@@ -52,15 +52,21 @@ export class AuthService {
 
 	/* Jwt */
 
-	async createToken(user: any) {
-		const token = this.jwtService.sign({
-			id: user.id,
-			username: user.username,
+	createToken(userID: number) {
+		const payload = { id: userID };
+		console.log('payload', payload);
+		return this.jwtService.sign({
+			sub: userID,
+			test: 'Hi!'
 		});
-		return token;
 	}
 
-	async validateJwtUser(id: number) {
-	};
+	verifyJWT(token: string): any {
+		try {
+			return this.jwtService.verify(token);
+		} catch {
+			return null;
+		}
+	}
 }
 

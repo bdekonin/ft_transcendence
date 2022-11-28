@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,6 +21,7 @@ async function bootstrap() {
     })
   );
 
+  app.use(cookieParser());
   // app.setGlobalPrefix("api/v2");
 
   const config = new DocumentBuilder()
@@ -40,7 +42,7 @@ async function bootstrap() {
       "http://localhost:3000",
     ],
     credentials: true,
-    exposedHeaders: ['randomStringLol', 'X-XSRF-TOKEN'],
+    exposedHeaders: ['randomStringLol', 'X-XSRF-TOKEN', "Authorization"],
   });
 
   await app.listen(3000);

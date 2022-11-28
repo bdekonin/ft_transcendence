@@ -1,9 +1,12 @@
-import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, createParamDecorator, Get, Req, Res, UseGuards } from "@nestjs/common";
 import { Request } from "express";
 import { AuthService } from "./auth.service";
 import { AuthenticateGuard, FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
 import { ApiTags } from "@nestjs/swagger";
 import { Response } from 'express'
+import { AuthGuard } from "@nestjs/passport";
+import { JwtAuthGuard } from "./utils/jwt-auth.guard";
+import { User } from "src/entities/User.entity";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -27,11 +30,7 @@ export class AuthController {
 		@Req() req: Request,
 		@Res({passthrough: false}) res: Response,
 	) {
-		const user = req.user;
-		if (!user)
-			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
-		res.cookie('jwt', this.authService.createToken(user), { httpOnly: true });
-		res.redirect(process.env.FRONTEND_REDIRECT_URL);
+		return this.doCallback(req, res);
 	}
 
 	/* Google */
@@ -44,10 +43,10 @@ export class AuthController {
 	@Get('google/callback')
 	@UseGuards(GoogleAuthGuard)
 	handleRedirectGoogle(
-		// @Req req: Request,
+		@Req() req: Request,
 		@Res({passthrough: false}) res: Response,
 	) {
-		res.redirect(process.env.FRONTEND_REDIRECT_URL);
+		return this.doCallback(req, res);
 	}
 
 	@Get('status')
@@ -69,4 +68,42 @@ export class AuthController {
 			// what to do here?
 		});
 	}
+
+	@Get('verify-session')
+	verify_session(@Req() request: Request) {
+		console.log('Verifying session')
+		console.log(request.session)
+	}
+
+	@Get('jwt')
+	@UseGuards(JwtAuthGuard)
+	jwt(@Req() req: Request) {
+		console.log('jwt')
+		console.log(req.header)
+		console.log('jwt', req.headers.authorization);
+
+		// console.log
+		if (!req.headers.authorization) return false;
+		const token = req.headers.authorization.split(' ')[1];
+		const payload = this.authService.verifyJWT(token);
+		return !!payload;
+	}
+
+
+	private doCallback(req: Request, res: Response) {
+		const user = req.user as User;
+		if (!user)
+			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
+		const token = this.authService.createToken(user.id);
+		res.cookie('jwt', token, { httpOnly: true });
+		res.header('Authorization', 'JWT ' + token);
+		
+		res.redirect(process.env.FRONTEND_REDIRECT_URL);
+		return { token };
+	}
 }
+
+
+export const AuthUserJWT = createParamDecorator((data, req) => {
+	return req.user;
+});
