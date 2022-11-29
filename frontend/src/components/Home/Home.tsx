@@ -63,6 +63,8 @@ const Home: FC = () => {
 					<button onClick={ sendPing }>Send ping</button> */}
 				<button>Game</button>
 				<br />
+				<button onClick={() => {navigate('/chat')}}>Chat</button>
+				<br />
 				<button onClick={() => {navigate('/friends')}}>Friends</button>
 				<br />
 				<button onClick={() => {navigate('/social')}}>Socials</button>

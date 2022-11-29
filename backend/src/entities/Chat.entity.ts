@@ -35,7 +35,7 @@ export class Chat {
 	users: User[];
 	
 	@OneToMany(() => Message, (message) => message.parent)
-	@JoinColumn()
+	@JoinTable()
 	messages: Message[];
 
 	@Column({ nullable: true })

@@ -65,7 +65,6 @@ export class ChatService {
 			sender: sender,
 			parent: chat,
 		});
-		console.log(messageEntity);
 		return await this.messageRepo.save(messageEntity);
 	}
 
@@ -94,7 +93,6 @@ export class ChatService {
 
 		chats.map(chat => {
 			if (chat.name == null) {
-				console.log('Append Usernames!',chat)
 				if (chat.users[0].id == userID) {
 					chat.name = chat.users[0].username + ', ' + chat.users[1].username;
 				} else {
@@ -126,7 +124,6 @@ export class ChatService {
 		} else {
 			throw new BadRequestException("Invalid chat type");
 		}
-		console.log(chat);
 		const newChat = this.chatRepo.create({
 			type: chat.type,
 			name: chat.name,
@@ -169,7 +166,6 @@ export class ChatService {
 			users: [await this.userService.findUserById(users[0]), await this.userService.findUserById(users[1])],
 			password: null,
 		};
-		console.log('NewChat!',newChat);
 		return newChat;
 	}
 

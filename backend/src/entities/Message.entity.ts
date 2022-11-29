@@ -10,7 +10,10 @@ export class Message {
 	@Column()
 	message: string;
 
-	@OneToOne(() => User)
+	@ManyToOne(() => User, {
+		onDelete: 'CASCADE',
+		eager: true,
+	})
 	@JoinColumn()
 	sender: User;
 
