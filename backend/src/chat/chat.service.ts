@@ -4,7 +4,7 @@ import { Chat, ChatType } from 'src/entities/Chat.entity';
 import { User } from 'src/entities/User.entity';
 import { UserService } from 'src/user/user.service';
 import { UserNotFoundException } from 'src/utils/exceptions';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
@@ -81,15 +81,19 @@ export class ChatService {
 		return chat.messages;
 	}
 
-	async getChats(userID: number) {
-		const chats = await this.chatRepo.find({
-			relations: ['users'],
-			where: {
-				users: {
-					id: userID
-				}
-			},
-		});
+	async getChats(userID: number, filter: string) {
+		var chats: Chat[];
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new UserNotFoundException();
+		}
+
+		if (filter === 'public')
+			chats = await this.getChatTypePublic(userID);
+		else if (filter === 'protected')
+			chats = await this.getChatTypePrivate(userID);
+		else /* Joined */
+			chats = await this.getChatTypeJoined(userID);
 
 		chats.map(chat => {
 			if (chat.name == null) {
@@ -236,19 +240,6 @@ export class ChatService {
 		}
 		return true;
 	}
-
-	private async appendUsersToChat(users: number[]): Promise<User[]> {
-		const usersArray = [];
-		for (let i = 0; i < users.length; i++) {
-			const user = await this.userService.findUserById(users[i]);
-			if (!user) {
-				throw new UserNotFoundException();
-			}
-			usersArray.push(user);
-		}
-		return usersArray;
-	}
-
 	private async doesPrivateExist(idOne: number, idTwo: number): Promise<Chat> {
 		return await this.chatRepo.findOne({
 			relations: ['users'],
@@ -259,6 +250,40 @@ export class ChatService {
 					id: In([idOne, idTwo]),
 				},
 			}
+		});
+	}
+
+	/* Chat - Get Types */
+	async getChatTypeJoined(id: number): Promise<Chat[]> {
+		return await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				users: {
+					id: id
+				}
+			},
+		});
+	}
+	async getChatTypePublic(id: number): Promise<Chat[]> {
+		return await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.GROUP,
+				users: {
+					id: Not(id)
+				}
+			},
+		});
+	}
+	async getChatTypePrivate(id: number): Promise<Chat[]> {
+		return await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.GROUP_PROTECTED,
+				users: {
+					id: Not(id)
+				}
+			},
 		});
 	}
 }
