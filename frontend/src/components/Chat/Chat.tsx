@@ -76,12 +76,14 @@ const Chat: React.FC = () => {
 	}, [currentChat]);
 
 
+	function renderUsers() {
 
+	}
 
 	function renderRooms() {
 		return (
 			<div className="rooms">
-				<h1>Rooms</h1>
+				<h2>Rooms</h2>
 				<ul>
 					{
 						chats.map(chat => {
@@ -93,6 +95,21 @@ const Chat: React.FC = () => {
 						})
 					}
 				</ul>
+				<h3>Public Rooms</h3>
+				<ul>
+					<li><p className='room-name-clickable'>One</p></li>
+					<li><p className='room-name-clickable'>Two</p></li>
+					<li><p className='room-name-clickable'>Three</p></li>
+					<li><p className='room-name-clickable'>Four</p></li>
+				</ul>
+
+				<h3>Private Rooms</h3>
+				<ul>
+					<li><p className='room-name-clickable'>One</p></li>
+					<li><p className='room-name-clickable'>Two</p></li>
+					<li><p className='room-name-clickable'>Three</p></li>
+					<li><p className='room-name-clickable'>Four</p></li>
+				</ul>
 			</div>
 		)
 	}
@@ -100,14 +117,13 @@ const Chat: React.FC = () => {
 		return (
 			<div className="messages">
 				<h2>Chat Messages</h2>
-
 				{
 					messages.map((message, index)=> {
 						return (
 							<div className={!(index % 2) ? 'container' : 'container darker'} key={message.id}>
 								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
 								<p>{message.message}</p>
-								<span className="time-right">{convertEpochStringToMinutesSeconds(message.createdAt)}</span>
+								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
 								<p className={(index % 2) ? '' : 'right'}>{(index % 2) ? message.sender.username : ''}</p>
 							</div>
 						);
@@ -115,11 +131,6 @@ const Chat: React.FC = () => {
 				}
 			</div>
 		)
-	}
-	function convertEpochStringToMinutesSeconds(epoch: string): string {
-		const date = new Date(parseInt(epoch));
-
-		return moment(date).format('HH:mm:ss');
 	}
 
 	function postMessage() {
