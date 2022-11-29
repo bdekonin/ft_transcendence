@@ -10,15 +10,13 @@ import {
   import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth.service';
   
-  @Injectable()
-  export class JwtAuthGuard implements CanActivate {
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
 		constructor(
 			@Inject('AUTH_SERVICE') private authService: AuthService,
 		) { }
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		console.log('JwtAuthGuard canActivate');
-
 		const request = context.switchToHttp().getRequest();
 
 		const token = request.cookies.jwt;
@@ -26,8 +24,6 @@ import { AuthService } from '../auth.service';
 			throw new UnauthorizedException('No token provided');
 		}
 		const obj = await this.authService.verifyJWT(token.accessToken);
-		console.log('obj', obj)
-
 		if (!obj)
 			throw new UnauthorizedException('Object is undefined');
 
@@ -38,7 +34,34 @@ import { AuthService } from '../auth.service';
 		if (!user)
 			throw new UnauthorizedException('No User Found');
 		if (!user.username || user.username === '')
-			throw new ImATeapotException("Missing information.");
+			throw new ImATeapotException("Missing information. Please contact the administrator");
+
+		request.user = user;
+		return true;
+	}
+}
+
+  @Injectable()
+  export class JwtAuthGuardPatch implements CanActivate {
+		constructor(
+			@Inject('AUTH_SERVICE') private authService: AuthService,
+		) { }
+
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const request = context.switchToHttp().getRequest();
+
+		const token = request.cookies.jwt;
+		if (token == undefined || token.accessToken == undefined) {
+			throw new UnauthorizedException('No token provided');
+		}
+		const obj = await this.authService.verifyJWT(token.accessToken);
+		if (!obj)
+			throw new UnauthorizedException('Object is undefined');
+
+
+		const user = await this.authService.validateUser({
+			oauthID: obj.oauthID,
+		});
 		request.user = user;
 		return true;
 	}

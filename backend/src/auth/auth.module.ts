@@ -12,7 +12,6 @@ import { FortyTwoStrategy } from "./utils/FortyTwoStrategy";
 import { GoogleStrategy } from "./utils/GoogleStrategy";
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from "./utils/constants";
-import { JwtAuthGuard } from "./utils/jwt-auth.guard";
 import { JwtStrategy } from "./utils/jwt.strategy";
 import { PassportModule } from "@nestjs/passport";
 
@@ -20,10 +19,10 @@ import { PassportModule } from "@nestjs/passport";
 	imports: [
 		PassportModule,
 		UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory, Friend]),
-	JwtModule.register({
-		secret: jwtConstants.secret,
-		signOptions: { expiresIn: 60000 },
-	}),
+		JwtModule.register({
+			secret: jwtConstants.secret,
+			signOptions: { expiresIn: 60 * 10 }, /* 10 minutes */
+		}),
 	],
 	controllers: [AuthController],
 	providers: [

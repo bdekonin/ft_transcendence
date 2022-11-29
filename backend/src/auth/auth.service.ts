@@ -66,14 +66,9 @@ export class AuthService {
 
 	async verifyJWT(token: string): Promise<any> {
 		const options = { secret: jwtConstants.secret };
-		// if (!token)
-			// console.log('token', token);
-			// catch error
-
 		try {
 			return await this.jwtService.verify(token, options);
 		} catch (error) {
-			console.log('error', error);
 			return null;
 		}
 	}

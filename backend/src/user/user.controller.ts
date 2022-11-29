@@ -8,7 +8,7 @@ import { UserRequest } from "./user.decorator";
 import { AuthenticateGuard } from "src/auth/utils/Guards";
 import { Request } from "express";
 import { AuthGuard } from "@nestjs/passport";
-import { JwtAuthGuard } from "src/auth/utils/jwt-auth.guard";
+import { JwtAuthGuard, JwtAuthGuardPatch } from "src/auth/utils/jwt-auth.guard";
 
 @ApiTags('user')
 @Controller('/user/')
@@ -153,7 +153,7 @@ export class UserController {
 	}
 
 	@Patch()
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuardPatch)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'returns the updates user object', type: User })
 		@ApiBody({ type: updateUserDto })

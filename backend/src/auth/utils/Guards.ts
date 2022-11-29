@@ -32,12 +32,7 @@ export class AuthenticateGuard implements CanActivate {
 	  ): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
 		const user: User = request.user;
-		console.log('AuthenticateGuard', user);
 		if (user) {
-			// if (!user.username || user.username === '')
-			// 	throw new ImATeapotException("Missing information.");
-				// if (user.setup == false)
-				// throw new ImATeapotException("Missing information.");
 			return true;
 		}
 

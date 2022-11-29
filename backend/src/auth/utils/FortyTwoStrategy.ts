@@ -8,7 +8,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 	constructor(
 		@Inject('AUTH_SERVICE') private readonly authService: AuthService,
 	) {
-		console.log('FortyTwoStrategy Constructor');
 		super({
 			// grant_type: 'client_credentials',
 			clientID: process.env.FORTYTWO_CLIENT_ID,
@@ -18,7 +17,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 	async validate(accessToken: string, refreshToken: string, profile: Profile) {
-		console.log('FortyTwoStrategy Validate');
 		const user = await this.authService.validateUser({
 			// username: profile.username
 			oauthID: profile.id,

@@ -60,19 +60,10 @@ export class AuthController {
 		}
 	}
 
-	@Get('destroy')
-	destroySession(@Req() request: Request) {
-		console.log('Destroying session')
-		request.session.destroy(function(err) {
-			// cannot access session here
-			// what to do here?
-		});
-	}
-
-	@Get('verify-session')
-	verify_session(@Req() request: Request) {
-		console.log('Verifying session')
-		console.log(request.session)
+	@Get('logout')
+	destroySession(@Req() req, @Res() res) {
+		res.clearCookie('jwt');
+		res.json({ msg: 'Session destroyed' });
 	}
 
 	@Get('jwt')
@@ -85,10 +76,8 @@ export class AuthController {
 	private doCallback(req: Request, res: Response) {
 		const user = req.user as User;
 		if (!user) {
-			console.log('No user found in doCallback');
 			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
 		}
-		console.log('user doCallback', user)
 		const token = this.authService.createToken(user);
 		res.cookie('jwt', token, { httpOnly: true });
 		res.header('Authorization', 'JWT ' + token);
