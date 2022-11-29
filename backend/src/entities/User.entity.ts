@@ -65,7 +65,7 @@ export class User {
 	chats: Chat[];
 
 	@ApiProperty({ description: 'the id of the oath parent', example: 216532132 })
-	@Column({ default: '' })
+	@Column({ default: '', unique: true })
 	oauthID: string;
 	
 	@ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })

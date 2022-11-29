@@ -1,12 +1,14 @@
-import { BadRequestException, Controller, Delete, Get, Param, ParseIntPipe, Put, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, UseGuards } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { ApiQuery, ApiParam, ApiTags, ApiNotFoundResponse, ApiBadRequestResponse, ApiForbiddenResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Friend } from 'src/entities/Friend.entity';
 import { UserRequest } from 'src/user/user.decorator';
 import { User } from 'src/entities/User.entity';
+import { JwtAuthGuard } from 'src/auth/utils/jwt-auth.guard';
 
 @ApiTags('social')
 @Controller('social')
+@UseGuards(JwtAuthGuard)
 export class SocialController {
 	constructor(
 		private socialService: SocialService,

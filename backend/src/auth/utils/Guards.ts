@@ -7,8 +7,8 @@ import { User } from "src/entities/User.entity";
 export class FortyTwoAuthGuard extends AuthGuard('42') {
 	async canActivate(context: ExecutionContext) {
 		const activate = (await super.canActivate(context)) as boolean;
-		const request = context.switchToHttp().getRequest();
-		await super.logIn(request);
+		// const request = context.switchToHttp().getRequest();
+		// await super.logIn(request);
 		return activate;
 	}
 }
@@ -17,8 +17,8 @@ export class FortyTwoAuthGuard extends AuthGuard('42') {
 export class GoogleAuthGuard extends AuthGuard('google') {
 	async canActivate(context: ExecutionContext) {
 		const activate = (await super.canActivate(context)) as boolean;
-		const request = context.switchToHttp().getRequest();
-		await super.logIn(request);
+	// 	const request = context.switchToHttp().getRequest();
+	// 	await super.logIn(request);
 		return activate;
 	}
 }
@@ -33,10 +33,6 @@ export class AuthenticateGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 		const user: User = request.user;
 		if (user) {
-			if (!user.username || user.username === '')
-				throw new ImATeapotException("Missing information.");
-				// if (user.setup == false)
-				// throw new ImATeapotException("Missing information.");
 			return true;
 		}
 
