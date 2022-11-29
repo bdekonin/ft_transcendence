@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
+import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
 
 /* Private chat */
@@ -85,6 +86,14 @@ export class ChatController {
 		return await this.chatService.getMessages(chatID);
 	}
 
+	@Patch('join')
+	async joinChat(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Body() dto: JoinChatDto,
+	) {
+		return await this.chatService.joinChat(userID, dto);
+	}
+
 	@Get('chats')
 	async getChats(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -93,7 +102,7 @@ export class ChatController {
 		if (!filter)
 			filter = 'joined';
 
-		if (filter != 'joined' && filter != 'public' && filter != 'protected')
+		if (filter != 'joined' && filter != 'public' && filter != 'protected' && filter != 'all')
 			throw new BadRequestException('Invalid filter, must be "joined", "public" or "protected"');
 		return await this.chatService.getChats(userID, filter);
 	}

@@ -8,6 +8,7 @@ import { In, Not, Repository } from 'typeorm';
 import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
+import { JoinChatDto } from './join.dto';
 
 
 @Injectable()
@@ -92,6 +93,8 @@ export class ChatService {
 			chats = await this.getChatTypePublic(userID);
 		else if (filter === 'protected')
 			chats = await this.getChatTypePrivate(userID);
+		else if (filter === 'all')
+			 return await this.getChatTypeAll(userID);
 		else /* Joined */
 			chats = await this.getChatTypeJoined(userID);
 
@@ -108,6 +111,33 @@ export class ChatService {
 			delete chats[i].password;
 		}
 		return chats;
+	}
+
+	async joinChat(userID: number, dto: JoinChatDto) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: dto.chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (chat.type === ChatType.PRIVATE) {
+			throw new BadRequestException("Chat is private");
+		}
+
+		if (chat.type === ChatType.GROUP_PROTECTED) {
+			if (chat.password !== dto.password) {
+				throw new BadRequestException("Password is invalid.");
+			}
+		}
+
+		if (chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is already part of this chat");
+		}
+		chat.users.push(await this.userService.findUserById(userID));
+		return await this.chatRepo.save(chat);
 	}
 
 
@@ -254,7 +284,7 @@ export class ChatService {
 	}
 
 	/* Chat - Get Types */
-	async getChatTypeJoined(id: number): Promise<Chat[]> {
+	private async getChatTypeJoined(id: number): Promise<Chat[]> {
 		return await this.chatRepo.find({
 			relations: ['users'],
 			where: {
@@ -264,26 +294,39 @@ export class ChatService {
 			},
 		});
 	}
-	async getChatTypePublic(id: number): Promise<Chat[]> {
-		return await this.chatRepo.find({
+	private async getChatTypePublic(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
 			relations: ['users'],
 			where: {
 				type: ChatType.GROUP,
-				users: {
-					id: Not(id)
-				}
 			},
 		});
+
+		const filteredChats = chats.filter(chat => {
+			return !chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
 	}
-	async getChatTypePrivate(id: number): Promise<Chat[]> {
-		return await this.chatRepo.find({
+	private async getChatTypePrivate(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
 			relations: ['users'],
 			where: {
 				type: ChatType.GROUP_PROTECTED,
-				users: {
-					id: Not(id)
-				}
 			},
 		});
+
+		const filteredChats = chats.filter(chat => {
+			return !chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
+	}
+
+	private async getChatTypeAll(id: number) {
+		const payload = {
+			"joined": await this.getChats(id, 'joined'),
+			'public': await this.getChats(id, 'public'),
+			'protected': await this.getChats(id, 'protected'),
+		}
+		return payload;
 	}
 }
