@@ -55,11 +55,11 @@ export class AuthService {
 	/* Jwt */
 
 	createToken(user: User) {		
-		return {
+		return (
 			// expiresIn: 3600,
-			accessToken: this.jwtService.sign({ sub: user.id, oauthID: user.oauthID }),
+			this.jwtService.sign({ sub: user.id, oauthID: user.oauthID })
 			// user,
-		}
+		)
 
 
 	}
