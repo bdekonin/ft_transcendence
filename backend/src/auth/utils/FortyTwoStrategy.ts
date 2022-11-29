@@ -1,6 +1,7 @@
 import { ConsoleLogger, Inject, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from 'passport-42';
+import { User } from "src/entities/User.entity";
 import { AuthService } from "../auth.service";
 
 @Injectable()
