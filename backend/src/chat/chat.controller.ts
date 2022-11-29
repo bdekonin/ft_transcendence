@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
+import { MessageDto } from './message.dto';
 
 /* Private chat */
 /*
@@ -18,10 +20,7 @@ import { ChatService } from './chat.service';
 /*
 {
 	"name": "Group Chat Name",
-	"type": GROUP,
-	"users": [
-		'{userID}', # Only the creator of the chat
-	]
+	"type": GROUP
 }
 */
 
@@ -30,9 +29,6 @@ import { ChatService } from './chat.service';
 {
 	"name": "Group Chat Name",
 	"type": GROUP_PROTECTED,
-	"users": [
-		'{userID}', # Only the creator of the chat
-	]
 	"password": "password",
 }
 */
@@ -56,10 +52,13 @@ export class createChatDto {
 }
 
 @Controller('/chat/:userID/')
+@ApiTags('chat')
 export class ChatController {
 
 	constructor(private readonly chatService: ChatService) {}
 
+
+	/* Chat */
 	@Post('create')
 	async create(
 		@Param('userID', ParseIntPipe) userID: number,
@@ -68,6 +67,33 @@ export class ChatController {
 		return await this.chatService.createChat(userID, createDto);
 	}
 
+
+	/* Message */
+	@Post('message')
+	async sendMessage(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Body() messageDto: MessageDto,
+	) {
+		return await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
+	}
+
+	@Get('messages/:chatID')
+	async getMessages(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Param('chatID', ParseIntPipe) chatID: number,
+	) {
+		return await this.chatService.getMessages(chatID);
+	}
+
+	@Get('chats')
+	async getChats(@Param('userID', ParseIntPipe) userID: number) {
+		return await this.chatService.getChats(userID);
+	}
+
+
+
+
+	/* Temporary */
 	@Get('get')
 	get() {
 		return this.chatService.get();

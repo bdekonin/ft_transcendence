@@ -29,6 +29,7 @@ export class Chat {
 
 	@ManyToMany(() => User, (user) => user.chats, {
 		onDelete: 'CASCADE',
+		eager: true,
 	})
 	@JoinTable()
 	users: User[];
