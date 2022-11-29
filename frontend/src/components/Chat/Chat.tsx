@@ -24,10 +24,17 @@ const Chat: React.FC = () => {
 	
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
-	const [chats, setChats] = useState<Chat[]>([]);
 	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: ''});
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
+	
+	/* Chats */
+	const [joinedChats, setJoinedChats] = useState<Chat[]>([]);
+	const [publicChats, setPublicChats] = useState<Chat[]>([]);
+	const [protectedChats, setProtectedChats] = useState<Chat[]>([]);
+
+	/* Refresh */
+	const [pong, setPong] = useState('');
 
 	document.body.style.background = '#323232';
 
@@ -45,21 +52,24 @@ const Chat: React.FC = () => {
 	useEffect(() => {
 		if (!user)
 			return;
-		axios.get('http://localhost:3000/chat/' + user?.id + '/chats', { withCredentials: true })
+		axios.get('http://localhost:3000/chat/' + user?.id + '/chats?filter=all', { withCredentials: true })
 		.then(res => {
-			setChats(res.data);
+			setJoinedChats(res.data.joined);
+			setPublicChats(res.data.public);
+			setProtectedChats(res.data.protected);
 		})
 		.catch(err => {
 			navigate('/login');
 		});
-	}, [user]);
+	}, [user, pong]);
 
 	/* Setting the current chat after retrieving chats */
 	useEffect(() => {
-		if (chats.length != 0) {
-			setCurrentChat(chats[0]);
+		if (joinedChats.length != 0) {
+			if (pong == '')
+				setCurrentChat(joinedChats[0]);
 		}
-	}, [chats]);
+	}, [joinedChats, pong]);
 
 	/* Retrieving messages of the currentChat */
 	useEffect(() => {
@@ -73,20 +83,47 @@ const Chat: React.FC = () => {
 			navigate('/login');
 		});
 
-	}, [currentChat]);
+	}, [currentChat, pong]);
 
+	function joinPublic(chat: Chat) {
+		const payload = {
+			chatID: chat.id
+		}
+		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
+		.then(res => {
+			setPong(new Date().toISOString());
+		})
+		.catch(err => {
+			navigate('/login');
+		});
+	}
+	function joinProtected(chat: Chat) {
+		const payload = {
+			chatID: chat.id,
+			password: prompt('Please enter the password')
+		}
+		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
+		.then(res => {
+			setPong(new Date().toISOString());
+			alert('Success');
+		})
+		.catch(err => {
+			if (err.response.data.statusCode === 418)
+				navigate('/login');
+			alert(err.response.data.message)
+		});
+	}
 
 	function renderUsers() {
 
 	}
-
 	function renderRooms() {
 		return (
 			<div className="rooms">
 				<h2>Rooms</h2>
 				<ul>
 					{
-						chats.map(chat => {
+						joinedChats.map(chat => {
 							return (
 								<li key={chat.id}>
 									<p className="room-name-clickable" onClick={() => setCurrentChat(chat)}>{chat.name}</p>
@@ -97,26 +134,36 @@ const Chat: React.FC = () => {
 				</ul>
 				<h3>Public Rooms</h3>
 				<ul>
-					<li><p className='room-name-clickable'>One</p></li>
-					<li><p className='room-name-clickable'>Two</p></li>
-					<li><p className='room-name-clickable'>Three</p></li>
-					<li><p className='room-name-clickable'>Four</p></li>
+					{
+						publicChats.map(chat => {
+							return (
+								<li key={chat.id}>
+									<p className="room-name-clickable" onClick={() => joinPublic(chat)}>{chat.name}</p>
+								</li>
+							);
+						})
+					}
 				</ul>
 
 				<h3>Private Rooms</h3>
 				<ul>
-					<li><p className='room-name-clickable'>One</p></li>
-					<li><p className='room-name-clickable'>Two</p></li>
-					<li><p className='room-name-clickable'>Three</p></li>
-					<li><p className='room-name-clickable'>Four</p></li>
+					{
+						protectedChats.map(chat => {
+							return (
+								<li key={chat.id}>
+									<p className="room-name-clickable" onClick={() => joinProtected(chat)}>{chat.name}</p>
+								</li>
+							);
+						})
+					}
 				</ul>
 			</div>
 		)
 	}
-	function renderMesseges() {
+	function renderMessages() {
 		return (
 			<div className="messages">
-				<h2>Chat Messages</h2>
+				<h2 className='chatName'>{currentChat.name}</h2>
 				{
 					messages.map((message, index)=> {
 						return (
@@ -132,23 +179,6 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-
-	function postMessage() {
-		const payload = {
-			"chatID": currentChat.id,
-			"message": chatBoxMsg
-		}
-
-		axios.post('http://localhost:3000/chat/' + user?.id + '/message', payload, { withCredentials: true })
-		.then(res => {
-			setCurrentChat(currentChat);
-		})
-		.catch(err => {
-			navigate('/login');
-		});
-		// Call socket!!
-	}
-
 	function renderChatBox() {
 		return (
 			<div className="chat-box">
@@ -161,17 +191,34 @@ const Chat: React.FC = () => {
 				</input>
 				<button
 					type="submit"
-					onClick={() => postMessage()}>
+					onClick={(event) => postMessage(event)}>
 						Send
 				</button>
 			</div>
 		)
 	}
 
+	function postMessage(event:any) {
+		console.log('client', event);
+		const payload = {
+			"chatID": currentChat.id,
+			"message": chatBoxMsg
+		}
+	
+		axios.post('http://localhost:3000/chat/' + user?.id + '/message', payload, { withCredentials: true })
+		.then(res => {
+			setPong(new Date().toISOString());
+			setChatBoxMsg('');
+		})
+		.catch(err => {
+			navigate('/login');
+		});
+	}
+	
 	return (
 		<div className="main-container">
 			{renderRooms()}
-			{renderMesseges()}
+			{renderMessages()}
 			{renderChatBox()}
 		</div>
 	);
