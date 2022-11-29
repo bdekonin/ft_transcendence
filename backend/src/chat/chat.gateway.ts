@@ -18,7 +18,8 @@ import { User } from 'src/entities/User.entity';
 			'http://localhost:3006',
 		],
 		credentials: true,
-	}
+	},
+	// transports: ['websocket'],
 })
 export class chatGateway {
 	constructor (
@@ -30,16 +31,18 @@ export class chatGateway {
 	@WebSocketServer()
 	server: Server;
 
-	handleConnection (client: any, ...args: any[]) {
+	async handleConnection (client: any, ...args: any[]) {
 		console.log('client connected', client.id);
-		client.id = 'Rowan:' + client.id;
+		const user = await this.findUser(client)
+		console.log('user', user);
 	}
 
-	@SubscribeMessage('ping')
-	async ping (client: any, payload: any): Promise<WsResponse<any>> {
-		this.server.emit('pang', { user: 'Bobbie', message: 'Hello there!' });
-		return { event: 'pong', data: payload };
+	async newFriendRequest (data: any) {
+		console.log('newFriendRequest', data);
 	}
+
+
+
 
 	private parseCookies (cookies: string) {
 		const list = {};
@@ -53,6 +56,9 @@ export class chatGateway {
 	private async findUser (client: any): Promise<User> {
 		const cookies = this.parseCookies(client.handshake.headers.cookie);
 		const user = await this.authService.verifyJWT(cookies['jwt'])
+		// if (!user) {
+		// 	throw new Error('User not found');
+		// }
 		return user;
 	}
 }
