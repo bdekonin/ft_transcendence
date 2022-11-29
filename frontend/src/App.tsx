@@ -9,13 +9,19 @@ import Friends from "./components/Friends/Friends";
 import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
 import Settings from "./components/Settings/Settings";
+import React from "react";
+
+interface socketInterface {
+	socket: any;
+}
 
 
+export const socketContext = React.createContext<socketInterface | null>(null);
 
 const App:React.FC = () =>
 {
-
 	document.body.style.background = "#474E68";
+
 	return (
 		<Router>
 			<Routes>
