@@ -13,6 +13,7 @@ import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { Membership } from 'src/entities/Membership.entity';
 import { MembershipService } from 'src/user/membership/membership.service';
+import { chatGateway } from './chat.gateway';
 
 @Module({
 	imports: [
@@ -26,6 +27,7 @@ import { MembershipService } from 'src/user/membership/membership.service';
 		ChatController,
 	],
 	providers: [
+		chatGateway,
 		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
