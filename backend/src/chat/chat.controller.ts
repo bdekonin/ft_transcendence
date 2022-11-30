@@ -5,7 +5,6 @@ import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
 import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
-
 /* Private chat */
 /*
 {
@@ -56,7 +55,9 @@ export class createChatDto {
 @ApiTags('chat')
 export class ChatController {
 
-	constructor(private readonly chatService: ChatService) {}
+	constructor(
+		private readonly chatService: ChatService
+		) {}
 
 
 	/* Chat */
@@ -75,7 +76,8 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() messageDto: MessageDto,
 	) {
-		return await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
+		const response = await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
+		return response;
 	}
 
 	@Get('messages/:chatID')

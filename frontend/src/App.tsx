@@ -10,14 +10,15 @@ import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
 import Settings from "./components/Settings/Settings";
 import Chat from "./components/Chat/Chat";
-
 import React from "react";
+import { socket, SocketContext } from "./context/socket";
 
 const App:React.FC = () =>
 {
 	document.body.style.background = "#474E68";
 
 	return (
+		<SocketContext.Provider value={socket}>
 		<Router>
 			<Routes>
 				<Route path='/' element={<Home/>}/>
@@ -30,6 +31,7 @@ const App:React.FC = () =>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>
+		</SocketContext.Provider>
 	);
 }
 

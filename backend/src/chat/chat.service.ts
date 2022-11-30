@@ -38,7 +38,7 @@ export class ChatService {
 	}
 
 	/* Message */
-	async sendMessage(chatID: number, userID: number, message: string) {
+	async sendMessage(chatID: number, userID: number, message: string): Promise<Message> {
 		const chat = await this.chatRepo.findOne ({
 			relations: ['users'],
 			where: {
@@ -71,6 +71,11 @@ export class ChatService {
 
 	async getMessages(chatID: number) {
 		const chat = await this.chatRepo.findOne({
+			order: {
+				messages: {
+					id: 'DESC'
+				}
+			},
 			relations: ['messages'],
 			where: {
 				id: chatID
@@ -79,6 +84,11 @@ export class ChatService {
 		if (!chat) {
 			throw new BadRequestException("Chat does not exist");
 		}
+		const output = chat.messages.map(message => {
+				return {
+					id: message.id,
+				}
+			});
 		return chat.messages;
 	}
 
@@ -152,6 +162,9 @@ export class ChatService {
 		}
 		if (!chat.users.some(user => user.id === userID)) {
 			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.users.length === 2 && chat.type === ChatType.PRIVATE) {
+			return await this.chatRepo.delete(chatID);
 		}
 		if (chat.users.length === 1) {
 			return await this.chatRepo.delete(chatID);

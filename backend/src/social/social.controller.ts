@@ -5,7 +5,6 @@ import { Friend } from 'src/entities/Friend.entity';
 import { UserRequest } from 'src/user/user.decorator';
 import { User } from 'src/entities/User.entity';
 import { JwtAuthGuard } from 'src/auth/utils/jwt-auth.guard';
-import { chatGateway } from 'src/chat/chat.gateway';
 
 @ApiTags('social')
 @Controller('social')
@@ -13,7 +12,6 @@ import { chatGateway } from 'src/chat/chat.gateway';
 export class SocialController {
 	constructor(
 		private socialService: SocialService,
-		private chatGateway: chatGateway,
 	) {}
 
 	// Socials
@@ -28,7 +26,6 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		this.chatGateway.server.emit('social-refresh');
 		return await this.socialService.follow(user.id, otherID);
 	}
 
@@ -43,7 +40,6 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		this.chatGateway.server.emit('social-refresh');
 		return await this.socialService.unfollow(user.id, otherID);
 	}
 
@@ -58,7 +54,6 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		this.chatGateway.server.emit('social-refresh');
 		return await this.socialService.block(user.id, otherID);
 	}
 
@@ -73,7 +68,6 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		this.chatGateway.server.emit('social-refresh');
 		return await this.socialService.unblock(user.id, otherID);
 	}
 

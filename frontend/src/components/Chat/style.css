@@ -22,7 +22,18 @@ h1, h2, h3, h4, h5 {
 .messages {
   float: left;
   width: 80%;
+
+  /* Scrollable */
+  overflow-y: scroll;
+  height: 500px;
+  margin-bottom: 10px;
 }
+
+.messages h2 {
+  /* dont move */
+  position: sticky;
+}
+
 
 .rooms {
   padding: 0;
