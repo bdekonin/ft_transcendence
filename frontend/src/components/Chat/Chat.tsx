@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 import './style.css'
+import Socket from '../../Socket';
+import { socket } from '../../App';
 
 interface User {
 	id: number;
@@ -51,6 +53,11 @@ const Chat: React.FC = () => {
 		.catch(err => {
 			navigate('/login');
 		});
+
+		return () => {
+			console.log('unmounting');
+		}
+
 	}, []);
 	/* Retrieving User's Chats */
 	useEffect(() => {
@@ -72,8 +79,13 @@ const Chat: React.FC = () => {
 			if (pong == '')
 				setCurrentChat(joinedChats[0]);
 		}
+		else {
+			if (pong == '')
+				setCurrentChat({id: 0, name: '', users: []});
+		}
 	}, [joinedChats, pong]);
 	/* Retrieving messages and avatars of the currentChat */
+
 	useEffect(() => {
 		if (currentChat.id == 0)
 			return;
@@ -134,9 +146,11 @@ const Chat: React.FC = () => {
 				<button onClick={() => {
 					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
 					.then(res => {
-						setPong(new Date().toISOString());
+						socket.socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
+						setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
 					})
 					.catch(err => {
+						console.log('err', err);
 						if (err.response.data.statusCode === 418)
 							navigate('/login');
 						alert(err.response.data.message)
@@ -214,6 +228,9 @@ const Chat: React.FC = () => {
 		)
 	}
 	function renderChatBox() {
+		if (currentChat.id == 0) {
+			return ;
+		}
 		return (
 			<div className="chat-box">
 				<input

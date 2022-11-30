@@ -12,6 +12,9 @@ import Settings from "./components/Settings/Settings";
 import Chat from "./components/Chat/Chat";
 
 import React from "react";
+import Socket from "./Socket";
+
+export const socket = new Socket();
 
 const App:React.FC = () =>
 {
