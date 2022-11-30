@@ -14,6 +14,7 @@ import { SocialController } from "src/social/social.controller";
 import { SocialService } from "src/social/social.service";
 import { AuthService } from "src/auth/auth.service";
 import { JwtService } from '@nestjs/jwt';
+import { chatGateway } from "src/chat/chat.gateway";
 
 @Module({
 	imports: [
@@ -35,7 +36,8 @@ import { JwtService } from '@nestjs/jwt';
 		JwtService,
 		UserService,
 		MembershipService,
-		SocialService
+		SocialService,
+		chatGateway
 	]
 })
 export class UserModule {}

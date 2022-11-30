@@ -9,17 +9,19 @@ import Friends from "./components/Friends/Friends";
 import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
 import Settings from "./components/Settings/Settings";
+import Chat from "./components/Chat/Chat";
 
-
+import React from "react";
 
 const App:React.FC = () =>
 {
-
 	document.body.style.background = "#474E68";
+
 	return (
 		<Router>
 			<Routes>
 				<Route path='/' element={<Home/>}/>
+				<Route path='/chat' element={<Chat/>}/>
 				<Route path='/login' element={<Login />}/>
 				<Route path='/profile' element={<Profile />}/>
 				<Route path='/friends' element={<Friends />}/>

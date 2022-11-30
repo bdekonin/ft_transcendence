@@ -20,10 +20,10 @@ export class JwtAuthGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 
 		const token = request.cookies.jwt;
-		if (token == undefined || token.accessToken == undefined) {
+		if (token == undefined || token == '') {
 			throw new UnauthorizedException('No token provided');
 		}
-		const obj = await this.authService.verifyJWT(token.accessToken);
+		const obj = await this.authService.verifyJWT(token);
 		if (!obj)
 			throw new UnauthorizedException('Object is undefined');
 
@@ -51,10 +51,10 @@ export class JwtAuthGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 
 		const token = request.cookies.jwt;
-		if (token == undefined || token.accessToken == undefined) {
+		if (token == undefined || token == '') {
 			throw new UnauthorizedException('No token provided');
 		}
-		const obj = await this.authService.verifyJWT(token.accessToken);
+		const obj = await this.authService.verifyJWT(token);
 		if (!obj)
 			throw new UnauthorizedException('Object is undefined');
 

@@ -4,9 +4,11 @@ import { Chat, ChatType } from 'src/entities/Chat.entity';
 import { User } from 'src/entities/User.entity';
 import { UserService } from 'src/user/user.service';
 import { UserNotFoundException } from 'src/utils/exceptions';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
+import { Message } from 'src/entities/Message.entity';
+import { JoinChatDto } from './join.dto';
 
 
 @Injectable()
@@ -14,6 +16,7 @@ export class ChatService {
 	
 	constructor(
 		@InjectRepository(Chat) public chatRepo: Repository<Chat>,
+		@InjectRepository(Message) public messageRepo: Repository<Message>,
 		private userService: UserService,
 		@Inject(CACHE_MANAGER) private cacheManager: Cache,
 	) { }
@@ -34,6 +37,128 @@ export class ChatService {
 		return await this.cacheManager.set('key', 'value', seconds);
 	}
 
+	/* Message */
+	async sendMessage(chatID: number, userID: number, message: string) {
+		const chat = await this.chatRepo.findOne ({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (message.length > 1000) {
+			throw new BadRequestException("Message cannot be longer then 1000 characters");
+		}
+
+		const sender = await this.userService.findUserById(userID);
+		if (!sender) {
+			throw new UserNotFoundException();
+		}
+
+		const messageEntity = this.messageRepo.create({
+			message: message,
+			sender: sender,
+			parent: chat,
+		});
+		return await this.messageRepo.save(messageEntity);
+	}
+
+	async getMessages(chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['messages'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		return chat.messages;
+	}
+
+	async getChats(userID: number, filter: string) {
+		var chats: Chat[];
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new UserNotFoundException();
+		}
+
+		if (filter === 'public')
+			chats = await this.getChatTypePublic(userID);
+		else if (filter === 'protected')
+			chats = await this.getChatTypePrivate(userID);
+		else if (filter === 'all')
+			 return await this.getChatTypeAll(userID);
+		else /* Joined */
+			chats = await this.getChatTypeJoined(userID);
+
+		chats.map(chat => {
+			if (chat.name == null) {
+				if (chat.users[0].id == userID) {
+					chat.name = chat.users[0].username + ', ' + chat.users[1].username;
+				} else {
+					chat.name = chat.users[1].username + ', ' + chat.users[0].username;
+				}
+			}
+		});
+		for (let i = 0; i < chats.length; i++) {
+			delete chats[i].password;
+		}
+		return chats;
+	}
+
+	async joinChat(userID: number, dto: JoinChatDto) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: dto.chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (chat.type === ChatType.PRIVATE) {
+			throw new BadRequestException("Chat is private");
+		}
+
+		if (chat.type === ChatType.GROUP_PROTECTED) {
+			if (chat.password !== dto.password) {
+				throw new BadRequestException("Password is invalid.");
+			}
+		}
+
+		if (chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is already part of this chat");
+		}
+		chat.users.push(await this.userService.findUserById(userID));
+		return await this.chatRepo.save(chat);
+	}
+
+	async leaveChat(userID: number, chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.users.length === 1) {
+			return await this.chatRepo.delete(chatID);
+		}
+		chat.users = chat.users.filter(user => user.id !== userID);
+		return await this.chatRepo.save(chat);
+	}
 
 
 
@@ -41,8 +166,7 @@ export class ChatService {
 
 
 
-
-
+	/* Chat */
 	async createChat(userID: number, dto: createChatDto): Promise<Chat> {
 		var chat;
 		if (dto.type === ChatType.PRIVATE) {
@@ -54,11 +178,16 @@ export class ChatService {
 		} else {
 			throw new BadRequestException("Invalid chat type");
 		}
-		this.chatRepo.create(chat);
-		return await this.chatRepo.save(chat);
+		const newChat = this.chatRepo.create({
+			type: chat.type,
+			name: chat.name,
+			users: chat.users,
+			password: chat.password,
+		});
+		return await this.chatRepo.save(newChat);
 	}
 
-	/* Helper functions - Create Chat */
+	/* Chat - Helper Functions */
 	private async createPrivateChat(userID: number, dto: createChatDto) {
 		const { name, type, users, password } = dto;
 
@@ -88,7 +217,7 @@ export class ChatService {
 		const newChat = {
 			name: null,
 			type,
-			users: await this.appendUsersToChat(users),
+			users: [await this.userService.findUserById(users[0]), await this.userService.findUserById(users[1])],
 			password: null,
 		};
 		return newChat;
@@ -97,14 +226,8 @@ export class ChatService {
 	private async createGroupChat(userID: number, dto: createChatDto) {
 		const { name, type, users, password } = dto;
 
-		if (!name || !type || !users || password) {
+		if (!name || !type || users || password) {
 			throw new BadRequestException("Invalid group chat request");
-		}
-		if (users.length != 1) {
-			throw new BadRequestException("Group chat must have exactly 1 unique user");
-		}
-		if (!users.includes(userID)) {
-			throw new BadRequestException("Group chat must include the user who is creating it");
 		}
 		if (name.length < 3) {
 			throw new BadRequestException("Group chat name must be at least 3 characters long");
@@ -116,7 +239,7 @@ export class ChatService {
 		const newChat = {
 			name,
 			type,
-			users: await this.appendUsersToChat(users),
+			users: [await this.userService.findUserById(userID)],
 			password: null,
 		};
 		return newChat;
@@ -125,14 +248,8 @@ export class ChatService {
 	private async createProtectedGroupChat(userID: number, dto: createChatDto) {
 		const { name, type, users, password } = dto;
 
-		if (!name || !type || !users || !password) {
+		if (!name || !type || users || !password) {
 			throw new BadRequestException("Invalid protected group chat request");
-		}
-		if (users.length != 1) {
-			throw new BadRequestException("Protected group chat must have exactly 1 unique user");
-		}
-		if (!users.includes(userID)) {
-			throw new BadRequestException("Protected group chat must include the user who is creating it");
 		}
 		if (name.length < 3) {
 			throw new BadRequestException("Protected group chat name must be at least 3 characters long");
@@ -146,21 +263,18 @@ export class ChatService {
 		if (password.length > 20) {
 			throw new BadRequestException("Protected group chat password cannot be longer then 20 characters");
 		}
-		if (password.match(/^[a-zA-Z0-9]+$/)) {
-			throw new BadRequestException("Protected group chat password must contain only letters and numbers");
-		}
+		// if (password.match(/^[a-zA-Z0-9]+$/)) {
+		// 	throw new BadRequestException("Protected group chat password must contain only letters and numbers");
+		// }
 
 		const newChat = {
 			name,
 			type,
-			users: await this.appendUsersToChat(users),
+			users: [await this.userService.findUserById(userID)],
 			password,
 		};
 		return newChat;
 	}
-	
-
-
 
 	/* Helper functions */
 	private hasDuplicates(array: any[]): boolean {
@@ -176,19 +290,6 @@ export class ChatService {
 		}
 		return true;
 	}
-
-	private async appendUsersToChat(users: number[]): Promise<User[]> {
-		const usersArray = [];
-		for (let i = 0; i < users.length; i++) {
-			const user = await this.userService.findUserById(users[i]);
-			if (!user) {
-				throw new UserNotFoundException();
-			}
-			usersArray.push(user);
-		}
-		return usersArray;
-	}
-
 	private async doesPrivateExist(idOne: number, idTwo: number): Promise<Chat> {
 		return await this.chatRepo.findOne({
 			relations: ['users'],
@@ -200,5 +301,52 @@ export class ChatService {
 				},
 			}
 		});
+	}
+
+	/* Chat - Get Types */
+	private async getChatTypeJoined(id: number): Promise<Chat[]> {
+		return await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				users: {
+					id: id
+				}
+			},
+		});
+	}
+	private async getChatTypePublic(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.GROUP,
+			},
+		});
+
+		const filteredChats = chats.filter(chat => {
+			return !chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
+	}
+	private async getChatTypePrivate(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.GROUP_PROTECTED,
+			},
+		});
+
+		const filteredChats = chats.filter(chat => {
+			return !chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
+	}
+
+	private async getChatTypeAll(id: number) {
+		const payload = {
+			"joined": await this.getChats(id, 'joined'),
+			'public': await this.getChats(id, 'public'),
+			'protected': await this.getChats(id, 'protected'),
+		}
+		return payload;
 	}
 }
