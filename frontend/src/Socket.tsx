@@ -6,7 +6,6 @@ export class Socket {
 		const socket = io('ws://localhost:3001', {
 			withCredentials: true,
 		});
-		// socket.connect();
 		this.socket = socket;
 	}
 
