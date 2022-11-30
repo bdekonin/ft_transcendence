@@ -14,7 +14,6 @@ import { Chat } from './entities/Chat.entity';
 import { Message } from './entities/Message.entity';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
-import { socketGateway } from './gateway/socket.gateway';
 import { socketModule } from './gateway/socket.Module';
 
 @Module({

@@ -13,8 +13,6 @@ import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { Membership } from 'src/entities/Membership.entity';
 import { MembershipService } from 'src/user/membership/membership.service';
-import { socketGateway } from 'src/gateway/socket.gateway';
-import { socketModule } from 'src/gateway/socket.Module';
 
 @Module({
 	imports: [
@@ -35,8 +33,7 @@ import { socketModule } from 'src/gateway/socket.Module';
 		},
 		JwtService,
 		UserService,
-		ChatService,
-		socketGateway,
+		ChatService
 	],
 })
 export class ChatModule {}

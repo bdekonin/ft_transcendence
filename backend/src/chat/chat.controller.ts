@@ -5,7 +5,6 @@ import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
 import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
-import { socketGateway } from 'src/gateway/socket.gateway';
 /* Private chat */
 /*
 {
@@ -57,8 +56,7 @@ export class createChatDto {
 export class ChatController {
 
 	constructor(
-		private readonly chatService: ChatService,
-		private readonly socketGateway: socketGateway,
+		private readonly chatService: ChatService
 		) {}
 
 
