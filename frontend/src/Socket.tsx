@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { callbackify } from "util";
 
 export class Socket {
 	public socket;
@@ -9,12 +10,12 @@ export class Socket {
 		this.socket = socket;
 	}
 
-	listenOn(listen: string) {
-		this.socket.on(listen, (e) => {console.log(e)});
+	listenOn(listen: string, callback: any) {
+		this.socket.on(listen, callback);
 	}
 
 	listenOff(listen: string) {
-		this.socket.off(listen, () => {console.log('stopped listening on ' + listen)});
+		this.socket.off(listen);
 	}
 }
 
