@@ -13,13 +13,6 @@ import Chat from "./components/Chat/Chat";
 
 import React from "react";
 
-interface socketInterface {
-	socket: any;
-}
-
-
-export const socketContext = React.createContext<socketInterface | null>(null);
-
 const App:React.FC = () =>
 {
 	document.body.style.background = "#474E68";
