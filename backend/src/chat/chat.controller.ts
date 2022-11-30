@@ -79,7 +79,6 @@ export class ChatController {
 		@Body() messageDto: MessageDto,
 	) {
 		const response = await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
-		this.socketGateway.emitNewChatMessage(userID, messageDto);
 		return response;
 	}
 
