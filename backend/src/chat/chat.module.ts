@@ -13,12 +13,14 @@ import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { Membership } from 'src/entities/Membership.entity';
 import { MembershipService } from 'src/user/membership/membership.service';
+import { socketGateway } from 'src/gateway/socket.gateway';
+import { socketModule } from 'src/gateway/socket.Module';
 
 @Module({
 	imports: [
+		forwardRef(() => AppModule),
 		UserModule, ChatModule,
 		TypeOrmModule.forFeature([Chat, User, Message, Membership]),
-		forwardRef(() => AppModule),
 		CacheModule.register(),
 	],
 	controllers: [
@@ -34,6 +36,7 @@ import { MembershipService } from 'src/user/membership/membership.service';
 		JwtService,
 		UserService,
 		ChatService,
+		socketGateway,
 	],
 })
 export class ChatModule {}

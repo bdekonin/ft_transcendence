@@ -38,7 +38,7 @@ export class ChatService {
 	}
 
 	/* Message */
-	async sendMessage(chatID: number, userID: number, message: string) {
+	async sendMessage(chatID: number, userID: number, message: string): Promise<Message> {
 		const chat = await this.chatRepo.findOne ({
 			relations: ['users'],
 			where: {

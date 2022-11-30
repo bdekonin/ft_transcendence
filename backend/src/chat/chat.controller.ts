@@ -5,7 +5,7 @@ import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
 import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
-
+import { socketGateway } from 'src/gateway/socket.gateway';
 /* Private chat */
 /*
 {
@@ -56,7 +56,10 @@ export class createChatDto {
 @ApiTags('chat')
 export class ChatController {
 
-	constructor(private readonly chatService: ChatService) {}
+	constructor(
+		private readonly chatService: ChatService,
+		private readonly socketGateway: socketGateway,
+		) {}
 
 
 	/* Chat */
@@ -75,7 +78,9 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() messageDto: MessageDto,
 	) {
-		return await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
+		const response = await this.chatService.sendMessage(messageDto.chatID, userID, messageDto.message);
+		this.socketGateway.emitNewChatMessage(userID, messageDto);
+		return response;
 	}
 
 	@Get('messages/:chatID')
