@@ -12,6 +12,7 @@ interface User {
 interface Chat {
 	id: number;
 	name: string;
+	users: User[];
 }
 interface Message {
 	id: number;
@@ -19,12 +20,16 @@ interface Message {
 	sender: User;
 	createdAt: string;
 }
+interface Avatar {
+	id: number,
+	avatar: string
+}
 
 const Chat: React.FC = () => {
 	
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
-	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: ''});
+	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: []});
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
 	
@@ -47,7 +52,6 @@ const Chat: React.FC = () => {
 			navigate('/login');
 		});
 	}, []);
-
 	/* Retrieving User's Chats */
 	useEffect(() => {
 		if (!user)
@@ -62,7 +66,6 @@ const Chat: React.FC = () => {
 			navigate('/login');
 		});
 	}, [user, pong]);
-
 	/* Setting the current chat after retrieving chats */
 	useEffect(() => {
 		if (joinedChats.length != 0) {
@@ -70,8 +73,7 @@ const Chat: React.FC = () => {
 				setCurrentChat(joinedChats[0]);
 		}
 	}, [joinedChats, pong]);
-
-	/* Retrieving messages of the currentChat */
+	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
 		if (currentChat.id == 0)
 			return;
@@ -82,7 +84,6 @@ const Chat: React.FC = () => {
 		.catch(err => {
 			navigate('/login');
 		});
-
 	}, [currentChat, pong]);
 
 	function joinPublic(chat: Chat) {
@@ -116,13 +117,43 @@ const Chat: React.FC = () => {
 
 	function renderUsers() {
 
+		return (
+			<div className='user-icons'>
+				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
+				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
+				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
+				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
+				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
+
+			</div>
+		)
+	}
+	function renderActionButtons() {
+		return (
+			<div className='action-buttons'>
+				<button onClick={() => {
+					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
+					.then(res => {
+						setPong(new Date().toISOString());
+					})
+					.catch(err => {
+						if (err.response.data.statusCode === 418)
+							navigate('/login');
+						alert(err.response.data.message)
+					});
+				}}>Leave Current Chat</button>
+			</div>
+		)
 	}
 	function renderRooms() {
 		return (
 			<div className="rooms">
-				<h2>Rooms</h2>
+				<h3>Users in this chat</h3>
+				{renderUsers()}
+				<h3>Joined Rooms</h3>
 				<ul>
 					{
+						joinedChats.length == 0 ? <p>No joined rooms</p> :
 						joinedChats.map(chat => {
 							return (
 								<li key={chat.id}>
@@ -135,6 +166,7 @@ const Chat: React.FC = () => {
 				<h3>Public Rooms</h3>
 				<ul>
 					{
+						publicChats.length == 0 ? <p>No public rooms</p> :
 						publicChats.map(chat => {
 							return (
 								<li key={chat.id}>
@@ -144,10 +176,10 @@ const Chat: React.FC = () => {
 						})
 					}
 				</ul>
-
 				<h3>Private Rooms</h3>
 				<ul>
 					{
+						protectedChats.length == 0 ? <p>No private rooms</p> :
 						protectedChats.map(chat => {
 							return (
 								<li key={chat.id}>
@@ -157,6 +189,8 @@ const Chat: React.FC = () => {
 						})
 					}
 				</ul>
+				<h3>Action Buttons</h3>
+				{renderActionButtons()}
 			</div>
 		)
 	}
