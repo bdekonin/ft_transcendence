@@ -1,10 +1,10 @@
+import { useEffect, useState , useContext } from 'react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 import './style.css'
-import Socket from '../../Socket';
-import { socket } from '../../App';
+import { SocketContext } from '../../context/socket';
+import { Socket } from 'socket.io-client';
 
 interface User {
 	id: number;
@@ -30,6 +30,7 @@ interface Avatar {
 
 const Chat: React.FC = () => {
 	
+	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: [], unread: false});
@@ -47,12 +48,10 @@ const Chat: React.FC = () => {
 	const [refreshMessages, setRefreshMessages] = useState('');
 
 	document.body.style.background = '#323232';
-
-	socket.listenOn('chat/new-message', () => {
+	socket.on('chat/message', () => {
 		console.log('new message!!');
 		setRefreshMessages(new Date().toISOString());
-	});
-
+	})
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -61,10 +60,9 @@ const Chat: React.FC = () => {
 		.catch(err => {
 			navigate('/login');
 		});
-
 		return () => {
 			console.log('unmounting');
-			socket.listenOff('pong');
+			socket.off('chat/new-message');
 		}
 
 	}, []);
@@ -93,11 +91,16 @@ const Chat: React.FC = () => {
 		else {
 			if (pong == '')
 				setCurrentChat(joinedChats[0]);
-			socket.socket.emit('chat/join-multiple', {
-				chatIDs: joinedChats.map(chat => chat.id)
-			});
 		}
 	}, [joinedChats, pong]);
+
+	useEffect(() => {
+		if (currentChat.id == 0)
+			return;
+		socket.emit('chat/join-multiple', {
+			chatIDs: joinedChats.map(chat => chat.id)
+		});
+	}, [joinedChats]);
 
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
@@ -163,7 +166,7 @@ const Chat: React.FC = () => {
 				<button onClick={() => {
 					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
 					.then(res => {
-						socket.socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
+						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
 						setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
 					})
 					.catch(err => {
@@ -269,10 +272,12 @@ const Chat: React.FC = () => {
 	function postMessage(event:any) {
 		console.log('client', event);
 		const payload = {
+			"senderID": user?.id,
 			"chatID": currentChat.id,
 			"message": chatBoxMsg
 		}
-		socket.socket.emit('chat/new-chat', payload);
+		console.log('Emitting message', payload);
+		socket.emit('chat/new-chat', payload);
 	}
 	
 	return (

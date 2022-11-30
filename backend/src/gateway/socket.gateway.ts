@@ -5,9 +5,10 @@ import {
 	WebSocketServer,
   } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { MessageDto } from 'src/chat/message.dto';
 import { ChatService } from 'src/chat/chat.service';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 class verifyUserDto {
 	sub: number; /* user id */
@@ -46,7 +47,8 @@ export class socketGateway {
 	/* List of current users */
 	connections: UserSocket[] = [];
 
-	async handleConnection (client: any, ...args: any[]) {
+	async handleConnection (client: Socket, ...args: any[]) {
+		// console.log('client', client.rooms);
 		const user = await this.findUser(client)
 		if (user) {
 			this.connections.push({
@@ -54,10 +56,13 @@ export class socketGateway {
 				socketID: client.id,
 			});
 		}
+		client.rooms.forEach((room) => {
+			console.log('room', room);
+		});
 		console.log('Connections', this.connections);
 	}
 
-	async handleDisconnect (client: any) {
+	async handleDisconnect (client: Socket) {
 		const user = await this.findUser(client)
 		this.connections = this.connections.filter((connection) => {
 			return connection.userID !== user?.sub;
@@ -98,36 +103,28 @@ export class socketGateway {
 		const user = await this.findUser(client)
 		// console.log('user', user);
 		payload.chatIDs.forEach((chatID: string) => {
+			console.log('client ' + client.id + ' joining chat ' + chatID);
 			client.join('chat:' + chatID);
-			console.log('Joining chat: ', chatID);
 		});
-		// client.emit('chat/join', {
-		// 	chatID: payload.chatID,
-		// 	userID: user.sub,
-		// });
 	}
 
 	@SubscribeMessage('chat/leave')
 	async handleLeaveChat (client: any, payload: any) {
 		console.log('leave chat', payload);
-		// client.to 
-		// const user = await this.findUser(client)
-		// console.log('user', user);
-		// client.leave(payload.chatID);
-		// client.emit('chat/leave', {
-		// 	chatID: payload.chatID,
-		// 	userID: user.sub,
-		// });
 	}
 	
 	@SubscribeMessage('chat/new-chat')
 	async emitNewChatMessage(client: any, payload: MessageDto) {
+		console.log('Recieved emit', new Date().valueOf().toString());
 		const userID = this.connections.find((connection) => {
 			return connection.socketID === client.id;
 		})?.userID;
+		if (userID != payload.senderID) {
+			console.log('User ID does not match sender ID');
+			return;
+		}
 		this.chatService.sendMessage(payload.chatID, userID, payload.message);
-		console.log('emit chat:', payload.chatID , payload);
-		this.server.to('chat:' + payload.chatID).emit('chat/new-message', payload);
+		this.server.to('chat:1').emit('chat/message', payload);
 	}
 
 
