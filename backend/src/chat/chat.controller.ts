@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ChatType } from 'src/entities/Chat.entity';
@@ -92,6 +92,14 @@ export class ChatController {
 		@Body() dto: JoinChatDto,
 	) {
 		return await this.chatService.joinChat(userID, dto);
+	}
+
+	@Delete('leave/:chatID')
+	async deleteChat(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Param('chatID', ParseIntPipe) chatID: number,
+	) {
+		return await this.chatService.leaveChat(userID, chatID);
 	}
 
 	@Get('chats')

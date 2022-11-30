@@ -140,6 +140,26 @@ export class ChatService {
 		return await this.chatRepo.save(chat);
 	}
 
+	async leaveChat(userID: number, chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.users.length === 1) {
+			return await this.chatRepo.delete(chatID);
+		}
+		chat.users = chat.users.filter(user => user.id !== userID);
+		return await this.chatRepo.save(chat);
+	}
+
 
 
 
