@@ -34,7 +34,9 @@ export class Chat {
 	@JoinTable()
 	users: User[];
 	
-	@OneToMany(() => Message, (message) => message.parent)
+	@OneToMany(() => Message, (message) => message.parent, {
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	messages: Message[];
 

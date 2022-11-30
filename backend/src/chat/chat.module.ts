@@ -13,13 +13,12 @@ import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { Membership } from 'src/entities/Membership.entity';
 import { MembershipService } from 'src/user/membership/membership.service';
-import { chatGateway } from './chat.gateway';
 
 @Module({
 	imports: [
+		forwardRef(() => AppModule),
 		UserModule, ChatModule,
 		TypeOrmModule.forFeature([Chat, User, Message, Membership]),
-		forwardRef(() => AppModule),
 		CacheModule.register(),
 	],
 	controllers: [
@@ -27,7 +26,6 @@ import { chatGateway } from './chat.gateway';
 		ChatController,
 	],
 	providers: [
-		chatGateway,
 		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
@@ -35,7 +33,7 @@ import { chatGateway } from './chat.gateway';
 		},
 		JwtService,
 		UserService,
-		ChatService,
+		ChatService
 	],
 })
 export class ChatModule {}

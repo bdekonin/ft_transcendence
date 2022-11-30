@@ -38,7 +38,7 @@ export class ChatService {
 	}
 
 	/* Message */
-	async sendMessage(chatID: number, userID: number, message: string) {
+	async sendMessage(chatID: number, userID: number, message: string): Promise<Message> {
 		const chat = await this.chatRepo.findOne ({
 			relations: ['users'],
 			where: {
@@ -152,6 +152,9 @@ export class ChatService {
 		}
 		if (!chat.users.some(user => user.id === userID)) {
 			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.users.length === 2 && chat.type === ChatType.PRIVATE) {
+			return await this.chatRepo.delete(chatID);
 		}
 		if (chat.users.length === 1) {
 			return await this.chatRepo.delete(chatID);

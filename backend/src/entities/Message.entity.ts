@@ -17,7 +17,9 @@ export class Message {
 	@JoinColumn()
 	sender: User;
 
-	@ManyToOne(() => Chat, (chat) => chat.messages)
+	@ManyToOne(() => Chat, (chat) => chat.messages, {
+		onDelete: 'CASCADE',
+	})
 	parent: Chat;
 
 	// @ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })

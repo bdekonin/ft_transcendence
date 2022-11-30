@@ -1,8 +1,10 @@
+import { useEffect, useState , useContext } from 'react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 import './style.css'
+import { SocketContext } from '../../context/socket';
+import { Socket } from 'socket.io-client';
 
 interface User {
 	id: number;
@@ -13,6 +15,7 @@ interface Chat {
 	id: number;
 	name: string;
 	users: User[];
+	unread: boolean;
 }
 interface Message {
 	id: number;
@@ -27,9 +30,10 @@ interface Avatar {
 
 const Chat: React.FC = () => {
 	
+	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
-	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: []});
+	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: [], unread: false});
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
 	
@@ -41,8 +45,13 @@ const Chat: React.FC = () => {
 	/* Refresh */
 	const [pong, setPong] = useState('');
 
-	document.body.style.background = '#323232';
+	const [refreshMessages, setRefreshMessages] = useState('');
 
+	document.body.style.background = '#323232';
+	socket.on('chat/message', () => {
+		console.log('new message!!');
+		setRefreshMessages(new Date().toISOString());
+	})
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -51,7 +60,13 @@ const Chat: React.FC = () => {
 		.catch(err => {
 			navigate('/login');
 		});
+		return () => {
+			console.log('unmounting');
+			socket.off('chat/new-message');
+		}
+
 	}, []);
+
 	/* Retrieving User's Chats */
 	useEffect(() => {
 		if (!user)
@@ -66,13 +81,27 @@ const Chat: React.FC = () => {
 			navigate('/login');
 		});
 	}, [user, pong]);
+
 	/* Setting the current chat after retrieving chats */
 	useEffect(() => {
-		if (joinedChats.length != 0) {
+		if (joinedChats.length == 0) {
+			if (pong == '')
+				setCurrentChat({id: 0, name: '', users: [], unread: false});
+			}
+		else {
 			if (pong == '')
 				setCurrentChat(joinedChats[0]);
 		}
 	}, [joinedChats, pong]);
+
+	useEffect(() => {
+		if (currentChat.id == 0)
+			return;
+		socket.emit('chat/join-multiple', {
+			chatIDs: joinedChats.map(chat => chat.id)
+		});
+	}, [joinedChats]);
+
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
 		if (currentChat.id == 0)
@@ -84,7 +113,10 @@ const Chat: React.FC = () => {
 		.catch(err => {
 			navigate('/login');
 		});
-	}, [currentChat, pong]);
+	}, [currentChat, pong, refreshMessages]);
+
+
+
 
 	function joinPublic(chat: Chat) {
 		const payload = {
@@ -134,9 +166,11 @@ const Chat: React.FC = () => {
 				<button onClick={() => {
 					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
 					.then(res => {
-						setPong(new Date().toISOString());
+						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
+						setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
 					})
 					.catch(err => {
+						console.log('err', err);
 						if (err.response.data.statusCode === 418)
 							navigate('/login');
 						alert(err.response.data.message)
@@ -157,7 +191,7 @@ const Chat: React.FC = () => {
 						joinedChats.map(chat => {
 							return (
 								<li key={chat.id}>
-									<p className="room-name-clickable" onClick={() => setCurrentChat(chat)}>{chat.name}</p>
+									<p className={chat.unread ? 'room-name-clickable unread' : 'room-name-clickable'} onClick={() => setCurrentChat(chat)}>{chat.name}</p>
 								</li>
 							);
 						})
@@ -214,6 +248,9 @@ const Chat: React.FC = () => {
 		)
 	}
 	function renderChatBox() {
+		if (currentChat.id == 0) {
+			return ;
+		}
 		return (
 			<div className="chat-box">
 				<input
@@ -235,18 +272,12 @@ const Chat: React.FC = () => {
 	function postMessage(event:any) {
 		console.log('client', event);
 		const payload = {
+			"senderID": user?.id,
 			"chatID": currentChat.id,
 			"message": chatBoxMsg
 		}
-	
-		axios.post('http://localhost:3000/chat/' + user?.id + '/message', payload, { withCredentials: true })
-		.then(res => {
-			setPong(new Date().toISOString());
-			setChatBoxMsg('');
-		})
-		.catch(err => {
-			navigate('/login');
-		});
+		console.log('Emitting message', payload);
+		socket.emit('chat/new-chat', payload);
 	}
 	
 	return (
