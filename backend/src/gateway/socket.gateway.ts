@@ -4,9 +4,10 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
   } from '@nestjs/websockets';
-import { Server } from 'http';
 import { AuthService } from 'src/auth/auth.service';
-import { Socket } from 'socket.io';
+import { Server } from 'socket.io';
+import { MessageDto } from 'src/chat/message.dto';
+import { ChatService } from 'src/chat/chat.service';
 
 class verifyUserDto {
 	sub: number; /* user id */
@@ -34,6 +35,7 @@ class UserSocket {
 export class socketGateway {
 	constructor (
 		@Inject('AUTH_SERVICE') private readonly authService: AuthService,
+		private readonly chatService: ChatService,
 	) {
 		console.log("socket Gateway constructor");
 	}
@@ -45,9 +47,7 @@ export class socketGateway {
 	connections: UserSocket[] = [];
 
 	async handleConnection (client: any, ...args: any[]) {
-		console.log('client connected', client.id);
 		const user = await this.findUser(client)
-		console.log('user', user);
 		if (user) {
 			this.connections.push({
 				userID: user.sub,
@@ -58,7 +58,6 @@ export class socketGateway {
 	}
 
 	async handleDisconnect (client: any) {
-		console.log('client disconnected', client.id);
 		const user = await this.findUser(client)
 		this.connections = this.connections.filter((connection) => {
 			return connection.userID !== user?.sub;
@@ -81,12 +80,27 @@ export class socketGateway {
 
 
 	/* Chats */
-	@SubscribeMessage('chat/join')
-	async handleJoinChat (client: any, payload: any) {
+	@SubscribeMessage('chat/join-one')
+	async handleJoinChatOne (client: any, payload: any) {
 		console.log('join chat', payload);
 		// const user = await this.findUser(client)
 		// console.log('user', user);
 		// client.join(payload.chatID);
+		// client.emit('chat/join', {
+		// 	chatID: payload.chatID,
+		// 	userID: user.sub,
+		// });
+	}
+
+	@SubscribeMessage('chat/join-multiple')
+	async handleJoinChatMultiple (client: any, payload: any) {
+		// console.log('join chat', payload);
+		const user = await this.findUser(client)
+		// console.log('user', user);
+		payload.chatIDs.forEach((chatID: string) => {
+			client.join('chat:' + chatID);
+			console.log('Joining chat: ', chatID);
+		});
 		// client.emit('chat/join', {
 		// 	chatID: payload.chatID,
 		// 	userID: user.sub,
@@ -105,18 +119,24 @@ export class socketGateway {
 		// 	userID: user.sub,
 		// });
 	}
-
-	// @SubscribeMessage('chat/new-chat')
-	async emitNewChat (client: any, payload: any) {
+	
+	@SubscribeMessage('chat/new-chat')
+	async emitNewChatMessage(client: any, payload: MessageDto) {
+		const userID = this.connections.find((connection) => {
+			return connection.socketID === client.id;
+		})?.userID;
+		this.chatService.sendMessage(payload.chatID, userID, payload.message);
+		console.log('emit chat:', payload.chatID , payload);
+		this.server.to('chat:' + payload.chatID).emit('chat/new-message', payload);
 	}
 
-	async emitNewMessage(socket: Socket, payload: any) {
-		console.log('emit new message', payload);
-		// socket.to(payload.chatID).emit('chat/new-message', payload);
-		// this.server.to(chatID.toString()).emit('chat/new-message', message);
+
+
+
+	async pong() {
+		console.log('Pong has been called!');
+		this.server.emit('pong');
 	}
-
-
 
 
 

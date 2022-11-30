@@ -1,9 +1,11 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { CacheModule, forwardRef, Module } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppModule } from "src/app.module";
 import { AuthService } from "src/auth/auth.service";
+import { ChatController } from "src/chat/chat.controller";
 import { ChatModule } from "src/chat/chat.module";
+import { ChatService } from "src/chat/chat.service";
 import { Chat } from "src/entities/Chat.entity";
 import { Membership } from "src/entities/Membership.entity";
 import { Message } from "src/entities/Message.entity";
@@ -18,8 +20,9 @@ import { socketGateway } from "./socket.gateway";
 		UserModule, ChatModule,
 		TypeOrmModule.forFeature([Chat, User, Message, Membership]),
 		forwardRef(() => AppModule),
+		CacheModule.register(),
 	],
-	controllers: [],
+	controllers: [ChatController],
 	providers: [
 		socketGateway,
 		MembershipService,
@@ -29,6 +32,7 @@ import { socketGateway } from "./socket.gateway";
 		},
 		JwtService,
 		UserService,
+		ChatService,
 	]
 })
 export class socketModule {}
