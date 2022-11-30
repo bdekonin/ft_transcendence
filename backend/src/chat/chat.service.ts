@@ -71,6 +71,11 @@ export class ChatService {
 
 	async getMessages(chatID: number) {
 		const chat = await this.chatRepo.findOne({
+			order: {
+				messages: {
+					id: 'DESC'
+				}
+			},
 			relations: ['messages'],
 			where: {
 				id: chatID
@@ -79,6 +84,11 @@ export class ChatService {
 		if (!chat) {
 			throw new BadRequestException("Chat does not exist");
 		}
+		const output = chat.messages.map(message => {
+				return {
+					id: message.id,
+				}
+			});
 		return chat.messages;
 	}
 

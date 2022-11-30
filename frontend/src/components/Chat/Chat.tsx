@@ -46,20 +46,27 @@ const Chat: React.FC = () => {
 	const [pong, setPong] = useState('');
 
 	const [refreshMessages, setRefreshMessages] = useState('');
-
-	document.body.style.background = '#323232';
-	socket.on('chat/message', () => {
-		console.log('new message!!');
-		setRefreshMessages(new Date().toISOString());
+	socket.on('chat/new-message', (payload: any) => {
+		console.log('chat/new-message', payload);
+		console.log('currentChat', currentChat);
+		if (payload.chatID === currentChat.id) {
+			// setMessages((messages) => [...messages, payload]);
+			setRefreshMessages(new Date().toISOString());
+		}
 	})
+	document.body.style.background = '#323232';
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
 		})
 		.catch(err => {
-			navigate('/login');
+			console.log('err', err);
+			if (err.response.data.statusCode === 400)
+				navigate('/login');
+			alert(err.response.data.message)
 		});
+
 		return () => {
 			console.log('unmounting');
 			socket.off('chat/new-message');
@@ -78,7 +85,10 @@ const Chat: React.FC = () => {
 			setProtectedChats(res.data.protected);
 		})
 		.catch(err => {
-			navigate('/login');
+			console.log('err', err);
+			if (err.response.data.statusCode === 400)
+				navigate('/login');
+			alert(err.response.data.message)
 		});
 	}, [user, pong]);
 
@@ -111,7 +121,10 @@ const Chat: React.FC = () => {
 			setMessages(res.data);
 		})
 		.catch(err => {
-			navigate('/login');
+			console.log('err', err);
+			if (err.response.data.statusCode === 400)
+				navigate('/login');
+			alert(err.response.data.message)
 		});
 	}, [currentChat, pong, refreshMessages]);
 
@@ -148,7 +161,6 @@ const Chat: React.FC = () => {
 	}
 
 	function renderUsers() {
-
 		return (
 			<div className='user-icons'>
 				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
@@ -171,7 +183,7 @@ const Chat: React.FC = () => {
 					})
 					.catch(err => {
 						console.log('err', err);
-						if (err.response.data.statusCode === 418)
+						if (err.response.data.statusCode === 400)
 							navigate('/login');
 						alert(err.response.data.message)
 					});
@@ -278,6 +290,7 @@ const Chat: React.FC = () => {
 		}
 		console.log('Emitting message', payload);
 		socket.emit('chat/new-chat', payload);
+		setRefreshMessages(new Date().toISOString());
 	}
 	
 	return (

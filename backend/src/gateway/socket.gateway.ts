@@ -88,13 +88,6 @@ export class socketGateway {
 	@SubscribeMessage('chat/join-one')
 	async handleJoinChatOne (client: any, payload: any) {
 		console.log('join chat', payload);
-		// const user = await this.findUser(client)
-		// console.log('user', user);
-		// client.join(payload.chatID);
-		// client.emit('chat/join', {
-		// 	chatID: payload.chatID,
-		// 	userID: user.sub,
-		// });
 	}
 
 	@SubscribeMessage('chat/join-multiple')
@@ -124,7 +117,8 @@ export class socketGateway {
 			return;
 		}
 		this.chatService.sendMessage(payload.chatID, userID, payload.message);
-		this.server.to('chat:1').emit('chat/message', payload);
+		console.log('sending to chat:' + payload.chatID);
+		this.server.emit('chat/new-message', payload);
 	}
 
 
