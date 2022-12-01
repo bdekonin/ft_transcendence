@@ -21,6 +21,7 @@ interface Message {
 	id: number;
 	message: string;
 	sender: User;
+	parent: Chat;
 	createdAt: string;
 }
 interface Avatar {
@@ -46,15 +47,16 @@ const Chat: React.FC = () => {
 	const [pong, setPong] = useState('');
 
 	const [refreshMessages, setRefreshMessages] = useState('');
-	socket.on('chat/new-message', (payload: any) => {
+	socket.on('chat/new-message', (payload: Message) => {
 		console.log('chat/new-message', payload);
 		console.log('currentChat', currentChat);
-		if (payload.chatID === currentChat.id) {
-			// setMessages((messages) => [...messages, payload]);
-			setRefreshMessages(new Date().toISOString());
+		if (payload.parent.id === currentChat.id) {
+			setMessages((messages) => [...messages, payload]);
 		}
 	})
 	document.body.style.background = '#323232';
+
+
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -126,7 +128,7 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, [currentChat, pong, refreshMessages]);
+	}, [currentChat, pong]);
 
 
 
@@ -290,7 +292,6 @@ const Chat: React.FC = () => {
 		}
 		console.log('Emitting message', payload);
 		socket.emit('chat/new-chat', payload);
-		setRefreshMessages(new Date().toISOString());
 	}
 	
 	return (

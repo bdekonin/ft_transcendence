@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { MessageDto } from 'src/chat/message.dto';
 import { ChatService } from 'src/chat/chat.service';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { Chat } from 'src/entities/Chat.entity';
 
 class verifyUserDto {
 	sub: number; /* user id */
@@ -48,18 +49,17 @@ export class socketGateway {
 	connections: UserSocket[] = [];
 
 	async handleConnection (client: Socket, ...args: any[]) {
-		// console.log('client', client.rooms);
 		const user = await this.findUser(client)
+		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 		if (user) {
 			this.connections.push({
 				userID: user.sub,
 				socketID: client.id,
 			});
 		}
-		client.rooms.forEach((room) => {
-			console.log('room', room);
-		});
 		console.log('Connections', this.connections);
+
+		console.log();
 	}
 
 	async handleDisconnect (client: Socket) {
@@ -91,7 +91,7 @@ export class socketGateway {
 	}
 
 	@SubscribeMessage('chat/join-multiple')
-	async handleJoinChatMultiple (client: any, payload: any) {
+	async handleJoinChatMultiple (client: Socket, payload: any) {
 		// console.log('join chat', payload);
 		const user = await this.findUser(client)
 		// console.log('user', user);
@@ -102,12 +102,12 @@ export class socketGateway {
 	}
 
 	@SubscribeMessage('chat/leave')
-	async handleLeaveChat (client: any, payload: any) {
+	async handleLeaveChat (client: Socket, payload: any) {
 		console.log('leave chat', payload);
 	}
 	
 	@SubscribeMessage('chat/new-chat')
-	async emitNewChatMessage(client: any, payload: MessageDto) {
+	async emitNewChatMessage(client: Socket, payload: MessageDto) {
 		console.log('Recieved emit', new Date().valueOf().toString());
 		const userID = this.connections.find((connection) => {
 			return connection.socketID === client.id;
@@ -116,21 +116,17 @@ export class socketGateway {
 			console.log('User ID does not match sender ID');
 			return;
 		}
-		this.chatService.sendMessage(payload.chatID, userID, payload.message);
-		console.log('sending to chat:' + payload.chatID);
-		this.server.emit('chat/new-message', payload);
+		const messagePayload = await this.chatService.sendMessage(payload.chatID, userID, payload.message);
+		this.server.in('chat:' + payload.chatID).emit('chat/new-message', messagePayload);
 	}
 
 
 
-
-	async pong() {
-		console.log('Pong has been called!');
-		this.server.emit('pong');
+	private async fetchRooms (client: Socket): Promise<Chat[]> {
+		const user = await this.findUser(client)
+		const rooms = await this.chatService.getChats(user.sub, "joined");
+		return rooms;
 	}
-
-
-
 	private parseCookies (cookies: string) {
 		const list = {};
 		cookies && cookies.split(';').forEach((cookie) => {
@@ -140,7 +136,7 @@ export class socketGateway {
 		return list;
 	}
 
-	private async findUser (client: any): Promise<verifyUserDto> {
+	private async findUser (client: Socket): Promise<verifyUserDto> {
 		const cookies = this.parseCookies(client.handshake.headers.cookie);
 		const user = await this.authService.verifyJWT(cookies['jwt'])
 		return user;
