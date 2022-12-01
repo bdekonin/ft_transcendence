@@ -50,25 +50,41 @@ const Chat: React.FC = () => {
 
 
 	useEffect(() => {
+		socket.on('chat/refresh-message', (incomingPayload: Message) => {
+			console.log('incomingPayload', incomingPayload);
+			console.log('currentChat', currentChat);
+			if (incomingPayload.parent.id === currentChat.id){
+				setMessages((messages) => [incomingPayload, ...messages]);
+			}
+		})
+		return () => {
+			console.log('unmounting');
+			socket.off('chat/refresh-message');
+		}
+	});
+
+	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
 
-		socket.on('chat/refresh-message', (incomingPayload: Message) => {
-			setMessages((messages) => [incomingPayload, ...messages]);
-		})
+		// socket.on('chat/refresh-message', (incomingPayload: Message) => {
+		// 	console.log('incomingPayload', incomingPayload);
+		// 	console.log('currentChat', currentChat);
+		// 	setMessages((messages) => [incomingPayload, ...messages]);
+		// })
 
-		return () => {
-			console.log('unmounting');
-			socket.off('chat/new-message');
-		}
+		// return () => {
+		// 	console.log('unmounting');
+		// 	socket.off('chat/refresh-message');
+		// }
 
 	}, []);
 
@@ -120,6 +136,13 @@ const Chat: React.FC = () => {
 
 
 
+	function sendJoinEmitter(chatID: number) {
+		socket.emit('chat/join', { chatID: chatID });
+	}
+
+	function sendLeaveEmitter(chatID: number) {
+		socket.emit('chat/leave', { chatID: chatID });
+	}
 
 	function joinPublic(chat: Chat) {
 		const payload = {
@@ -129,6 +152,7 @@ const Chat: React.FC = () => {
 		.then(res => {
 			// setPong(new Date().toISOString());
 			setCurrentChat(chat);
+			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
 			navigate('/login');
@@ -143,6 +167,7 @@ const Chat: React.FC = () => {
 		.then(res => {
 			setPong(new Date().toISOString());
 			alert('Success');
+			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 418)
@@ -284,7 +309,6 @@ const Chat: React.FC = () => {
 	}
 
 	function postMessage(event:any) {
-		console.log('client', event);
 		const payload = {
 			"senderID": user?.id,
 			"chatID": currentChat.id,

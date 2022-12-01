@@ -89,15 +89,20 @@ export class socketGateway {
 	@SubscribeMessage('chat/join')
 	async handleJoinChatMultiple (client: Socket, payload: any) {
 		const user = await this.findUser(client)
-		payload.chatIDs.forEach((chatID: string) => {
-			console.log('client ' + client.id + ' joining chat ' + chatID);
-			client.join('chat:' + chatID);
-		});
+		if (!user)
+			return;
+		console.log('Join chat', payload);
+		/* Add client to every chat he is in */
+		client.join('chat:' + payload.chatID);
 	}
 
 	@SubscribeMessage('chat/leave')
 	async handleLeaveChat (client: Socket, payload: any) {
-		console.log('leave chat', payload);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		console.log('Leave chat', payload);
+		client.leave('chat:' + payload.chatID);
 	}
 	
 	@SubscribeMessage('chat/new-chat')
