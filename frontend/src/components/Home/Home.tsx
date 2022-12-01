@@ -6,8 +6,6 @@ import '../../styles/home.css';
 const Home: FC = () => {
 
 	const navigate = useNavigate();
-	// const [isConnected, setIsConnected] = useState(socket.connected);
-	const [lastPong, setLastPong] = useState(0);
   
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})

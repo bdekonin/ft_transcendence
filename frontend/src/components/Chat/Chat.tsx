@@ -21,6 +21,7 @@ interface Message {
 	id: number;
 	message: string;
 	sender: User;
+	parent: Chat;
 	createdAt: string;
 }
 interface Avatar {
@@ -45,16 +46,9 @@ const Chat: React.FC = () => {
 	/* Refresh */
 	const [pong, setPong] = useState('');
 
-	const [refreshMessages, setRefreshMessages] = useState('');
-	socket.on('chat/new-message', (payload: any) => {
-		console.log('chat/new-message', payload);
-		console.log('currentChat', currentChat);
-		if (payload.chatID === currentChat.id) {
-			// setMessages((messages) => [...messages, payload]);
-			setRefreshMessages(new Date().toISOString());
-		}
-	})
 	document.body.style.background = '#323232';
+
+
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -66,6 +60,10 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
+
+		socket.on('chat/refresh-message', (incomingPayload: Message) => {
+			setMessages((messages) => [incomingPayload, ...messages]);
+		})
 
 		return () => {
 			console.log('unmounting');
@@ -104,14 +102,6 @@ const Chat: React.FC = () => {
 		}
 	}, [joinedChats, pong]);
 
-	useEffect(() => {
-		if (currentChat.id == 0)
-			return;
-		socket.emit('chat/join-multiple', {
-			chatIDs: joinedChats.map(chat => chat.id)
-		});
-	}, [joinedChats]);
-
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
 		if (currentChat.id == 0)
@@ -126,7 +116,7 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, [currentChat, pong, refreshMessages]);
+	}, [currentChat, pong]);
 
 
 
@@ -137,7 +127,8 @@ const Chat: React.FC = () => {
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			setPong(new Date().toISOString());
+			// setPong(new Date().toISOString());
+			setCurrentChat(chat);
 		})
 		.catch(err => {
 			navigate('/login');
@@ -188,6 +179,17 @@ const Chat: React.FC = () => {
 						alert(err.response.data.message)
 					});
 				}}>Leave Current Chat</button>
+				<button onClick={() => {
+					console.log('user', user);
+					console.log('currentChat', currentChat);
+					console.log('messages', messages);
+					console.log('chatBoxMsg', chatBoxMsg);
+					
+					/* Chats */
+					console.log('joinedChats', joinedChats);
+					console.log('publicChats', publicChats);
+					console.log('protectedChats', protectedChats);
+				}}>Debug</button>
 			</div>
 		)
 	}
@@ -247,7 +249,7 @@ const Chat: React.FC = () => {
 				{
 					messages.map((message, index)=> {
 						return (
-							<div className={!(index % 2) ? 'container' : 'container darker'} key={message.id}>
+							<div className={!(index % 2) ? 'container' : 'container darker'} key={index}>
 								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
 								<p>{message.message}</p>
 								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
@@ -290,7 +292,6 @@ const Chat: React.FC = () => {
 		}
 		console.log('Emitting message', payload);
 		socket.emit('chat/new-chat', payload);
-		setRefreshMessages(new Date().toISOString());
 	}
 	
 	return (
