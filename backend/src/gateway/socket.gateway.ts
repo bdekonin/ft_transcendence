@@ -45,7 +45,8 @@ export class socketGateway {
 	server: Server;
 
 	/* List of current users */
-	connections: Set<number> = new Set();
+	// connections: Set<number> = new Set();
+	connections: UserSocket[] = [];
 
 
 	async handleConnection (client: Socket, ...args: any[]) {
@@ -54,7 +55,11 @@ export class socketGateway {
 			return;
 		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 
-		this.connections.add(user.id); /* Add user to list of connections */
+		/* Add user to list of connections */
+		this.connections.push({
+			userID: user.id, socketID: client.id
+		});
+
 
 		/* Add client to every chat he is in */
 		rooms.forEach((room) => {
@@ -73,35 +78,17 @@ export class socketGateway {
 			return;
 
 		/* Remove user from list of connections */
-		this.connections.delete(user.id);
+		const clientToBeRemoved = this.connections.find((connection) => connection.socketID == client.id);
+		if (clientToBeRemoved)
+			this.connections.splice(this.connections.indexOf(clientToBeRemoved), 1);
+
 		console.log('Connections', this.connections);
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/* Chats */
-	@SubscribeMessage('chat/join-one')
-	async handleJoinChatOne (client: any, payload: any) {
-		console.log('join chat', payload);
-	}
-
-	@SubscribeMessage('chat/join-multiple')
+	@SubscribeMessage('chat/join')
 	async handleJoinChatMultiple (client: Socket, payload: any) {
-		// console.log('join chat', payload);
 		const user = await this.findUser(client)
-		// console.log('user', user);
 		payload.chatIDs.forEach((chatID: string) => {
 			console.log('client ' + client.id + ' joining chat ' + chatID);
 			client.join('chat:' + chatID);
@@ -125,7 +112,7 @@ export class socketGateway {
 			return;
 		}
 		const messagePayload = await this.chatService.sendMessage(payload.chatID, user.id, payload.message);
-		this.server.in('chat:' + payload.chatID).emit('chat/new-message', messagePayload);
+		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
 	}
 
 
