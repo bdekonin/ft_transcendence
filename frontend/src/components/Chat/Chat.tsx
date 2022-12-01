@@ -51,15 +51,22 @@ const Chat: React.FC = () => {
 
 	useEffect(() => {
 		socket.on('chat/refresh-message', (incomingPayload: Message) => {
-			console.log('incomingPayload', incomingPayload);
-			console.log('currentChat', currentChat);
 			if (incomingPayload.parent.id === currentChat.id){
 				setMessages((messages) => [incomingPayload, ...messages]);
 			}
+			else {
+				/* Enable notification for that channel */
+			}
+		})
+		socket.on('chat/refresh-chats', () => {
+			console.log('refreshing chats');
+			// window.location.reload();
+			setPong(new Date().toISOString());
+			/* Refresh chats */
 		})
 		return () => {
-			console.log('unmounting');
 			socket.off('chat/refresh-message');
+			socket.off('chat/refresh-chats');
 		}
 	});
 
@@ -74,18 +81,6 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-
-		// socket.on('chat/refresh-message', (incomingPayload: Message) => {
-		// 	console.log('incomingPayload', incomingPayload);
-		// 	console.log('currentChat', currentChat);
-		// 	setMessages((messages) => [incomingPayload, ...messages]);
-		// })
-
-		// return () => {
-		// 	console.log('unmounting');
-		// 	socket.off('chat/refresh-message');
-		// }
-
 	}, []);
 
 	/* Retrieving User's Chats */
@@ -100,7 +95,7 @@ const Chat: React.FC = () => {
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
@@ -128,13 +123,31 @@ const Chat: React.FC = () => {
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
 	}, [currentChat, pong]);
 
+	/* Retrieving avatars of the currentChat */
+	// useEffect(() => {
+	// 	if (currentChat.id == 0)
+	// 		return;
 
+	// 	currentChat.users.forEach((user) => {
+	// 		axios.get('http://localhost:3000/user/' + user.id + '/avatar', { withCredentials: true })
+	// 		.then(res => {
+	// 			// user['avatar'] = res.data.avatar;
+	// 			console.log('res');
+	// 		})
+	// 		.catch(err => {
+	// 			console.log('err', err);
+	// 			if (err.response.data.statusCode === 401)
+	// 				navigate('/login');	
+	// 			alert(err.response.data.message)
+	// 		});
+	// 	});
+	// }, [currentChat, pong]);
 
 	function sendJoinEmitter(chatID: number) {
 		socket.emit('chat/join', { chatID: chatID });
@@ -179,12 +192,12 @@ const Chat: React.FC = () => {
 	function renderUsers() {
 		return (
 			<div className='user-icons'>
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-
+				{
+					/* print out the users in the chat */
+					currentChat.users.map((user: User) => {
+						return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
+					})
+				}
 			</div>
 		)
 	}
@@ -195,15 +208,18 @@ const Chat: React.FC = () => {
 					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
 					.then(res => {
 						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
-						setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
+						// setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
+						setPong(new Date().toISOString());
+						sendLeaveEmitter( currentChat.id );
 					})
 					.catch(err => {
 						console.log('err', err);
-						if (err.response.data.statusCode === 400)
+						if (err.response.data.statusCode === 401)
 							navigate('/login');
 						alert(err.response.data.message)
 					});
 				}}>Leave Current Chat</button>
+
 				<button onClick={() => {
 					console.log('user', user);
 					console.log('currentChat', currentChat);
