@@ -10,6 +10,7 @@ import { MessageDto } from 'src/chat/message.dto';
 import { ChatService } from 'src/chat/chat.service';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Chat } from 'src/entities/Chat.entity';
+import { UserService } from 'src/user/user.service';
 
 class userDto {
 	id: number; /* user id */
@@ -36,6 +37,7 @@ class UserSocket {
 export class socketGateway {
 	constructor (
 		@Inject('AUTH_SERVICE') private readonly authService: AuthService,
+		private readonly userService: UserService,
 		private readonly chatService: ChatService,
 	) {
 		console.log("socket Gateway constructor");
@@ -118,6 +120,17 @@ export class socketGateway {
 		}
 		const messagePayload = await this.chatService.sendMessage(payload.chatID, user.id, payload.message);
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
+	}
+
+	@SubscribeMessage('ping')
+	handlePing (client: Socket, payload: Date) {
+		const user = this.findUser(client)
+		if (!user)
+			return;
+		console.log('Ping', payload);
+		
+		/* Set last seen */
+		// this.chatService.setLastSeen(payload, user.id);
 	}
 
 

@@ -10,12 +10,21 @@ import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
 import Settings from "./components/Settings/Settings";
 import Chat from "./components/Chat/Chat";
-import React from "react";
+import React, { useEffect } from "react";
 import { socket, SocketContext } from "./context/socket";
 
 const App:React.FC = () =>
 {
 	document.body.style.background = "#474E68";
+
+	useEffect(() => {
+		// interval
+		const interval = setInterval(() => {
+			socket.emit("ping", new Date().valueOf());
+		}, 1000);
+
+		// interval.
+	}, []);
 
 	return (
 		<SocketContext.Provider value={socket}>
