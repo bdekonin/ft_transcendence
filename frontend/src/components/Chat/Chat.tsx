@@ -61,13 +61,8 @@ const Chat: React.FC = () => {
 			alert(err.response.data.message)
 		});
 
-		socket.on('chat/new-message', (incomingPayload: Message) => {
-			console.log('chat/new-message', incomingPayload);
-			console.log('currentChat', currentChat);
-			if (incomingPayload.parent.id === currentChat.id) {
-				console.log('All + New MEssages', [...messages, incomingPayload]);
-				setMessages((messages) => [incomingPayload, ...messages]);
-			}
+		socket.on('chat/refresh-message', (incomingPayload: Message) => {
+			setMessages((messages) => [incomingPayload, ...messages]);
 		})
 
 		return () => {
@@ -107,14 +102,6 @@ const Chat: React.FC = () => {
 		}
 	}, [joinedChats, pong]);
 
-	useEffect(() => {
-		if (currentChat.id == 0)
-			return;
-		socket.emit('chat/join-multiple', {
-			chatIDs: joinedChats.map(chat => chat.id)
-		});
-	}, [joinedChats]);
-
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
 		if (currentChat.id == 0)
@@ -140,7 +127,8 @@ const Chat: React.FC = () => {
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			setPong(new Date().toISOString());
+			// setPong(new Date().toISOString());
+			setCurrentChat(chat);
 		})
 		.catch(err => {
 			navigate('/login');
@@ -191,6 +179,17 @@ const Chat: React.FC = () => {
 						alert(err.response.data.message)
 					});
 				}}>Leave Current Chat</button>
+				<button onClick={() => {
+					console.log('user', user);
+					console.log('currentChat', currentChat);
+					console.log('messages', messages);
+					console.log('chatBoxMsg', chatBoxMsg);
+					
+					/* Chats */
+					console.log('joinedChats', joinedChats);
+					console.log('publicChats', publicChats);
+					console.log('protectedChats', protectedChats);
+				}}>Debug</button>
 			</div>
 		)
 	}
