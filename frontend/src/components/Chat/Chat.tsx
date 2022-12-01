@@ -46,14 +46,6 @@ const Chat: React.FC = () => {
 	/* Refresh */
 	const [pong, setPong] = useState('');
 
-	const [refreshMessages, setRefreshMessages] = useState('');
-	socket.on('chat/new-message', (payload: Message) => {
-		console.log('chat/new-message', payload);
-		console.log('currentChat', currentChat);
-		if (payload.parent.id === currentChat.id) {
-			setMessages((messages) => [...messages, payload]);
-		}
-	})
 	document.body.style.background = '#323232';
 
 
@@ -68,6 +60,15 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
+
+		socket.on('chat/new-message', (incomingPayload: Message) => {
+			console.log('chat/new-message', incomingPayload);
+			console.log('currentChat', currentChat);
+			if (incomingPayload.parent.id === currentChat.id) {
+				console.log('All + New MEssages', [...messages, incomingPayload]);
+				setMessages((messages) => [incomingPayload, ...messages]);
+			}
+		})
 
 		return () => {
 			console.log('unmounting');
@@ -249,7 +250,7 @@ const Chat: React.FC = () => {
 				{
 					messages.map((message, index)=> {
 						return (
-							<div className={!(index % 2) ? 'container' : 'container darker'} key={message.id}>
+							<div className={!(index % 2) ? 'container' : 'container darker'} key={index}>
 								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
 								<p>{message.message}</p>
 								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
