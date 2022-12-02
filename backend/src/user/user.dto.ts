@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { isBoolean, IsBoolean, IsEnum, IsOptional, isString, IsString } from "class-validator";
-import { UserRole } from "src/entities/Membership.entity";
+import { IsBoolean, IsDate, IsOptional } from "class-validator";
 
 export class updateUserDto {
 
@@ -16,4 +15,8 @@ export class updateUserDto {
 
 	@IsOptional()
 	avatar?: string;
+
+	@IsOptional()
+	@IsDate()
+	lastOnline?: string;
 }

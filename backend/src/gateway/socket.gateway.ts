@@ -10,6 +10,7 @@ import { MessageDto } from 'src/chat/message.dto';
 import { ChatService } from 'src/chat/chat.service';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Chat } from 'src/entities/Chat.entity';
+import { UserService } from 'src/user/user.service';
 
 class userDto {
 	id: number; /* user id */
@@ -36,6 +37,7 @@ class UserSocket {
 export class socketGateway {
 	constructor (
 		@Inject('AUTH_SERVICE') private readonly authService: AuthService,
+		private readonly userService: UserService,
 		private readonly chatService: ChatService,
 	) {
 		console.log("socket Gateway constructor");
@@ -53,8 +55,8 @@ export class socketGateway {
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 
+		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 		/* Add user to list of connections */
 		this.connections.push({
 			userID: user.id, socketID: client.id
@@ -120,6 +122,14 @@ export class socketGateway {
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
 	}
 
+	@SubscribeMessage('ping')
+	async handlePing (client: Socket, payload: Date) {
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		this.userService.updateUser(user.id, { lastOnline: new Date().valueOf().toString() });
+	}
+
 
 
 	private async fetchRooms (client: Socket): Promise<Chat[]> {
@@ -142,6 +152,9 @@ export class socketGateway {
 		const cookies = this.parseCookies(client.handshake.headers.cookie);
 		const user = await this.authService.verifyJWT(cookies['jwt'])
 		if (!user)
+			return null;
+
+		if (!await this.authService.findUserById(user.id))
 			return null;
 		return { id: user.sub };
 	}
