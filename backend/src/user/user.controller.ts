@@ -63,7 +63,7 @@ export class UserController {
 	}
 
 	@Post('avatar')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuardPatch)
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
 	@UseInterceptors(FileInterceptor('file'))

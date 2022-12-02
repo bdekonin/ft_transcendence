@@ -28,9 +28,7 @@ export class JwtAuthGuard implements CanActivate {
 			throw new UnauthorizedException('Object is undefined');
 
 
-		const user = await this.authService.validateUser({
-			oauthID: obj.oauthID,
-		});
+		const user = await this.authService.userService.findUserByOauthID(obj.oauthID);
 		if (!user)
 			throw new UnauthorizedException('No User Found');
 		if (!user.username || user.username === '')
@@ -59,9 +57,7 @@ export class JwtAuthGuard implements CanActivate {
 			throw new UnauthorizedException('Object is undefined');
 
 
-		const user = await this.authService.validateUser({
-			oauthID: obj.oauthID,
-		});
+		const user = await this.authService.userService.findUserByOauthID(obj.oauthID);
 		request.user = user;
 		return true;
 	}

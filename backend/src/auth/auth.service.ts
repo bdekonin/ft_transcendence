@@ -12,7 +12,7 @@ import { jwtConstants } from "./utils/constants";
 export class AuthService {
 
 	constructor(
-		private userService: UserService,
+		public userService: UserService,
 		private jwtService: JwtService,
 		@InjectRepository(Membership) public membershipRepo:
 		Repository<Membership>,

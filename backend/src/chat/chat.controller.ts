@@ -5,6 +5,8 @@ import { ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
 import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
+import { socketGateway } from 'src/gateway/socket.gateway';
+
 /* Private chat */
 /*
 {
@@ -56,7 +58,8 @@ export class createChatDto {
 export class ChatController {
 
 	constructor(
-		private readonly chatService: ChatService
+		private readonly chatService: ChatService,
+		private readonly socketGateway: socketGateway,
 		) {}
 
 
@@ -66,10 +69,9 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() createDto: createChatDto,
 	) {
+		this.socketGateway.server.emit('chat/refresh-chats');
 		return await this.chatService.createChat(userID, createDto);
 	}
-
-
 	/* Message */
 	@Post('message')
 	async sendMessage(
@@ -93,6 +95,7 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() dto: JoinChatDto,
 	) {
+		this.socketGateway.server.emit('chat/refresh-chats');
 		return await this.chatService.joinChat(userID, dto);
 	}
 
@@ -101,6 +104,7 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('chatID', ParseIntPipe) chatID: number,
 	) {
+		this.socketGateway.server.emit('chat/refresh-chats');
 		return await this.chatService.leaveChat(userID, chatID);
 	}
 

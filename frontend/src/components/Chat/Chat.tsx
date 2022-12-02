@@ -21,6 +21,7 @@ interface Message {
 	id: number;
 	message: string;
 	sender: User;
+	parent: Chat;
 	createdAt: string;
 }
 interface Avatar {
@@ -45,16 +46,30 @@ const Chat: React.FC = () => {
 	/* Refresh */
 	const [pong, setPong] = useState('');
 
-	const [refreshMessages, setRefreshMessages] = useState('');
-	socket.on('chat/new-message', (payload: any) => {
-		console.log('chat/new-message', payload);
-		console.log('currentChat', currentChat);
-		if (payload.chatID === currentChat.id) {
-			// setMessages((messages) => [...messages, payload]);
-			setRefreshMessages(new Date().toISOString());
-		}
-	})
 	document.body.style.background = '#323232';
+
+
+	useEffect(() => {
+		socket.on('chat/refresh-message', (incomingPayload: Message) => {
+			if (incomingPayload.parent.id === currentChat.id){
+				setMessages((messages) => [incomingPayload, ...messages]);
+			}
+			else {
+				/* Enable notification for that channel */
+			}
+		})
+		socket.on('chat/refresh-chats', () => {
+			console.log('refreshing chats');
+			// window.location.reload();
+			setPong(new Date().toISOString());
+			/* Refresh chats */
+		})
+		return () => {
+			socket.off('chat/refresh-message');
+			socket.off('chat/refresh-chats');
+		}
+	});
+
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -62,16 +77,10 @@ const Chat: React.FC = () => {
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-
-		return () => {
-			console.log('unmounting');
-			socket.off('chat/new-message');
-		}
-
 	}, []);
 
 	/* Retrieving User's Chats */
@@ -86,7 +95,7 @@ const Chat: React.FC = () => {
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
@@ -104,14 +113,6 @@ const Chat: React.FC = () => {
 		}
 	}, [joinedChats, pong]);
 
-	useEffect(() => {
-		if (currentChat.id == 0)
-			return;
-		socket.emit('chat/join-multiple', {
-			chatIDs: joinedChats.map(chat => chat.id)
-		});
-	}, [joinedChats]);
-
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
 		if (currentChat.id == 0)
@@ -122,14 +123,39 @@ const Chat: React.FC = () => {
 		})
 		.catch(err => {
 			console.log('err', err);
-			if (err.response.data.statusCode === 400)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, [currentChat, pong, refreshMessages]);
+	}, [currentChat, pong]);
 
+	/* Retrieving avatars of the currentChat */
+	// useEffect(() => {
+	// 	if (currentChat.id == 0)
+	// 		return;
 
+	// 	currentChat.users.forEach((user) => {
+	// 		axios.get('http://localhost:3000/user/' + user.id + '/avatar', { withCredentials: true })
+	// 		.then(res => {
+	// 			// user['avatar'] = res.data.avatar;
+	// 			console.log('res');
+	// 		})
+	// 		.catch(err => {
+	// 			console.log('err', err);
+	// 			if (err.response.data.statusCode === 401)
+	// 				navigate('/login');	
+	// 			alert(err.response.data.message)
+	// 		});
+	// 	});
+	// }, [currentChat, pong]);
 
+	function sendJoinEmitter(chatID: number) {
+		socket.emit('chat/join', { chatID: chatID });
+	}
+
+	function sendLeaveEmitter(chatID: number) {
+		socket.emit('chat/leave', { chatID: chatID });
+	}
 
 	function joinPublic(chat: Chat) {
 		const payload = {
@@ -137,7 +163,9 @@ const Chat: React.FC = () => {
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			setPong(new Date().toISOString());
+			// setPong(new Date().toISOString());
+			setCurrentChat(chat);
+			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
 			navigate('/login');
@@ -152,6 +180,7 @@ const Chat: React.FC = () => {
 		.then(res => {
 			setPong(new Date().toISOString());
 			alert('Success');
+			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 418)
@@ -163,12 +192,12 @@ const Chat: React.FC = () => {
 	function renderUsers() {
 		return (
 			<div className='user-icons'>
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-				<img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" />
-
+				{
+					/* print out the users in the chat */
+					currentChat.users.map((user: User) => {
+						return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
+					})
+				}
 			</div>
 		)
 	}
@@ -179,15 +208,29 @@ const Chat: React.FC = () => {
 					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
 					.then(res => {
 						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
-						setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
+						// setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
+						setPong(new Date().toISOString());
+						sendLeaveEmitter( currentChat.id );
 					})
 					.catch(err => {
 						console.log('err', err);
-						if (err.response.data.statusCode === 400)
+						if (err.response.data.statusCode === 401)
 							navigate('/login');
 						alert(err.response.data.message)
 					});
 				}}>Leave Current Chat</button>
+
+				<button onClick={() => {
+					console.log('user', user);
+					console.log('currentChat', currentChat);
+					console.log('messages', messages);
+					console.log('chatBoxMsg', chatBoxMsg);
+					
+					/* Chats */
+					console.log('joinedChats', joinedChats);
+					console.log('publicChats', publicChats);
+					console.log('protectedChats', protectedChats);
+				}}>Debug</button>
 			</div>
 		)
 	}
@@ -247,7 +290,7 @@ const Chat: React.FC = () => {
 				{
 					messages.map((message, index)=> {
 						return (
-							<div className={!(index % 2) ? 'container' : 'container darker'} key={message.id}>
+							<div className={!(index % 2) ? 'container' : 'container darker'} key={index}>
 								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
 								<p>{message.message}</p>
 								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
@@ -282,7 +325,6 @@ const Chat: React.FC = () => {
 	}
 
 	function postMessage(event:any) {
-		console.log('client', event);
 		const payload = {
 			"senderID": user?.id,
 			"chatID": currentChat.id,
@@ -290,7 +332,6 @@ const Chat: React.FC = () => {
 		}
 		console.log('Emitting message', payload);
 		socket.emit('chat/new-chat', payload);
-		setRefreshMessages(new Date().toISOString());
 	}
 	
 	return (

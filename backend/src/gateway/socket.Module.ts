@@ -1,4 +1,4 @@
-import { CacheModule, forwardRef, Module } from "@nestjs/common";
+import { CacheModule, forwardRef, Global, Module } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppModule } from "src/app.module";
@@ -15,6 +15,7 @@ import { UserModule } from "src/user/user.module";
 import { UserService } from "src/user/user.service";
 import { socketGateway } from "./socket.gateway";
 
+@Global()
 @Module({
 	imports: [
 		UserModule, ChatModule,
@@ -33,6 +34,7 @@ import { socketGateway } from "./socket.gateway";
 		JwtService,
 		UserService,
 		ChatService,
-	]
+	],
+	exports: [socketGateway],
 })
 export class socketModule {}

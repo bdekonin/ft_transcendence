@@ -72,9 +72,14 @@ export class User {
 	@Column()
 	createdAt: string;
 
+	@ApiProperty({ description: 'Last seen online', example: '1669318644507' })
+	@Column({nullable: true})
+	lastOnline: string;
+
 	@BeforeInsert()
 	updateDates() {
 		const date = new Date().valueOf() + 3600;
 		this.createdAt = date.toString();
+		this.lastOnline = date.toString();
 	}
 }
