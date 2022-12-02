@@ -55,8 +55,8 @@ export class socketGateway {
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 
+		const rooms = await this.fetchRooms(client); /* Currently joined rooms */
 		/* Add user to list of connections */
 		this.connections.push({
 			userID: user.id, socketID: client.id
@@ -123,14 +123,11 @@ export class socketGateway {
 	}
 
 	@SubscribeMessage('ping')
-	handlePing (client: Socket, payload: Date) {
-		const user = this.findUser(client)
+	async handlePing (client: Socket, payload: Date) {
+		const user = await this.findUser(client)
 		if (!user)
 			return;
-		console.log('Ping', payload);
-		
-		/* Set last seen */
-		// this.chatService.setLastSeen(payload, user.id);
+		this.userService.updateUser(user.id, { lastOnline: new Date().valueOf().toString() });
 	}
 
 
@@ -155,6 +152,9 @@ export class socketGateway {
 		const cookies = this.parseCookies(client.handshake.headers.cookie);
 		const user = await this.authService.verifyJWT(cookies['jwt'])
 		if (!user)
+			return null;
+
+		if (!await this.authService.findUserById(user.id))
 			return null;
 		return { id: user.sub };
 	}

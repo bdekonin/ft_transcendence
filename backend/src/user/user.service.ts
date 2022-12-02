@@ -88,11 +88,6 @@ export class UserService {
 			if (user.username == dto.username) {
 				throw new NotModifiedException('Username is already set to ' + dto.username);
 			}
-			// const usernameRegex = /^[a-zA-Z0-9]+$/;
-	
-			// if (!usernameRegex.test(dto.username))
-			// 	throw new BadRequestException('Username must be between 3 and 20 characters long and can only contain letters, numbers, underscores and dashes');
-	
 			user.username = dto.username;
 			await this.userRepository.save(user).catch((err) => {
 				if (err.code === '23505') {
@@ -107,6 +102,11 @@ export class UserService {
 			user.twofa = dto.twofa;
 			this.userRepository.save(user);
 		}
+		if (dto.lastOnline) {
+			user.lastOnline = dto.lastOnline;
+			this.userRepository.save(user);
+		}
+
 		return { msg: "OK" };
 	}
 
@@ -137,6 +137,13 @@ export class UserService {
 			username: usernameArg
 		});
 		return user;
+	}
+	async findUserByOauthID(oauthID: string): Promise<User> {
+		const user = await this.userRepository.findOneBy({
+			oauthID: oauthID
+		});
+		return user;
+
 	}
 	async save(user: User): Promise<User> {
 		return await this.userRepository.save(user);

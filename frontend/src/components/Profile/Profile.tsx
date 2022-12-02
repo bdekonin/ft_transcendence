@@ -1,4 +1,5 @@
 import axios from "axios";
+import moment from "moment";
 import { stringify } from "querystring";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -24,6 +25,7 @@ interface User {
 	loses: string;
 // chats*	{...}
 	createdAt: string;
+	lastOnline: string;
 }
 
 interface Avatar {
@@ -122,6 +124,24 @@ const Profile:React.FC = () =>
 		);
 	}
 
+	function renderLastOnline() {
+		if (user?.lastOnline) {
+			const minute = 60 * 1000; /* 1 Minute * 1 second */
+			const current_time = new Date().getTime();
+			const last_online = new Date(Number(user.lastOnline)).getTime();
+			if (current_time - last_online < minute * 5) {
+				return <span className="online">Online</span>;
+			}
+			else {
+				/* Last seen */
+				return <span className="offline">Last seen {moment(last_online).format('DD dddd HH:mm:ss')}</span>;
+			}
+		}
+		else
+			return <p>Loading...</p>
+	}
+
+
 	return (
 		<div className="profile">
 			<button onClick={() => {navigate('/')}}>Home</button>
@@ -132,7 +152,10 @@ const Profile:React.FC = () =>
 				 <p>{user?.username}</p>
 			</div>
 			<div className='edit-profile'>
-				<button>Edit Profile</button>
+				{/* <button onClick={() => {navigate('/edit-profile')}}>Edit Profile</button> */}
+			</div>
+			<div className='last-online'>
+				{renderLastOnline()}
 			</div>
 			<div className='friend-href'>
 				<ul>
