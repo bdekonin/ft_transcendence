@@ -50,10 +50,8 @@ export class UserController {
 
 	@Get('/avatar')
 	@UseGuards(JwtAuthGuard)
-
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'Returns the image of the userID'})
-
 	async getUserAvatar(
 		@UserRequest() user: User,
 		@Res() res
