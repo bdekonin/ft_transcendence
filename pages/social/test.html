@@ -1,0 +1,55 @@
+Create a HTML page that looks like the starting screen of Minecraft
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Minecraft - Starting Screen</title>
+    <style>
+        body {
+            background-color: #000000;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .container {
+            width: 800px;
+            margin: auto;
+            padding: 30px;
+            background-color: #009900;
+        }
+        
+        .title {
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+            color: #FFFFFF;
+            border-bottom: 1px solid #FFFFFF;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        
+        .content {
+            font-size: 18px;
+            color: #FFFFFF;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            Minecraft
+        </div>
+        <div class="content">
+            Welcome to Minecraft! Choose a game mode to get started.
+        </div>
+        <div class="content">
+            <input type="radio" name="mode" value="survival"> Survival<br>
+            <input type="radio" name="mode" value="creative"> Creative<br>
+            <input type="radio" name="mode" value="adventure"> Adventure
+        </div>
+    </div>
+</body>
+
+</html>

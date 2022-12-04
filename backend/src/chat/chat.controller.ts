@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ChatType } from 'src/entities/Chat.entity';
+import { Chat, ChatType } from 'src/entities/Chat.entity';
 import { ChatService } from './chat.service';
 import { JoinChatDto } from './join.dto';
 import { MessageDto } from './message.dto';
@@ -38,18 +38,22 @@ import { socketGateway } from 'src/gateway/socket.gateway';
 export class createChatDto {
 	@IsOptional()
 	@IsString()
+	@ApiProperty({ required: false })
 	name?: string;
 
 	@IsEnum(ChatType)
+	@ApiProperty({ required: true })
 	type: ChatType;
 
 	@IsOptional()
 	@IsArray()
 	@IsNumber({}, { each: true })
+	@ApiProperty({ required: false })
 	users: number[];
 
 	@IsOptional()
 	@IsString()
+	@ApiProperty({ required: false })
 	password?: string;
 }
 
@@ -65,6 +69,8 @@ export class ChatController {
 
 	/* Chat */
 	@Post('create')
+		@ApiOkResponse({ description: 'Returns model of the chat', type: Chat })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
 	async create(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() createDto: createChatDto,
@@ -72,8 +78,12 @@ export class ChatController {
 		this.socketGateway.server.emit('chat/refresh-chats');
 		return await this.chatService.createChat(userID, createDto);
 	}
+
 	/* Message */
 	@Post('message')
+		@ApiBody({ type: MessageDto })
+		@ApiOkResponse({ description: 'Returns model of the message', type: Chat })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
 	async sendMessage(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() messageDto: MessageDto,
@@ -83,6 +93,8 @@ export class ChatController {
 	}
 
 	@Get('messages/:chatID')
+		@ApiOkResponse({ description: 'Returns all messages in chat', type: [Chat] })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
 	async getMessages(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('chatID', ParseIntPipe) chatID: number,
@@ -91,6 +103,9 @@ export class ChatController {
 	}
 
 	@Patch('join')
+		@ApiBody({ description: 'Check postman for examples.', type: JoinChatDto })
+		@ApiOkResponse({ description: 'Returns the updated chat with the included user', type: Chat })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
 	async joinChat(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() dto: JoinChatDto,
@@ -100,6 +115,8 @@ export class ChatController {
 	}
 
 	@Delete('leave/:chatID')
+		@ApiOkResponse({ description: 'Returns the updated chat with the included user', type: Chat })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
 	async deleteChat(
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('chatID', ParseIntPipe) chatID: number,
