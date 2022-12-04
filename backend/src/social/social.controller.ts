@@ -1,11 +1,14 @@
-import { BadRequestException, Controller, Delete, Get, Param, ParseIntPipe, Put, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, UseGuards } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { ApiQuery, ApiParam, ApiTags, ApiNotFoundResponse, ApiBadRequestResponse, ApiForbiddenResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Friend } from 'src/entities/Friend.entity';
-import { use } from 'passport';
+import { UserRequest } from 'src/user/user.decorator';
+import { User } from 'src/entities/User.entity';
+import { JwtAuthGuard } from 'src/auth/utils/jwt-auth.guard';
 
 @ApiTags('social')
-@Controller('/user/:userID/social')
+@Controller('social')
+@UseGuards(JwtAuthGuard)
 export class SocialController {
 	constructor(
 		private socialService: SocialService,
@@ -17,14 +20,13 @@ export class SocialController {
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiForbiddenResponse({description: 'Forbidden'})
 		@ApiOkResponse({ description: 'It returns the (created or modified) object', type: Friend })
-		@ApiParam({ name: 'userID', type: 'number', required: true, description: 'The ID of the user who wants to follow' })
 		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be followed' })
 	async followUser(
-		@Param('userID', ParseIntPipe) userID: number,
+		@UserRequest() user: User,
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.follow(userID, otherID);
+		return await this.socialService.follow(user.id, otherID);
 	}
 
 	@Delete(':otherID/unfollow')
@@ -32,14 +34,13 @@ export class SocialController {
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiForbiddenResponse({description: 'Forbidden'})
 		@ApiOkResponse({ description: 'It returns the removed object', type: Friend })
-		@ApiParam({ name: 'userID', type: 'number', required: true, description: 'The ID of the user who wants to unfollow' })
 		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be unfollowed' })
 	async unfollowUser(
-		@Param('userID', ParseIntPipe) userID: number,
+		@UserRequest() user: User,
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.unfollow(userID, otherID);
+		return await this.socialService.unfollow(user.id, otherID);
 	}
 
 	@Put(':otherID/block')
@@ -47,14 +48,13 @@ export class SocialController {
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiForbiddenResponse({description: 'Forbidden'})
 		@ApiOkResponse({ description: 'It returns the (created or modified) object', type: Friend })
-		@ApiParam({ name: 'userID', type: 'number', required: true, description: 'The ID of the user who wants to block' })
 		@ApiParam({ name: 'recieverID', type: 'number', required: true, description: 'The ID of the user who wants to be blocked' })
 	async blockUser(
-		@Param('userID', ParseIntPipe) userID: number,
+		@UserRequest() user: User,
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.block(userID, otherID);
+		return await this.socialService.block(user.id, otherID);
 	}
 
 	@Delete(':otherID/unblock')
@@ -62,21 +62,19 @@ export class SocialController {
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiForbiddenResponse({description: 'Forbidden'})
 		@ApiOkResponse({ description: 'It returns the removed object', type: Friend })
-		@ApiParam({ name: 'userID', type: 'number', required: true, description: 'The ID of the user who wants to unblock' })
 		@ApiParam({ name: 'otherID', type: 'number', required: true, description: 'The ID of the user who wants to be unblocked' })
 	async unblockUser(
-		@Param('userID', ParseIntPipe) userID: number,
+		@UserRequest() user: User,
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.unblock(userID, otherID);
+		return await this.socialService.unblock(user.id, otherID);
 	}
 
-	@Get()
+	@Get(':userID')
 		@ApiBadRequestResponse({description: 'Bad Request'})
 		@ApiNotFoundResponse({description: 'User not found'})
 		@ApiOkResponse({ description: 'All friendships', type: Friend, isArray: true })
-		@ApiParam({ name: 'userID', type: 'number', required: true, description: 'The ID of the user who wants to get all friendships' })
 		@ApiQuery({ name: 'filter', type: 'string', required: false, description: 'The type of friendships to get (pending, accepted, blocked, sent)' })
 		@ApiQuery({ name: 'otherID', type: 'number', required: false, description: 'The friendship between userID and otherID' })
 	async getSocial(
@@ -98,7 +96,29 @@ export class SocialController {
 		}
 		/* now return all friends */
 		else {
-			return await this.socialService.getAllFriends(userID);
+			const allFriends = await this.socialService.getAllFriends(userID);
+
+			// sort friends by status
+			const pending = allFriends.filter(friend => friend.status == 'pending');
+			const friends = allFriends.filter(friend => friend.status == 'accepted');
+			// const sent = allFriends.filter(friend => friend.status == 'sent');
+			// const blocked = allFriends.filter(friend => friend.status == 'blocked');
+			return [...pending, ...friends];
+			// return { pending, friends };
 		}
+	}
+	@Get()
+		@ApiBadRequestResponse({description: 'Bad Request'})
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'All friendships', type: Friend, isArray: true })
+		@ApiQuery({ name: 'filter', type: 'string', required: false, description: 'The type of friendships to get (pending, accepted, blocked, sent)' })
+		@ApiQuery({ name: 'otherID', type: 'number', required: false, description: 'The friendship between userID and otherID' })
+	async getSocialByRequest(
+		@UserRequest() user: User,
+		@Query('filter') filter: string,
+		@Query('otherID') otherID: string
+	)
+	{
+		return await this.getSocial(user.id, filter, otherID);
 	}
 }

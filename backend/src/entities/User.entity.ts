@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, BeforeInsert, Entity, JoinColumn, AfterLoad, ManyToMany, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GameHistory } from "./GameHistory.entity";
 import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
@@ -19,7 +19,7 @@ export class User {
 	username?: string; // Unique username
 
 	@ApiProperty({ description: 'The avatar of the user', example: 'default.jpeg' })
-	@Column({ default: 'default.jpeg' })
+	@Column({ default: 'default.png' })
 	avatar: string; // Link to image || or file path to image
 
 	// @Column() // One to One
@@ -64,15 +64,22 @@ export class User {
 	@ManyToMany(() => Chat, (chat) => chat.users)
 	chats: Chat[];
 
-	// @ApiProperty({ description: 'Has the user setup their account', example: false })
-	// @Column({ default: false })
-	// setup: boolean;
-
 	@ApiProperty({ description: 'the id of the oath parent', example: 216532132 })
-	@Column({ default: '' })
+	@Column({ default: '', unique: true })
 	oauthID: string;
 	
-	@ApiProperty({ description: 'Creation Date', example: '2021-01-01T00:00:00.000Z' })
-	@CreateDateColumn({ type: 'timestamp' })
-	createdAt: Date;
+	@ApiProperty({ description: 'Creation Date epoch', example: '1669318644507' })
+	@Column()
+	createdAt: string;
+
+	@ApiProperty({ description: 'Last seen online', example: '1669318644507' })
+	@Column({nullable: true})
+	lastOnline: string;
+
+	@BeforeInsert()
+	updateDates() {
+		const date = new Date().valueOf() + 3600;
+		this.createdAt = date.toString();
+		this.lastOnline = date.toString();
+	}
 }

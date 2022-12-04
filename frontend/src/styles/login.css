@@ -1,3 +1,15 @@
+.login .background-video {
+	position: fixed;
+	z-index: -1;
+	width: 100%;
+	left: 0;
+	top: 0;
+}
+
+.login .block1 {
+	/* opacity: 50%; */
+}
+
 .login h1 {
 	color:	white;
 	text-align: center;
@@ -10,6 +22,7 @@
 	
 	margin-left: 20%;
 	border-radius: 50%;
+
 }
 
 .login .image2 {
@@ -30,7 +43,7 @@
 	filter: none;
 }
 
-.login {
+.login .block1{
 	margin: auto;
 	margin-top: 10%;
 	width: 50%;
@@ -38,6 +51,7 @@
 	height: 470px;
 	background-color: #27282e;
 	border-radius: 150px;
+	opacity: 50%;
 }
 
  /* .wrap {

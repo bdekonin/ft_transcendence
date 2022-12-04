@@ -4,12 +4,16 @@ import { Membership, UserRole } from "src/entities/Membership.entity";
 import { UserService } from "src/user/user.service";
 import { Repository } from "typeorm";
 import { UserDetails } from "./utils/types";
+import { JwtService } from '@nestjs/jwt';
+import { User } from "src/entities/User.entity";
+import { jwtConstants } from "./utils/constants";
 
 @Injectable()
 export class AuthService {
 
 	constructor(
-		private userService: UserService,
+		public userService: UserService,
+		private jwtService: JwtService,
 		@InjectRepository(Membership) public membershipRepo:
 		Repository<Membership>,
 	) {}
@@ -21,9 +25,6 @@ export class AuthService {
 
 		if (user)
 			return user;
-
-		console.log('User not found. Creating...');
-		console.log(details);
 		
 		const newMembership = this.membershipRepo.create();
 		const savedMembership = await this.membershipRepo.save(newMembership);
@@ -48,6 +49,28 @@ export class AuthService {
 	async findUserByIdUsername(idArg:number, usernameArg: string)
 	{
 		return await this.userService.findUserByIdUsername(idArg, usernameArg)
+	}
+
+
+	/* Jwt */
+
+	createToken(user: User) {		
+		return (
+			// expiresIn: 3600,
+			this.jwtService.sign({ sub: user.id, oauthID: user.oauthID })
+			// user,
+		)
+
+
+	}
+
+	async verifyJWT(token: string): Promise<any> {
+		const options = { secret: jwtConstants.secret };
+		try {
+			return await this.jwtService.verify(token, options);
+		} catch (error) {
+			return null;
+		}
 	}
 }
 
