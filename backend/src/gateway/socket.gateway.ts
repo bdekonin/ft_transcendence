@@ -8,9 +8,10 @@ import { AuthService } from 'src/auth/auth.service';
 import { Server, Socket } from 'socket.io';
 import { MessageDto } from 'src/chat/message.dto';
 import { ChatService } from 'src/chat/chat.service';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Chat } from 'src/entities/Chat.entity';
 import { UserService } from 'src/user/user.service';
+import {v4 as uuidv4} from 'uuid';
+import { seedrandom} from 'seedrandom';
 
 class userDto {
 	id: number; /* user id */
@@ -157,5 +158,172 @@ export class socketGateway {
 		if (!await this.authService.findUserById(user.id))
 			return null;
 		return { id: user.sub };
+	}
+
+
+	waitingPlayers: Set<string> = new Set();
+	currentGames: Map<string, Game> = new Map();
+	/* Game */
+
+	@SubscribeMessage('game/waiting')
+	async handleJoinGame (client: Socket, payload: any) {
+		console.log('game/waiting has been called');
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		this.waitingPlayers.add(client.id);
+		console.log('Waiting players', this.waitingPlayers);
+		if (this.waitingPlayers.size >= 2) {
+			this.createGame();
+		}
+	}
+
+	@SubscribeMessage('game/leave')
+	async handleLeaveGame (client: Socket, payload: any) {
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		this.waitingPlayers.delete(client.id);
+	}
+
+	@SubscribeMessage('game/down')
+	async handleDown (client: Socket, payload: any) {
+		console.log('game/down has been called', payload);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		if (payload.press == false)
+			return;
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			console.log('game/down game not found', payload);
+			return;
+		}
+		if (game.left.socket == client.id) {
+			console.log('game/down left has been called');
+			game.left.y += 8;
+		} else if (game.right.socket == client.id) {
+			console.log('game/down right has been called');
+			game.right.y += 8;
+		}
+		// save game
+		this.currentGames.set(payload, game);
+		this.server.emit('game/update', game);
+	}
+	@SubscribeMessage('game/up')
+	async handleUp (client: Socket, payload: any) {
+		console.log('game/up has been called', payload);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		if (payload.press == false)
+			return;
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			console.log('game/up game not found', payload);
+			return;
+		}
+		if (game.left.socket == client.id) {
+			console.log('game/up left has been called');
+			game.left.y -= 8;
+		} else if (game.right.socket == client.id) {
+			console.log('game/up right has been called');
+			game.right.y -= 8;
+		}
+		// save game
+		this.currentGames.set(payload, game);
+		this.server.emit('game/update', game);
+	}
+
+
+
+	@SubscribeMessage('game/move')
+	async handleMove (client: Socket, payload: any) {
+		console.log('game/move has been called', payload);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		const game = this.currentGames.get(payload.gameID);	
+		if (!game)
+			return;
+		console.log('Game found', game);
+		// if (game.left.socket == client.id) {
+		// 	console.log('Left paddle moved');
+		// 	game.left.y = payload.y;
+		// } else if (game.right.socket == client.id) {
+		// 	console.log('Right paddle moved');
+		// 	game.right.y = payload.y;
+		// }
+		if (payload.direction == 'up') {
+			game.left.y -= 10;
+		}
+		this.server.emit('game/update', game);
+		console.log('Game updated', game);
+		this.currentGames.set(payload.gameID, game);
+	}
+
+	async upleft(y: number)
+	{
+		const game = this.currentGames[0];
+		game.left.y = y;
+		this.server.emit('game/update', game);
+	}
+
+	private async createGame () {
+		const players = Array.from(this.waitingPlayers);
+
+		const random = Math.round(Math.random());
+
+		const player1 = players[random];
+		const player2 = players[1 - random];
+
+
+		const game: Game = {
+			id: uuidv4(),
+			left: new Paddle(player1, 10, 180, true),
+			right: new Paddle(player2, 690, 180, false)
+		}
+
+		this.waitingPlayers.clear();
+		this.server.emit('game/start', game);
+		console.log('Game starting!!', game);
+		this.currentGames.set(game.id, game);
+	}
+}
+
+interface Game {
+	id: string;
+	left: Paddle;
+	right: Paddle;
+}
+
+interface position {
+	x: number;
+	y: number;
+}
+
+class Paddle {
+	readonly socket: string;
+	left: boolean;
+	right: boolean;
+
+	readonly x: number;
+	y: number;
+
+	readonly width: number;
+	readonly height: number;
+
+	constructor(socket: string, x: number, y: number, left: boolean) {
+		/* Set readonly properties */
+		this.left = left;
+		this.right = !left;
+		this.socket = socket;
+
+		this.x = x;
+		this.y = y;
+
+		this.width = 10;
+		this.height = 60;
+
 	}
 }

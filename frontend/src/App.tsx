@@ -12,6 +12,7 @@ import Settings from "./components/Settings/Settings";
 import Chat from "./components/Chat/Chat";
 import React, { useEffect } from "react";
 import { socket, SocketContext } from "./context/socket";
+import Game from "./components/Game/Game";
 
 const App:React.FC = () =>
 {
@@ -38,6 +39,7 @@ const App:React.FC = () =>
 				<Route path='/friends' element={<Friends />}/>
 				<Route path='/social' element={<Social />}/>
 				<Route path='/settings' element={<Settings />}/>
+				<Route path='/game' element={<Game />}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>

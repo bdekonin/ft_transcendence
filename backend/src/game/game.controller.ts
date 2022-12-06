@@ -3,12 +3,14 @@ import { ApiBody, ApiQuery, ApiParam, ApiTags, ApiNotFoundResponse, ApiBadReques
 import { GameHistory } from 'src/entities/GameHistory.entity';
 import { CreateGameDTO } from './game.dto';
 import { GameService } from './game.service';
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @ApiTags('game')
 @Controller('game')
 export class GameController {
 	constructor(
 		private readonly gameService: GameService,
+		private readonly socketGateway: socketGateway,
 	) {}
 
 	@Get('userID/:userID')

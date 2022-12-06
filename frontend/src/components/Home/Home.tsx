@@ -18,7 +18,7 @@ const Home: FC = () => {
 		<>
 			<h1>This is the HomePage!</h1>
 			<div className='navigator'>
-				<button>Game</button>
+				<button onClick={() => {navigate('/game')}}>Game</button>
 				<br />
 				<button onClick={() => {navigate('/chat')}}>Chat</button>
 				<br />
