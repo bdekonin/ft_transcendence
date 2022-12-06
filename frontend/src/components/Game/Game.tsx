@@ -117,18 +117,23 @@ const Game: React.FC = () => {
 		}
 	};
 
-	useEffect(() => {
-		// console.log('gameState', gameState);
-		// renderFrame();
-		const interval = setInterval(() => {
-			renderFrame();
-			window.requestAnimationFrame(renderFrame);
-		}, 1000 / 60);
-		return () => {
-			clearInterval(interval);
-		}
-	}, [gameState]);
 
+	const requestIdRef = useRef<number>(0);
+	const tick = () => {
+		renderFrame();
+		if (requestIdRef.current) {
+			requestIdRef.current = requestAnimationFrame(tick);
+		}
+	};
+	
+	/* Launch game + cleanup */
+	useEffect(() => {
+		requestIdRef.current = requestAnimationFrame(tick);
+		return () => {
+			cancelAnimationFrame(requestIdRef.current);
+		};
+
+	});
 
 	if (isWaiting) {
 		return (
@@ -140,16 +145,6 @@ const Game: React.FC = () => {
 	return (
 		<div className="container">
 			<canvas ref={canvasRef} height={600} width={1300} id="game-canvas"></canvas>
-			<button onClick={
-				() => {
-					keyDownHandler({ key: "Up" } as KeyboardEvent)
-				}
-			}>Up</button>
-			<button onClick={
-				() => {
-					keyDownHandler({ key: "Down" } as KeyboardEvent)
-				}
-			}>Down</button>
 		</div>
 	)
 }
