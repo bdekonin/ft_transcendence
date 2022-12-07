@@ -1,4 +1,3 @@
-import { drawerClasses } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SocketContext } from '../../context/socket';
 import './style.css'
@@ -7,6 +6,8 @@ interface Game {
 	id: string;
 	left: Paddle;
 	right: Paddle;
+	leftScore: number;
+	rightScore: number;
 }
 
 interface Paddle {
@@ -20,6 +21,14 @@ interface Paddle {
 	readonly width: number;
 	readonly height: number;
 }
+
+export enum STATE {
+	SPECTATOR,
+	WAITING, /* Default state */
+	PLAYING,
+	END
+}
+
 
 const Game: React.FC = () => {
 
@@ -37,16 +46,17 @@ const Game: React.FC = () => {
 	useEffect(getCanvasContext, []);
 	
 	const socket = useContext(SocketContext);
-	const [isWaiting, setIsWaiting] = useState<boolean>(true);
 	const [gameState, setGameState] = useState<Game>();
 
+	const [state, setState] = useState<STATE>(STATE.WAITING);
+
 	useEffect(() => {
-		if (isWaiting) {
+		if (state == STATE.WAITING) {
 			socket.emit("game/waiting");
 		}
 		socket.on("game/start", (data: Game) => {
 			setGameState(data);
-			setIsWaiting(false);
+			setState(STATE.PLAYING);
 		});
 		return () => {
 		  socket.off("game/start");
@@ -56,7 +66,7 @@ const Game: React.FC = () => {
 	useEffect(() => {
 		socket.on("game/update", (data: Game) => {
 			setGameState(data);
-			setIsWaiting(false);
+			setState(STATE.PLAYING);
 		});
 		return () => {
 		  socket.off("game/update");
@@ -66,7 +76,7 @@ const Game: React.FC = () => {
 	/* Capture user inputs */
 	const keyDownHandler = useCallback(
 		(e: KeyboardEvent) => {
-		if (typeof gameState != "undefined" && !isWaiting) {
+		if (typeof gameState != "undefined" && state == STATE.PLAYING) {
 				if (e.key === "Down" || e.key === "ArrowDown") {
 					socket.emit("game/down", {press: true, id: gameState.id});
 				} else if (e.key === "Up" || e.key === "ArrowUp") {
@@ -74,11 +84,11 @@ const Game: React.FC = () => {
 				}
 			}
 		},
-		[socket, isWaiting, gameState]
+		[socket, state, gameState]
 	);
 	const keyUpHandler = useCallback(
 		(e: KeyboardEvent) => {
-			if (typeof gameState != "undefined" && !isWaiting) {
+			if (typeof gameState != "undefined" && state == STATE.PLAYING) {
 				if (e.key === "Down" || e.key === "ArrowDown") {
 					socket.emit("game/down", {press: false, id: gameState.id});
 				} else if (e.key === "Up" || e.key === "ArrowUp") {
@@ -86,10 +96,8 @@ const Game: React.FC = () => {
 				}
 			}
 		},
-		[socket, isWaiting, gameState]
+		[socket, state, gameState]
 	);
-
-
 
 	useEffect(() => {
 		window.addEventListener("keydown", keyDownHandler, false);
@@ -105,17 +113,16 @@ const Game: React.FC = () => {
 		};
 	}, [keyUpHandler]);
 
-
-
 	/* Render next frame */
 	const renderFrame = () => {
 		if (!canvasRef.current || !context.current) return;
-		if (isWaiting) {
+		if (state == STATE.WAITING) {
 			context.current.font = "30px Arial Narrow";
 			context.current.fillStyle = "white";
 			context.current?.fillText("Waiting for other player...", 200, 200);
 		}
-		if (gameState) {
+		if (state == STATE.PLAYING && gameState) {
+			/* Paddles */
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
 			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
@@ -123,13 +130,21 @@ const Game: React.FC = () => {
 			context.current.fillRect(gameState.right.x, gameState.right.y, gameState.right.width, gameState.right.height);
 			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
 
-			/* Draw middle line */
+			/* Draw middle dotted line */
 			context.current.beginPath();
-			context.current.moveTo(canvasRef.current.width / 2, 0);
-			context.current.lineTo(canvasRef.current.width / 2, canvasRef.current.height);
+			for (let i = 0; i < canvasRef.current.height; i += 30) {
+				context.current.moveTo(canvasRef.current.width / 2, i);
+				context.current.lineTo(canvasRef.current.width / 2, i + 15);
+			}
 			context.current.strokeStyle = "white";
+			context.current.lineWidth = 2;
 			context.current.stroke();
 
+			/* Score */
+			context.current.font = "30px Arial Narrow";
+			context.current.fillStyle = "white";
+			context.current?.fillText(gameState.leftScore.toString(), 300, 40); /* Left */
+			context.current?.fillText(gameState.rightScore.toString(), 390, 40); /* Right */
 		}
 	};
 
@@ -147,24 +162,15 @@ const Game: React.FC = () => {
 		return () => {
 			cancelAnimationFrame(requestIdRef.current);
 		};
-
 	});
-
-	// if (isWaiting) {
-	// 	return (
-	// 		<div>
-	// 			<h1>Waiting for other player...</h1>
-	// 		</div>
-	// 	);
-	// }
 
 	return (
 		<canvas
-		  ref={canvasRef}
-		  width={700}
-		  height={400}
-		  className="pong-canvas"
-		  style={{ border: "1px solid black" }}
+			ref={canvasRef}
+			width={700}
+			height={400}
+			className="pong-canvas"
+			style={{ border: "2px solid white" }}
 		/>
 	  );
 }

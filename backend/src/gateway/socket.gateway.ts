@@ -262,7 +262,9 @@ export class socketGateway {
 		const game: Game = {
 			id: uuidv4(),
 			left: new Paddle(player1, 10, 190, true),
-			right: new Paddle(player2, 700 - 20, 190, false)
+			right: new Paddle(player2, 700 - 20, 190, false),
+			leftScore: 0,
+			rightScore: 0
 		}
 
 		this.waitingPlayers.clear();
@@ -276,11 +278,8 @@ interface Game {
 	id: string;
 	left: Paddle;
 	right: Paddle;
-}
-
-interface position {
-	x: number;
-	y: number;
+	leftScore: number;
+	rightScore: number;
 }
 
 class Paddle {
