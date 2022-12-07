@@ -186,8 +186,7 @@ const Game: React.FC = () => {
 				ball.x = 700 / 2 - ball.width / 2;
 				// resetBall(gameState.ball.x, gameState.ball.y);
 				console.log('left score');
-				socket.emit("game/score", {side: "left", id: gameState.id});
-				// Game.computerScore += 1;
+				socket.emit("game/score", {side: "right", id: gameState.id});
 			}
 			
 			//check right canvas bounds
@@ -195,8 +194,7 @@ const Game: React.FC = () => {
 				ball.x = 700 / 2 - ball.width / 2;
 				// resetBall(350, 190);
 				console.log('right score');
-				socket.emit("game/score", {side: "right", id: gameState.id});
-				// Game.playerScore += 1;
+				socket.emit("game/score", {side: "left", id: gameState.id});
 			}
 			
 
@@ -252,6 +250,24 @@ const Game: React.FC = () => {
 			cancelAnimationFrame(requestIdRef.current);
 		};
 	});
+
+	// var fps = 30;
+	// function draw() {
+	// 	setTimeout(function() {
+	// 		// if (requestIdRef.current)
+	// 		// 	requestAnimationFrame(draw);
+	// 		// Put here the code you want to draw every frame
+	// 		update();
+	// 		render();
+	// 	}, 1000 / fps);
+	// }
+
+	// useEffect(() => {
+	// 	requestIdRef.current = requestAnimationFrame(draw);
+	// 	return () => {
+	// 		cancelAnimationFrame(requestIdRef.current);
+	// 	}
+	// });
 
 	return (
 		<canvas

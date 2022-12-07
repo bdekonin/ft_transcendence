@@ -189,7 +189,6 @@ export class socketGateway {
 
 	@SubscribeMessage('game/down')
 	async handleDown (client: Socket, payload: any) {
-		console.log('game/down has been called', payload);
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -201,13 +200,11 @@ export class socketGateway {
 			return;
 		}
 		if (game.left.socket == client.id) {
-			console.log('game/down left has been called');
 			/* Check if player is not at the bottom */
 			if (game.left.y + 60 >= 400)
 				return;
 			game.left.y += 8;
 		} else if (game.right.socket == client.id) {
-			console.log('game/down right has been called');
 			/* Check if player is not at the bottom */
 			if (game.right.y + 60 >= 400)
 				return;
@@ -219,7 +216,6 @@ export class socketGateway {
 	}
 	@SubscribeMessage('game/up')
 	async handleUp (client: Socket, payload: any) {
-		console.log('game/up has been called', payload);
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -231,13 +227,11 @@ export class socketGateway {
 			return;
 		}
 		if (game.left.socket == client.id) {
-			console.log('game/up left has been called');
 			/* Check if paddle is not at the top */
 			if (game.left.y <= 0)
 				return;
 			game.left.y -= 8;
 		} else if (game.right.socket == client.id) {
-			console.log('game/up right has been called');
 			/* Check if paddle is not at the top */
 			if (game.right.y <= 0)
 				return;
@@ -250,7 +244,6 @@ export class socketGateway {
 
 	@SubscribeMessage('game/score')
 	async handleScore (client: Socket, payload: any) {
-		console.log('game/score has been called', payload);
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -260,10 +253,8 @@ export class socketGateway {
 			return;
 		}
 		if (game.left.socket == client.id && payload.side == 'left') {
-			console.log('game/score left has been called');
 			game.leftScore += 1;
 		} else if (game.right.socket == client.id && payload.side == 'right') {
-			console.log('game/score right has been called');
 			game.rightScore += 1;
 		}
 		// save game
