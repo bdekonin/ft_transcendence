@@ -248,6 +248,29 @@ export class socketGateway {
 		this.server.emit('game/update', game);
 	}
 
+	@SubscribeMessage('game/score')
+	async handleScore (client: Socket, payload: any) {
+		console.log('game/score has been called', payload);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			console.log('game/score game not found', payload);
+			return;
+		}
+		if (game.left.socket == client.id && payload.side == 'left') {
+			console.log('game/score left has been called');
+			game.leftScore += 1;
+		} else if (game.right.socket == client.id && payload.side == 'right') {
+			console.log('game/score right has been called');
+			game.rightScore += 1;
+		}
+		// save game
+		this.currentGames.set(payload, game);
+		this.server.emit('game/update', game);
+	}
+
 	private async createGame () {
 		const players = Array.from(this.waitingPlayers);
 
@@ -301,6 +324,17 @@ class Ball {
 		this.width = 10;
 		this.height = 10;
 
+		/* Random direction */
+		const random = Math.floor(Math.random() * 2) + 1;
+		if (random % 2 == 0)
+			this.xVel = 1;
+		else
+			this.xVel = -1;
+		this.yVel = 1;
+	}
+
+	/* Only resets ball position and direction */
+	reset (x: number, y: number) {
 		/* Random direction */
 		const random = Math.floor(Math.random() * 2) + 1;
 		if (random % 2 == 0)

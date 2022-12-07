@@ -184,12 +184,18 @@ const Game: React.FC = () => {
 			//check left canvas bounds
 			if(ball.x <= 0){  
 				ball.x = 700 / 2 - ball.width / 2;
+				// resetBall(gameState.ball.x, gameState.ball.y);
+				console.log('left score');
+				socket.emit("game/score", {side: "left", id: gameState.id});
 				// Game.computerScore += 1;
 			}
 			
 			//check right canvas bounds
 			if(ball.x + ball.width >= 700){
 				ball.x = 700 / 2 - ball.width / 2;
+				// resetBall(350, 190);
+				console.log('right score');
+				socket.emit("game/score", {side: "right", id: gameState.id});
 				// Game.playerScore += 1;
 			}
 			
@@ -211,6 +217,20 @@ const Game: React.FC = () => {
 			ball.y += ball.yVel * ball.speed;
 		}
 	};
+
+	function resetBall(x: number, y: number) {
+		if (!ball) return;
+
+		ball.y = y;
+		ball.x = x;
+		/* Random direction */
+		const random = Math.floor(Math.random() * 2) + 1;
+		if (random % 2 == 0)
+			ball.xVel = 1;
+		else
+			ball.xVel = -1;
+		ball.yVel = 1;
+	}
 
 
 
