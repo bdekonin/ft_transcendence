@@ -187,6 +187,8 @@ export class socketGateway {
 		this.waitingPlayers.delete(client.id);
 	}
 
+	moveAmount = 8;
+
 	@SubscribeMessage('game/down')
 	async handleDown (client: Socket, payload: any) {
 		const user = await this.findUser(client)
@@ -203,12 +205,12 @@ export class socketGateway {
 			/* Check if player is not at the bottom */
 			if (game.left.y + 60 >= 400)
 				return;
-			game.left.y += 8;
+			game.left.y += this.moveAmount;
 		} else if (game.right.socket == client.id) {
 			/* Check if player is not at the bottom */
 			if (game.right.y + 60 >= 400)
 				return;
-			game.right.y += 8;
+			game.right.y += this.moveAmount;
 		}
 		// save game
 		this.currentGames.set(payload, game);
@@ -230,12 +232,12 @@ export class socketGateway {
 			/* Check if paddle is not at the top */
 			if (game.left.y <= 0)
 				return;
-			game.left.y -= 8;
+			game.left.y -= this.moveAmount;
 		} else if (game.right.socket == client.id) {
 			/* Check if paddle is not at the top */
 			if (game.right.y <= 0)
 				return;
-			game.right.y -= 8;
+			game.right.y -= this.moveAmount;
 		}
 		// save game
 		this.currentGames.set(payload, game);
@@ -298,7 +300,7 @@ interface Game {
 }
 
 class Ball {
-	readonly speed: number = 5;
+	readonly speed: number = 2.5;
 
 	x: number;
 	y: number;
