@@ -90,6 +90,7 @@ const Game: React.FC = () => {
 	);
 
 
+
 	useEffect(() => {
 		window.addEventListener("keydown", keyDownHandler, false);
 		return () => {
@@ -109,6 +110,11 @@ const Game: React.FC = () => {
 	/* Render next frame */
 	const renderFrame = () => {
 		if (!canvasRef.current || !context.current) return;
+		if (isWaiting) {
+			context.current.font = "30px Arial Narrow";
+			context.current.fillStyle = "white";
+			context.current?.fillText("Waiting for other player...", 200, 200);
+		}
 		if (gameState) {
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
@@ -127,11 +133,8 @@ const Game: React.FC = () => {
 		}
 	};
 
-
-
 	const requestIdRef = useRef<number>(0);
 	const tick = () => {
-		console.log('tick', context);
 		renderFrame();
 		if (requestIdRef.current) {
 			requestIdRef.current = requestAnimationFrame(tick);
@@ -147,13 +150,13 @@ const Game: React.FC = () => {
 
 	});
 
-	if (isWaiting) {
-		return (
-			<div>
-				<h1>Waiting for other player...</h1>
-			</div>
-		);
-	}
+	// if (isWaiting) {
+	// 	return (
+	// 		<div>
+	// 			<h1>Waiting for other player...</h1>
+	// 		</div>
+	// 	);
+	// }
 
 	return (
 		<canvas
