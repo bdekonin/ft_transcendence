@@ -248,8 +248,6 @@ export class socketGateway {
 		this.server.emit('game/update', game);
 	}
 
-
-
 	private async createGame () {
 		const players = Array.from(this.waitingPlayers);
 
@@ -263,6 +261,7 @@ export class socketGateway {
 			id: uuidv4(),
 			left: new Paddle(player1, 10, 190, true),
 			right: new Paddle(player2, 700 - 20, 190, false),
+			ball: new Ball(350, 190),
 			leftScore: 0,
 			rightScore: 0
 		}
@@ -278,8 +277,38 @@ interface Game {
 	id: string;
 	left: Paddle;
 	right: Paddle;
+	ball: Ball;
+
 	leftScore: number;
 	rightScore: number;
+}
+
+class Ball {
+	readonly speed: number = 5;
+
+	x: number;
+	y: number;
+	xVel:number = 0;
+	yVel:number = 0;
+
+	readonly width: number;
+	readonly height: number;
+
+	constructor(x: number, y: number) {
+		this.x = x;
+		this.y = y;
+
+		this.width = 10;
+		this.height = 10;
+
+		/* Random direction */
+		const random = Math.floor(Math.random() * 2) + 1;
+		if (random % 2 == 0)
+			this.xVel = 1;
+		else
+			this.xVel = -1;
+		this.yVel = 1;
+	}
 }
 
 class Paddle {

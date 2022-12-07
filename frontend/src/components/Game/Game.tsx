@@ -6,6 +6,7 @@ interface Game {
 	id: string;
 	left: Paddle;
 	right: Paddle;
+	ball: Ball;
 	leftScore: number;
 	rightScore: number;
 }
@@ -17,6 +18,18 @@ interface Paddle {
 
 	readonly x: number;
 	y: number;
+
+	readonly width: number;
+	readonly height: number;
+}
+
+interface Ball {
+	readonly speed: number;
+
+	x: number;
+	y: number;
+	xVel:number;
+	yVel:number;
 
 	readonly width: number;
 	readonly height: number;
@@ -47,6 +60,7 @@ const Game: React.FC = () => {
 	
 	const socket = useContext(SocketContext);
 	const [gameState, setGameState] = useState<Game>();
+	const [ball, setBall] = useState<Ball>();
 
 	const [state, setState] = useState<STATE>(STATE.WAITING);
 
@@ -56,6 +70,7 @@ const Game: React.FC = () => {
 		}
 		socket.on("game/start", (data: Game) => {
 			setGameState(data);
+			setBall(data.ball)
 			setState(STATE.PLAYING);
 		});
 		return () => {
@@ -114,14 +129,14 @@ const Game: React.FC = () => {
 	}, [keyUpHandler]);
 
 	/* Render next frame */
-	const renderFrame = () => {
+	const render = () => {
 		if (!canvasRef.current || !context.current) return;
 		if (state == STATE.WAITING) {
 			context.current.font = "30px Arial Narrow";
 			context.current.fillStyle = "white";
 			context.current?.fillText("Waiting for other player...", 200, 200);
 		}
-		if (state == STATE.PLAYING && gameState) {
+		if (state == STATE.PLAYING && gameState && ball) {
 			/* Paddles */
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
@@ -145,12 +160,66 @@ const Game: React.FC = () => {
 			context.current.fillStyle = "white";
 			context.current?.fillText(gameState.leftScore.toString(), 300, 40); /* Left */
 			context.current?.fillText(gameState.rightScore.toString(), 390, 40); /* Right */
+
+			/* Ball */
+			context.current.beginPath();
+			context.current.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
+			context.current.fillStyle = "white";
+			context.current.fill();
 		}
 	};
 
+	const update = () => {
+		if (state == STATE.PLAYING && gameState && ball) {
+			//check top canvas bounds
+			if(ball.y <= 10){
+				ball.yVel = 1;
+			}
+			
+			//check bottom canvas bounds
+			if(ball.y + ball.height >= 400 - 10){
+				ball.yVel = -1;
+			}
+			
+			//check left canvas bounds
+			if(ball.x <= 0){  
+				ball.x = 700 / 2 - ball.width / 2;
+				// Game.computerScore += 1;
+			}
+			
+			//check right canvas bounds
+			if(ball.x + ball.width >= 700){
+				ball.x = 700 / 2 - ball.width / 2;
+				// Game.playerScore += 1;
+			}
+			
+
+			//check player collision
+			if(ball.x <= gameState.left.x + gameState.left.width){
+				if(ball.y >= gameState.left.y && ball.y + ball.height <= gameState.left.y + gameState.left.height){
+					ball.xVel = 1;
+				}
+			}
+			
+			//check computer collision
+			if(ball.x + ball.width >= gameState.right.x){
+				if(ball.y >= gameState.right.y && ball.y + ball.height <= gameState.right.y + gameState.right.height){
+					ball.xVel = -1;
+				}
+			}
+			ball.x += ball.xVel * ball.speed;
+			ball.y += ball.yVel * ball.speed;
+		}
+	};
+
+
+
+
+
 	const requestIdRef = useRef<number>(0);
 	const tick = () => {
-		renderFrame();
+		render();
+		update();
 		if (requestIdRef.current) {
 			requestIdRef.current = requestAnimationFrame(tick);
 		}
