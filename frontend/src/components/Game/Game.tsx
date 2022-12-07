@@ -89,6 +89,7 @@ const Game: React.FC = () => {
 		[socket, isWaiting, gameState]
 	);
 
+
 	useEffect(() => {
 		window.addEventListener("keydown", keyDownHandler, false);
 		return () => {
@@ -104,6 +105,7 @@ const Game: React.FC = () => {
 	}, [keyUpHandler]);
 
 
+
 	/* Render next frame */
 	const renderFrame = () => {
 		if (!canvasRef.current || !context.current) return;
@@ -111,15 +113,25 @@ const Game: React.FC = () => {
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
 			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
-			context.current.fillStyle = "red";
+			context.current.fillStyle = "white";
 			context.current.fillRect(gameState.right.x, gameState.right.y, gameState.right.width, gameState.right.height);
 			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
+
+			/* Draw middle line */
+			context.current.beginPath();
+			context.current.moveTo(canvasRef.current.width / 2, 0);
+			context.current.lineTo(canvasRef.current.width / 2, canvasRef.current.height);
+			context.current.strokeStyle = "white";
+			context.current.stroke();
+
 		}
 	};
 
 
+
 	const requestIdRef = useRef<number>(0);
 	const tick = () => {
+		console.log('tick', context);
 		renderFrame();
 		if (requestIdRef.current) {
 			requestIdRef.current = requestAnimationFrame(tick);
@@ -142,10 +154,16 @@ const Game: React.FC = () => {
 			</div>
 		);
 	}
+
 	return (
-		<div className="container">
-			<canvas ref={canvasRef} height={600} width={1300} id="game-canvas"></canvas>
-		</div>
-	)
+		<canvas
+		  ref={canvasRef}
+		  width={700}
+		  height={400}
+		  className="pong-canvas"
+		  style={{ border: "1px solid black" }}
+		/>
+	  );
 }
+
 export default Game;

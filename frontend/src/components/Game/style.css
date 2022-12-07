@@ -1,14 +1,10 @@
 /* body {
 	text-align: center;
 } */
-.container {
-	/* text-align: center; */
-	/* background-color: purple; */
-	/* background-color: purple; */
-}
-.container .game-canvas {
+.pong-canvas {
+	width: 700px;
+	height: 400px;
+	margin: 0 auto;
 	display: block;
-	margin: 0px auto;
-	background: black;
-	/* border: 3px white; */
+	background-color: black;
 }

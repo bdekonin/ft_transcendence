@@ -11,7 +11,6 @@ import { ChatService } from 'src/chat/chat.service';
 import { Chat } from 'src/entities/Chat.entity';
 import { UserService } from 'src/user/user.service';
 import {v4 as uuidv4} from 'uuid';
-import { seedrandom} from 'seedrandom';
 
 class userDto {
 	id: number; /* user id */
@@ -173,6 +172,8 @@ export class socketGateway {
 			return;
 		this.waitingPlayers.add(client.id);
 		console.log('Waiting players', this.waitingPlayers);
+		console.log('Current games', this.currentGames);
+		/* Check if user is already in a game */
 		if (this.waitingPlayers.size >= 2) {
 			this.createGame();
 		}
@@ -201,9 +202,15 @@ export class socketGateway {
 		}
 		if (game.left.socket == client.id) {
 			console.log('game/down left has been called');
+			/* Check if player is not at the bottom */
+			if (game.left.y + 60 >= 400)
+				return;
 			game.left.y += 8;
 		} else if (game.right.socket == client.id) {
 			console.log('game/down right has been called');
+			/* Check if player is not at the bottom */
+			if (game.right.y + 60 >= 400)
+				return;
 			game.right.y += 8;
 		}
 		// save game
@@ -225,9 +232,15 @@ export class socketGateway {
 		}
 		if (game.left.socket == client.id) {
 			console.log('game/up left has been called');
+			/* Check if paddle is not at the top */
+			if (game.left.y <= 0)
+				return;
 			game.left.y -= 8;
 		} else if (game.right.socket == client.id) {
 			console.log('game/up right has been called');
+			/* Check if paddle is not at the top */
+			if (game.right.y <= 0)
+				return;
 			game.right.y -= 8;
 		}
 		// save game
@@ -236,38 +249,6 @@ export class socketGateway {
 	}
 
 
-
-	@SubscribeMessage('game/move')
-	async handleMove (client: Socket, payload: any) {
-		console.log('game/move has been called', payload);
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		const game = this.currentGames.get(payload.gameID);	
-		if (!game)
-			return;
-		console.log('Game found', game);
-		// if (game.left.socket == client.id) {
-		// 	console.log('Left paddle moved');
-		// 	game.left.y = payload.y;
-		// } else if (game.right.socket == client.id) {
-		// 	console.log('Right paddle moved');
-		// 	game.right.y = payload.y;
-		// }
-		if (payload.direction == 'up') {
-			game.left.y -= 10;
-		}
-		this.server.emit('game/update', game);
-		console.log('Game updated', game);
-		this.currentGames.set(payload.gameID, game);
-	}
-
-	async upleft(y: number)
-	{
-		const game = this.currentGames[0];
-		game.left.y = y;
-		this.server.emit('game/update', game);
-	}
 
 	private async createGame () {
 		const players = Array.from(this.waitingPlayers);
@@ -280,8 +261,8 @@ export class socketGateway {
 
 		const game: Game = {
 			id: uuidv4(),
-			left: new Paddle(player1, 10, 180, true),
-			right: new Paddle(player2, 690, 180, false)
+			left: new Paddle(player1, 10, 190, true),
+			right: new Paddle(player2, 700 - 20, 190, false)
 		}
 
 		this.waitingPlayers.clear();
