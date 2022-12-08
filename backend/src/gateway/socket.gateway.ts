@@ -336,7 +336,7 @@ interface Game {
 }
 
 class Ball {
-	readonly speed: number = 1; /* 2.5 */
+	readonly speed: number = 4; /* 2.5 */
 
 	x: number;
 	y: number;
