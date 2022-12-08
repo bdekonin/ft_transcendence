@@ -36,10 +36,11 @@ interface Ball {
 }
 
 export enum STATE {
-	SPECTATOR,
+	SPECTATOR, /* Spectator */
 	WAITING, /* Default state */
-	PLAYING,
-	END
+	INTRO, /* Intro animation */
+	PLAYING, /* Playing */
+	END /* End of game */
 }
 
 
@@ -71,7 +72,7 @@ const Game: React.FC = () => {
 		socket.on("game/start", (data: Game) => {
 			setGameState(data);
 			setBall(data.ball)
-			setState(STATE.PLAYING);
+			setState(STATE.INTRO);
 		});
 		return () => {
 		  socket.off("game/start");
@@ -88,46 +89,35 @@ const Game: React.FC = () => {
 		};
 	}, [socket]);
 
-	/* Capture user inputs */
-	const keyDownHandler = useCallback(
-		(e: KeyboardEvent) => {
-		if (typeof gameState != "undefined" && state == STATE.PLAYING) {
-				if (e.key === "Down" || e.key === "ArrowDown") {
-					socket.emit("game/down", {press: true, id: gameState.id});
-				} else if (e.key === "Up" || e.key === "ArrowUp") {
-					socket.emit("game/up", {press: true, id: gameState.id});
-				}
-			}
-		},
-		[socket, state, gameState]
-	);
-	const keyUpHandler = useCallback(
-		(e: KeyboardEvent) => {
+	useEffect(() => {
+		socket.on("game/ball", (data: Ball) => {
+			setBall(data);
+		});
+		return () => {
+			socket.off("game/ball");
+		};
+	}, [socket]);
+
+
+
+	/* Mouse move handler */
+	const mouseMoveHandler = useCallback(
+		(e: MouseEvent) => {
 			if (typeof gameState != "undefined" && state == STATE.PLAYING) {
-				if (e.key === "Down" || e.key === "ArrowDown") {
-					socket.emit("game/down", {press: false, id: gameState.id});
-				} else if (e.key === "Up" || e.key === "ArrowUp") {
-					socket.emit("game/up", {press: false, id: gameState.id});
-				}
+				socket.emit("game/move", {y: e.clientY, id: gameState.id});
 			}
 		},
 		[socket, state, gameState]
 	);
 
 	useEffect(() => {
-		window.addEventListener("keydown", keyDownHandler, false);
+		window.addEventListener("mousemove", mouseMoveHandler, false);
 		return () => {
-			window.removeEventListener("keydown", keyDownHandler, false);
+			window.removeEventListener("mousemove", mouseMoveHandler, false);
 		};
-	}, [keyDownHandler]);
+	}, [mouseMoveHandler]);
 
-	useEffect(() => {
-		window.addEventListener("keyup", keyUpHandler, false);
-		return () => {
-			window.removeEventListener("keyup", keyUpHandler, false);
-		};
-	}, [keyUpHandler]);
-
+	let interval: NodeJS.Timeout;
 	/* Render next frame */
 	const render = () => {
 		if (!canvasRef.current || !context.current) return;
@@ -135,6 +125,24 @@ const Game: React.FC = () => {
 			context.current.font = "30px Arial Narrow";
 			context.current.fillStyle = "white";
 			context.current?.fillText("Waiting for other player...", 200, 200);
+		}
+		if (state == STATE.INTRO && gameState) {
+			let i = 5;
+			if (!interval) {
+				interval = setInterval(() => {
+					if (i === 0) {
+						clearInterval(interval);
+						setState(STATE.PLAYING);
+						return;
+					}
+					if (!canvasRef.current || !context.current) return;
+					context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+					context.current.font = "30px Arial Narrow";
+					context.current.fillStyle = "white";
+					context.current?.fillText(i.toString(), canvasRef.current.width / 2 - 10, canvasRef.current.height / 2);
+					i--;
+				}, 1000);
+			}
 		}
 		if (state == STATE.PLAYING && gameState && ball) {
 			/* Paddles */
@@ -170,6 +178,9 @@ const Game: React.FC = () => {
 	};
 
 	const update = () => {
+		if (state == STATE.PLAYING && gameState) {
+
+		}
 		if (state == STATE.PLAYING && gameState && ball) {
 			//check top canvas bounds
 			if(ball.y <= 10){
@@ -183,20 +194,13 @@ const Game: React.FC = () => {
 			
 			//check left canvas bounds
 			if(ball.x <= 0){  
-				ball.x = 700 / 2 - ball.width / 2;
-				// resetBall(gameState.ball.x, gameState.ball.y);
-				console.log('left score');
 				socket.emit("game/score", {side: "right", id: gameState.id});
 			}
 			
 			//check right canvas bounds
 			if(ball.x + ball.width >= 700){
-				ball.x = 700 / 2 - ball.width / 2;
-				// resetBall(350, 190);
-				console.log('right score');
 				socket.emit("game/score", {side: "left", id: gameState.id});
 			}
-			
 
 			//check player collision
 			if(ball.x <= gameState.left.x + gameState.left.width){
@@ -216,24 +220,6 @@ const Game: React.FC = () => {
 		}
 	};
 
-	function resetBall(x: number, y: number) {
-		if (!ball) return;
-
-		ball.y = y;
-		ball.x = x;
-		/* Random direction */
-		const random = Math.floor(Math.random() * 2) + 1;
-		if (random % 2 == 0)
-			ball.xVel = 1;
-		else
-			ball.xVel = -1;
-		ball.yVel = 1;
-	}
-
-
-
-
-
 	const requestIdRef = useRef<number>(0);
 	const tick = () => {
 		render();
@@ -250,24 +236,6 @@ const Game: React.FC = () => {
 			cancelAnimationFrame(requestIdRef.current);
 		};
 	});
-
-	// var fps = 30;
-	// function draw() {
-	// 	setTimeout(function() {
-	// 		// if (requestIdRef.current)
-	// 		// 	requestAnimationFrame(draw);
-	// 		// Put here the code you want to draw every frame
-	// 		update();
-	// 		render();
-	// 	}, 1000 / fps);
-	// }
-
-	// useEffect(() => {
-	// 	requestIdRef.current = requestAnimationFrame(draw);
-	// 	return () => {
-	// 		cancelAnimationFrame(requestIdRef.current);
-	// 	}
-	// });
 
 	return (
 		<canvas

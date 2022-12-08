@@ -189,6 +189,7 @@ export class socketGateway {
 
 	moveAmount = 8;
 
+	/* Key presses */
 	@SubscribeMessage('game/down')
 	async handleDown (client: Socket, payload: any) {
 		const user = await this.findUser(client)
@@ -244,6 +245,39 @@ export class socketGateway {
 		this.server.emit('game/update', game);
 	}
 
+	/* Mouse movement */
+	@SubscribeMessage('game/move')
+	async handleMouseMove(client: Socket, payload: any) {
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			// console.log('game/move game not found', payload);
+			return;
+		}
+		if (game.left.socket == client.id) {
+			if (payload.y + 60 >= 400)
+				return;
+			if (payload.y <= 0)
+				return;
+			game.left.y = payload.y;
+		} else if (game.right.socket == client.id) {
+			if (payload.y + 60 >= 400)
+				return;
+			if (payload.y <= 0)
+				return;
+			game.right.y = payload.y;
+		}
+		// save game
+		this.currentGames.set(payload, game);
+		this.server.emit('game/update', game);
+	}
+
+
+
+
 	@SubscribeMessage('game/score')
 	async handleScore (client: Socket, payload: any) {
 		const user = await this.findUser(client)
@@ -251,7 +285,7 @@ export class socketGateway {
 			return;
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
-			console.log('game/score game not found', payload);
+			// console.log('game/score game not found', payload);
 			return;
 		}
 		if (game.left.socket == client.id && payload.side == 'left') {
@@ -261,7 +295,9 @@ export class socketGateway {
 		}
 		// save game
 		this.currentGames.set(payload, game);
+		game.ball.reset();
 		this.server.emit('game/update', game);
+		this.server.emit('game/ball', game.ball);
 	}
 
 	private async createGame () {
@@ -275,8 +311,8 @@ export class socketGateway {
 
 		const game: Game = {
 			id: uuidv4(),
-			left: new Paddle(player1, 10, 190, true),
-			right: new Paddle(player2, 700 - 20, 190, false),
+			left: new Paddle(player1, "bdekonin", 10, 190, true),
+			right: new Paddle(player2, "rkieboom", 700 - 20, 190, false),
 			ball: new Ball(350, 190),
 			leftScore: 0,
 			rightScore: 0
@@ -300,7 +336,7 @@ interface Game {
 }
 
 class Ball {
-	readonly speed: number = 2.5;
+	readonly speed: number = 1; /* 2.5 */
 
 	x: number;
 	y: number;
@@ -310,9 +346,13 @@ class Ball {
 	readonly width: number;
 	readonly height: number;
 
+	private startingX: number;
+	private startingY: number;
 	constructor(x: number, y: number) {
 		this.x = x;
 		this.y = y;
+		this.startingX = x;
+		this.startingY = y;
 
 		this.width = 10;
 		this.height = 10;
@@ -327,7 +367,9 @@ class Ball {
 	}
 
 	/* Only resets ball position and direction */
-	reset (x: number, y: number) {
+	reset () {
+		this.x = this.startingX;
+		this.y = this.startingY;
 		/* Random direction */
 		const random = Math.floor(Math.random() * 2) + 1;
 		if (random % 2 == 0)
@@ -340,6 +382,7 @@ class Ball {
 
 class Paddle {
 	readonly socket: string;
+	readonly username: string;
 	left: boolean;
 	right: boolean;
 
@@ -349,11 +392,12 @@ class Paddle {
 	readonly width: number;
 	readonly height: number;
 
-	constructor(socket: string, x: number, y: number, left: boolean) {
+	constructor(socket: string, username: string, x: number, y: number, left: boolean) {
 		/* Set readonly properties */
 		this.left = left;
 		this.right = !left;
 		this.socket = socket;
+		this.username = username;
 
 		this.x = x;
 		this.y = y;
