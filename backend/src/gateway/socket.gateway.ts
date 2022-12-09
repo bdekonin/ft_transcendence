@@ -254,7 +254,6 @@ export class socketGateway {
 
 	@SubscribeMessage('game/score')
 	async handleScore (client: Socket, payload: any) {
-		console.log('game/score', payload.id);
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -301,16 +300,16 @@ export class socketGateway {
 	}
 
 	async handleEndGame (game: Game, winner?: Paddle) {
-		console.log('Ending game', game.id);
+		// console.log('Ending game', game.id);
 		this.currentGames.delete(game.id);
 
 		if (!winner) { /* Draw */
-			console.log('Its a draw', winner);
+			// console.log('Its a draw', winner);
 			this.server.to('game:' + game.id).emit('game/end');
 			this.server.socketsLeave('game:' + game.id);
 			return ;
 		}
-		console.log('The winner is ', winner);
+		// console.log('The winner is ', winner);
 		/* Remove user from the socket room */
 		this.server.to('game:' + game.id).emit('game/end', { winner: winner.username });
 		this.server.socketsLeave('game:' + game.id);
@@ -334,19 +333,27 @@ export class socketGateway {
 		
 		const game: Game = {
 			id: uuidv4(),
+			// theme: Theme[Object.keys(Theme)[Math.floor(Math.random() * Object.keys(Theme).length)]],
+			theme: Theme.FOOTBALL,
 			left: new Paddle(player1[0], user1.username, 10, 190, true),
 			right: new Paddle(player2[0], user2.username, 700 - 20, 190, false),
 			ball: new Ball(350, 190),
 			leftScore: 0,
 			rightScore: 0
 		}
-		console.log('Creating game', game.id);
+		console.log('Creating game', game);
 		return game;
 	}
 }
 
+export enum Theme {
+	CLASSIC, /* Classic theme - Default */
+	FOOTBALL, /* Football theme */
+}
+
 interface Game {
 	id: string;
+	theme: Theme;
 	left: Paddle;
 	right: Paddle;
 	ball: Ball;

@@ -1,10 +1,12 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
+import { drawEnd, drawIntro, drawPlaying, drawWaiting } from './draw';
 import './style.css'
 
 interface Game {
 	id: string;
+	theme: Theme;
 	left: Paddle;
 	right: Paddle;
 	ball: Ball;
@@ -37,12 +39,31 @@ interface Ball {
 	readonly height: number;
 }
 
+// This enum represents the possible states of the game
 export enum STATE {
-	SPECTATOR, /* Spectator */
-	WAITING, /* Default state */
-	INTRO, /* Intro animation */
-	PLAYING, /* Playing */
-	END /* End of game */
+	// The spectator state, where the user is watching the game but not participating
+	SPECTATOR,
+	
+	// The default state, where the user is waiting for the game to start
+	WAITING,
+	
+	// The intro animation state, where the game is playing the intro animation
+	INTRO,
+	
+	// The playing state, where the user is actively participating in the game
+	PLAYING,
+	
+	// The end of game state, where the game is over and the user is no longer participating
+	END
+}
+
+// This enum represents the available themes for the game
+export enum Theme {
+	// The classic theme
+	CLASSIC,
+	
+	// The football theme
+	FOOTBALL,
 }
 
 
@@ -58,10 +79,10 @@ const Game: React.FC = () => {
 
 	const getCanvasContext = () => {
 		if (!canvasRef.current) {
-		  return;
+			return;
 		}
 		context.current = canvasRef.current.getContext("2d");
-	  };
+	};
 	
 	useEffect(getCanvasContext, []);
 	
@@ -172,9 +193,7 @@ const Game: React.FC = () => {
 		if (!canvasRef.current || !context.current)
 			return;
 		if (state == STATE.WAITING) {
-			context.current.font = "30px Arial Narrow";
-			context.current.fillStyle = "white";
-			context.current?.fillText("Waiting for other player...", 200, 200);
+			drawWaiting(context.current)
 		}
 		else if (state == STATE.INTRO && gameState) {
 			let i = 7;
@@ -185,64 +204,30 @@ const Game: React.FC = () => {
 						setState(STATE.PLAYING);
 						return;
 					}
-					if (!canvasRef.current || !context.current) return;
-					context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-					context.current.font = "30px Arial Narrow";
-					context.current.fillStyle = "white";
-					if (i > 5) {
-						const username = gameState.left.socket != socket.id ? gameState.left.username : gameState.right.username;
-						context.current?.fillText("Playing against " + username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
-					}
-					else if (i > 3) {
-						context.current?.fillText("Ready?", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
-					}
-					else {
-						context.current?.fillText(i.toString(), canvasRef.current.width / 2 - 10, canvasRef.current.height / 2);
-					}
+					if (!canvasRef.current || !context.current)
+						return;
+					drawIntro(gameState.theme, i, socket.id, {
+						context: context.current,
+						canvas: canvasRef.current,
+						gameState: gameState,
+					});
 					i--;
 				}, 1000);
 			}
 		}
 		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
-			/* Paddles */
-			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-			context.current.fillStyle = "white";
-			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
-			context.current.fillStyle = "white";
-			context.current.fillRect(gameState.right.x, gameState.right.y, gameState.right.width, gameState.right.height);
-			context.current.fillRect(gameState.left.x, gameState.left.y, gameState.left.width, gameState.left.height);
-
-			/* Draw middle dotted line */
-			context.current.beginPath();
-			for (let i = 0; i < canvasRef.current.height; i += 30) {
-				context.current.moveTo(canvasRef.current.width / 2, i);
-				context.current.lineTo(canvasRef.current.width / 2, i + 15);
-			}
-			context.current.strokeStyle = "white";
-			context.current.lineWidth = 2;
-			context.current.stroke();
-
-			/* Score */
-			context.current.font = "30px Arial Narrow";
-			context.current.fillStyle = "white";
-			context.current?.fillText(gameState.leftScore.toString(), 300, 40); /* Left */
-			context.current?.fillText(gameState.rightScore.toString(), 390, 40); /* Right */
-
-			/* Ball */
-			context.current.beginPath();
-			context.current.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
-			context.current.fillStyle = "white";
-			context.current.fill();
+			drawPlaying(gameState.theme, ball, {
+				context: context.current,
+				canvas: canvasRef.current,
+				gameState: gameState,
+			});
 		}
 		else if (state == STATE.END && gameState && winner) {
-			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-			context.current.font = "30px Arial Narrow";
-			context.current.fillStyle = "white";
-			if (!winner) {
-				context.current?.fillText("Draw!", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
-				return;
-			}
-			context.current?.fillText("Winner: " + winner, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
+			drawEnd(gameState.theme, winner, {
+				context: context.current,
+				canvas: canvasRef.current,
+				gameState: gameState,
+			});
 		}
 	};
 
@@ -311,7 +296,7 @@ const Game: React.FC = () => {
 			width={700}
 			height={400}
 			className="pong-canvas"
-			style={{ border: "2px solid white" }}
+			style={{ border: "1px solid white" }}
 		/>
 	  );
 }
