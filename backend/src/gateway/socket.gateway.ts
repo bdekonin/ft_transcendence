@@ -160,31 +160,65 @@ export class socketGateway {
 	}
 
 
-	waitingPlayers: Set<string> = new Set();
+	// waitingPlayers: Set<string> = new Set();
+	waitingPlayers: Map<string, Socket> = new Map();
 	currentGames: Map<string, Game> = new Map();
 	/* Game */
 
 	@SubscribeMessage('game/waiting')
 	async handleJoinGame (client: Socket, payload: any) {
-		console.log('game/waiting has been called');
+		console.log('game/waiting');
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-		this.waitingPlayers.add(client.id);
-		console.log('Waiting players', this.waitingPlayers);
-		console.log('Current games', this.currentGames);
 		/* Check if user is already in a game */
-		if (this.waitingPlayers.size >= 2) {
-			this.createGame();
+		const usersCurrentGame = this.isUserInGame(client.id); /* returns game if user is in a game else null */
+		if (usersCurrentGame) {
+			console.log('User is already in a game');
+			// this.server.emit('game/rejoin', usersCurrentGame);
+			this.server.to('game:' + usersCurrentGame.id).emit('game/rejoin', usersCurrentGame);
+			return ;
 		}
+
+		this.waitingPlayers.set(client.id, client);
+		if (this.waitingPlayers.size >= 2) {
+			const game = await this.createGame();
+			/* Adding players to game room */
+			this.waitingPlayers.get(game.left.socket).join('game:' + game.id);
+			this.waitingPlayers.get(game.right.socket).join('game:' + game.id);
+
+			this.waitingPlayers.clear();
+			this.server.in('game:' + game.id).emit('game/start', game);
+			this.currentGames.set(game.id, game);
+		}
+
+	}
+
+
+	isUserInGame (clientID: string): Game {
+		/* Looping through all current games */
+		for (const game of this.currentGames.values()) {
+			if (game.left.socket == clientID || game.right.socket == clientID)
+				return game;
+		}
+		return null;
 	}
 
 	@SubscribeMessage('game/leave')
 	async handleLeaveGame (client: Socket, payload: any) {
+		console.log('game/leave');
 		const user = await this.findUser(client)
 		if (!user)
 			return;
 		this.waitingPlayers.delete(client.id);
+		const usersCurrentGame = this.isUserInGame(client.id);
+		if (usersCurrentGame) {
+			/* User is still in a game */
+			console.log('User is still in a game');
+			return ;
+		}
+		/* Leave game room */
+		client.leave('game:' + payload?.id);
 	}
 
 	moveAmount = 8;
@@ -195,7 +229,6 @@ export class socketGateway {
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
 			// console.log('game/move game not found', payload);
@@ -216,17 +249,18 @@ export class socketGateway {
 		}
 		// save game
 		this.currentGames.set(payload.id, game);
-		this.server.emit('game/update', game);
+		this.server.to('game:' + payload.id).emit('game/update', game);
 	}
 
 	@SubscribeMessage('game/score')
 	async handleScore (client: Socket, payload: any) {
+		console.log('game/score', payload.id);
 		const user = await this.findUser(client)
 		if (!user)
 			return;
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
-			// console.log('game/score game not found', payload);
+			console.log('game/score game not found');
 			return;
 		}
 		if (game.left.socket == client.id && payload.side == 'left') {
@@ -234,56 +268,53 @@ export class socketGateway {
 		} else if (game.right.socket == client.id && payload.side == 'right') {
 			game.rightScore += 1;
 		}
-		if (game.leftScore >= 10 || game.rightScore >= 10) {
-			this.handleEndGame(client, payload);
+		if (game.leftScore >= 5 || game.rightScore >= 5) { /* Change to 10 */
+			this.handleEndGame(game);
 			return;
 		}
 
 		// save game
+		game.ball.reset(); 
 		this.currentGames.set(payload.id, game);
-		game.ball.reset();
-		this.server.emit('game/update', game);
-		this.server.emit('game/ball', game.ball);
+		this.server.to('game:' + payload.id).emit('game/update', game);
+		this.server.to('game:' + payload.id).emit('game/ball', game.ball);
 	}
 
-	async handleEndGame (client: Socket, payload: any) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		const game = this.currentGames.get(payload.id);
-		if (!game) {
-			// console.log('game/end game not found', payload);
-			return;
-		}
-		this.currentGames.delete(payload.id);
+	async handleEndGame (game: Game) {
+		console.log('Ending game', game.id);
+		this.currentGames.delete(game.id);
 
-		this.server.emit('game/end');
-		/* Send request to update user stats */
-		// this.userService.ga
+		/* Remove user from the socket room */
+		this.server.to('game:' + game.id).emit('game/end');
+		this.server.socketsLeave('game:' + game.id);
 	}
 
-	private async createGame () {
+	private async createGame (): Promise<Game> {
 		const players = Array.from(this.waitingPlayers);
-
+		
 		const random = Math.round(Math.random());
-
+		
 		const player1 = players[random];
 		const player2 = players[1 - random];
-
-
+		
+		const tempUser1 = await this.findUser(player1[1]);
+		const tempUser2 = await this.findUser(player2[1]);
+		if (!tempUser1 || !tempUser2)
+		return null;
+		
+		const user1 = await this.userService.findUserById(tempUser1.id);
+		const user2 = await this.userService.findUserById(tempUser2.id);
+		
 		const game: Game = {
 			id: uuidv4(),
-			left: new Paddle(player1, "bdekonin", 10, 190, true),
-			right: new Paddle(player2, "rkieboom", 700 - 20, 190, false),
+			left: new Paddle(player1[0], user1.username, 10, 190, true),
+			right: new Paddle(player2[0], user2.username, 700 - 20, 190, false),
 			ball: new Ball(350, 190),
 			leftScore: 0,
 			rightScore: 0
 		}
-
-		this.waitingPlayers.clear();
-		this.server.emit('game/start', game);
-		console.log('Game starting!!', game);
-		this.currentGames.set(game.id, game);
+		console.log('Creating game', game.id);
+		return game;
 	}
 }
 

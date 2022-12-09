@@ -1,5 +1,6 @@
 import { containerClasses } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
 import './style.css'
 
@@ -51,6 +52,7 @@ const Game: React.FC = () => {
 	/* Canvas */
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const context = useRef<CanvasRenderingContext2D | null>();
+	const location = useLocation();
 
 	const getCanvasContext = () => {
 		if (!canvasRef.current) {
@@ -68,6 +70,13 @@ const Game: React.FC = () => {
 	const [state, setState] = useState<STATE>(STATE.WAITING);
 
 	useEffect(() => {
+		if (location.hash) {
+			socket.emit("game/rejoin", {id: location.hash.substring(1)});
+			setState(STATE.SPECTATOR);
+		}
+	}, [socket]);
+
+	useEffect(() => {
 		if (state == STATE.WAITING) {
 			socket.emit("game/waiting");
 		}
@@ -77,9 +86,22 @@ const Game: React.FC = () => {
 			setState(STATE.INTRO);
 		});
 		return () => {
-		  socket.off("game/start");
+			socket.off("game/start");
+			socket.emit("game/leave");
 		};
 	}, [socket]);
+
+	useEffect(() => {
+		socket.on('game/rejoin', (data: Game) => {
+			setGameState(data);
+			setBall(data.ball)
+			setState(STATE.PLAYING);
+		});
+		return () => {
+			socket.off("game/rejoin");
+		}
+	}, [socket]);
+
 
 	useEffect(() => {
 		socket.on("game/update", (data: Game) => {
@@ -87,7 +109,7 @@ const Game: React.FC = () => {
 			setState(STATE.PLAYING);
 		});
 		return () => {
-		  socket.off("game/update");
+			socket.off("game/update");
 		};
 	}, [socket]);
 
@@ -152,7 +174,8 @@ const Game: React.FC = () => {
 					context.current.font = "30px Arial Narrow";
 					context.current.fillStyle = "white";
 					if (i > 5) {
-						context.current?.fillText("Playing against " + gameState.right.username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
+						const username = gameState.left.socket != socket.id ? gameState.left.username : gameState.right.username;
+						context.current?.fillText("Playing against " + username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
 					}
 					else if (i > 3) {
 						context.current?.fillText("Ready?", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
@@ -227,6 +250,7 @@ const Game: React.FC = () => {
 			//check right canvas bounds
 			if(ball.x + ball.width >= 700){
 				socket.emit("game/score", {side: "left", id: gameState.id});
+				console.log('location', location);
 			}
 
 			//check player collision
