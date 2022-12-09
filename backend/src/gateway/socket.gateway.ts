@@ -268,8 +268,12 @@ export class socketGateway {
 		} else if (game.right.socket == client.id && payload.side == 'right') {
 			game.rightScore += 1;
 		}
-		if (game.leftScore >= 5 || game.rightScore >= 5) { /* Change to 10 */
-			this.handleEndGame(game);
+		if (game.leftScore >= 10) {
+			this.handleEndGame(game, game.left);
+			return;
+		}
+		else if (game.rightScore >= 10) {
+			this.handleEndGame(game, game.right);
 			return;
 		}
 
@@ -280,12 +284,35 @@ export class socketGateway {
 		this.server.to('game:' + payload.id).emit('game/ball', game.ball);
 	}
 
-	async handleEndGame (game: Game) {
+	@SubscribeMessage('game/request-spectate')
+	async handleRequestSpectate (client: Socket, payload: any) {
+		/* payload only has .id */
+		console.log('game/request-spectate', payload.id);
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			console.log('game/request-spectate game not found');
+			return;
+		}
+		this.server.to(client.id).emit('game/spectate', game);
+		client.join('game:' + payload.id);
+	}
+
+	async handleEndGame (game: Game, winner?: Paddle) {
 		console.log('Ending game', game.id);
 		this.currentGames.delete(game.id);
 
+		if (!winner) { /* Draw */
+			console.log('Its a draw', winner);
+			this.server.to('game:' + game.id).emit('game/end');
+			this.server.socketsLeave('game:' + game.id);
+			return ;
+		}
+		console.log('The winner is ', winner);
 		/* Remove user from the socket room */
-		this.server.to('game:' + game.id).emit('game/end');
+		this.server.to('game:' + game.id).emit('game/end', { winner: winner.username });
 		this.server.socketsLeave('game:' + game.id);
 	}
 

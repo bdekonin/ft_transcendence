@@ -1,4 +1,3 @@
-import { containerClasses } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
@@ -49,10 +48,13 @@ export enum STATE {
 
 const Game: React.FC = () => {
 
+	const socket = useContext(SocketContext);
+	const [state, setState] = useState<STATE>(STATE.WAITING);
+	const location = useLocation();
+	
 	/* Canvas */
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const context = useRef<CanvasRenderingContext2D | null>();
-	const location = useLocation();
 
 	const getCanvasContext = () => {
 		if (!canvasRef.current) {
@@ -63,16 +65,22 @@ const Game: React.FC = () => {
 	
 	useEffect(getCanvasContext, []);
 	
-	const socket = useContext(SocketContext);
 	const [gameState, setGameState] = useState<Game>();
 	const [ball, setBall] = useState<Ball>();
-
-	const [state, setState] = useState<STATE>(STATE.WAITING);
+	const [winner, setWinner] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (location.hash) {
-			socket.emit("game/rejoin", {id: location.hash.substring(1)});
-			setState(STATE.SPECTATOR);
+			socket.emit("game/request-spectate", {id: location.hash.substring(1)});
+			socket.on('game/spectate', (data: Game) => {
+				setGameState(data);
+				setBall(data.ball)
+				setState(STATE.SPECTATOR);
+			});
+		}
+
+		return () => {
+			socket.off("game/spectate");
 		}
 	}, [socket]);
 
@@ -83,7 +91,9 @@ const Game: React.FC = () => {
 		socket.on("game/start", (data: Game) => {
 			setGameState(data);
 			setBall(data.ball)
-			setState(STATE.INTRO);
+			if (state != STATE.SPECTATOR) {
+				setState(STATE.INTRO);
+			}
 		});
 		return () => {
 			socket.off("game/start");
@@ -95,18 +105,23 @@ const Game: React.FC = () => {
 		socket.on('game/rejoin', (data: Game) => {
 			setGameState(data);
 			setBall(data.ball)
-			setState(STATE.PLAYING);
+			if (state != STATE.SPECTATOR) {
+				setState(STATE.PLAYING);
+			}
 		});
 		return () => {
 			socket.off("game/rejoin");
 		}
 	}, [socket]);
 
-
 	useEffect(() => {
 		socket.on("game/update", (data: Game) => {
+			/* Update game state */
 			setGameState(data);
-			setState(STATE.PLAYING);
+			if (state != STATE.SPECTATOR) {
+				if (socket.id == data.left.socket || socket.id == data.right.socket)
+					setState(STATE.PLAYING);
+			}
 		});
 		return () => {
 			socket.off("game/update");
@@ -121,17 +136,18 @@ const Game: React.FC = () => {
 			socket.off("game/ball");
 		};
 	}, [socket]);
-
+	
 	useEffect(() => {
-		socket.on("game/end", () => {
+		socket.on("game/end", (payload?: any) => {
+			if (payload) {
+				setWinner(payload.winner);
+			}
 			setState(STATE.END);
 		});
 		return () => {
 			socket.off("game/end");
 		};
 	}, [socket]);
-
-
 
 	/* Mouse move handler */
 	const mouseMoveHandler = useCallback(
@@ -187,7 +203,7 @@ const Game: React.FC = () => {
 				}, 1000);
 			}
 		}
-		else if (state == STATE.PLAYING && gameState && ball) {
+		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
 			/* Paddles */
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
@@ -218,20 +234,20 @@ const Game: React.FC = () => {
 			context.current.fillStyle = "white";
 			context.current.fill();
 		}
-		else if (state == STATE.END && gameState) {
+		else if (state == STATE.END && gameState && winner) {
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.font = "30px Arial Narrow";
 			context.current.fillStyle = "white";
-			context.current?.fillText("Game over!", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
-			// context.current?.fillText("Winner: " + gameState.winner.username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2 + 50);
+			if (!winner) {
+				context.current?.fillText("Draw!", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
+				return;
+			}
+			context.current?.fillText("Winner: " + winner, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
 		}
 	};
 
 	const update = () => {
-		if (state == STATE.PLAYING && gameState) {
-
-		}
-		if (state == STATE.PLAYING && gameState && ball) {
+		if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
 			//check top canvas bounds
 			if(ball.y <= 10){
 				ball.yVel = 1;
@@ -243,14 +259,15 @@ const Game: React.FC = () => {
 			}
 			
 			//check left canvas bounds
-			if(ball.x <= 0){  
-				socket.emit("game/score", {side: "right", id: gameState.id});
+			if(ball.x <= 0){
+				if (state == STATE.PLAYING)
+					socket.emit("game/score", {side: "right", id: gameState.id});
 			}
 			
 			//check right canvas bounds
 			if(ball.x + ball.width >= 700){
-				socket.emit("game/score", {side: "left", id: gameState.id});
-				console.log('location', location);
+				if (state == STATE.PLAYING)
+					socket.emit("game/score", {side: "left", id: gameState.id});
 			}
 
 			//check player collision
