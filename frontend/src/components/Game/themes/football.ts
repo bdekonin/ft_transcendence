@@ -1,12 +1,13 @@
 import { drawInterface } from "../draw";
 import { Ball } from "../Game";
+import { drawEndForClassicTheme, drawIntroForClassicTheme, drawWaitingForClassicTheme } from "./classic";
 
 
-export function drawWaitingForFootballTheme() {
-	// ...
+export function drawWaitingForFootballTheme(context: CanvasRenderingContext2D) {
+	drawWaitingForClassicTheme(context);
 }
-export function drawIntroForFootballTheme() {
-	// ...
+export function drawIntroForFootballTheme(i: number, socketID: string, dto: drawInterface) {
+	drawIntroForClassicTheme(i, socketID, dto)
 }
 export function drawPlayingForFootballTheme(ball: Ball, dto: drawInterface) {
 
@@ -32,8 +33,8 @@ export function drawPlayingForFootballTheme(ball: Ball, dto: drawInterface) {
 	dto.context.fillStyle = "white";
 	dto.context.fill();
 }
-export function drawEndForFootballTheme() {
-	// ...
+export function drawEndForFootballTheme(winner: string, dto: drawInterface) {
+	drawEndForClassicTheme(winner, dto);
 }
 
 function drawFootballPitch(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
