@@ -4,7 +4,7 @@ import { SocketContext } from '../../context/socket';
 import { drawEnd, drawIntro, drawPlaying, drawWaiting } from './draw';
 import './style.css'
 
-interface Game {
+export interface Game {
 	id: string;
 	theme: Theme;
 	left: Paddle;
@@ -14,7 +14,7 @@ interface Game {
 	rightScore: number;
 }
 
-interface Paddle {
+export interface Paddle {
 	readonly socket: string;
 	readonly username: string;
 	left: boolean;
@@ -27,7 +27,7 @@ interface Paddle {
 	readonly height: number;
 }
 
-interface Ball {
+export interface Ball {
 	readonly speed: number;
 
 	x: number;
