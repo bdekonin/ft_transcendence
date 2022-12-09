@@ -189,62 +189,6 @@ export class socketGateway {
 
 	moveAmount = 8;
 
-	/* Key presses */
-	@SubscribeMessage('game/down')
-	async handleDown (client: Socket, payload: any) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		if (payload.press == false)
-			return;
-		const game = this.currentGames.get(payload.id);
-		if (!game) {
-			console.log('game/down game not found', payload);
-			return;
-		}
-		if (game.left.socket == client.id) {
-			/* Check if player is not at the bottom */
-			if (game.left.y + 60 >= 400)
-				return;
-			game.left.y += this.moveAmount;
-		} else if (game.right.socket == client.id) {
-			/* Check if player is not at the bottom */
-			if (game.right.y + 60 >= 400)
-				return;
-			game.right.y += this.moveAmount;
-		}
-		// save game
-		this.currentGames.set(payload, game);
-		this.server.emit('game/update', game);
-	}
-	@SubscribeMessage('game/up')
-	async handleUp (client: Socket, payload: any) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		if (payload.press == false)
-			return;
-		const game = this.currentGames.get(payload.id);
-		if (!game) {
-			console.log('game/up game not found', payload);
-			return;
-		}
-		if (game.left.socket == client.id) {
-			/* Check if paddle is not at the top */
-			if (game.left.y <= 0)
-				return;
-			game.left.y -= this.moveAmount;
-		} else if (game.right.socket == client.id) {
-			/* Check if paddle is not at the top */
-			if (game.right.y <= 0)
-				return;
-			game.right.y -= this.moveAmount;
-		}
-		// save game
-		this.currentGames.set(payload, game);
-		this.server.emit('game/update', game);
-	}
-
 	/* Mouse movement */
 	@SubscribeMessage('game/move')
 	async handleMouseMove(client: Socket, payload: any) {
@@ -271,12 +215,9 @@ export class socketGateway {
 			game.right.y = payload.y;
 		}
 		// save game
-		this.currentGames.set(payload, game);
+		this.currentGames.set(payload.id, game);
 		this.server.emit('game/update', game);
 	}
-
-
-
 
 	@SubscribeMessage('game/score')
 	async handleScore (client: Socket, payload: any) {
@@ -293,11 +234,32 @@ export class socketGateway {
 		} else if (game.right.socket == client.id && payload.side == 'right') {
 			game.rightScore += 1;
 		}
+		if (game.leftScore >= 10 || game.rightScore >= 10) {
+			this.handleEndGame(client, payload);
+			return;
+		}
+
 		// save game
-		this.currentGames.set(payload, game);
+		this.currentGames.set(payload.id, game);
 		game.ball.reset();
 		this.server.emit('game/update', game);
 		this.server.emit('game/ball', game.ball);
+	}
+
+	async handleEndGame (client: Socket, payload: any) {
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		const game = this.currentGames.get(payload.id);
+		if (!game) {
+			// console.log('game/end game not found', payload);
+			return;
+		}
+		this.currentGames.delete(payload.id);
+
+		this.server.emit('game/end');
+		/* Send request to update user stats */
+		// this.userService.ga
 	}
 
 	private async createGame () {

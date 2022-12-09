@@ -1,3 +1,4 @@
+import { containerClasses } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SocketContext } from '../../context/socket';
 import './style.css'
@@ -13,6 +14,7 @@ interface Game {
 
 interface Paddle {
 	readonly socket: string;
+	readonly username: string;
 	left: boolean;
 	right: boolean;
 
@@ -98,6 +100,15 @@ const Game: React.FC = () => {
 		};
 	}, [socket]);
 
+	useEffect(() => {
+		socket.on("game/end", () => {
+			setState(STATE.END);
+		});
+		return () => {
+			socket.off("game/end");
+		};
+	}, [socket]);
+
 
 
 	/* Mouse move handler */
@@ -120,14 +131,15 @@ const Game: React.FC = () => {
 	let interval: NodeJS.Timeout;
 	/* Render next frame */
 	const render = () => {
-		if (!canvasRef.current || !context.current) return;
+		if (!canvasRef.current || !context.current)
+			return;
 		if (state == STATE.WAITING) {
 			context.current.font = "30px Arial Narrow";
 			context.current.fillStyle = "white";
 			context.current?.fillText("Waiting for other player...", 200, 200);
 		}
-		if (state == STATE.INTRO && gameState) {
-			let i = 5;
+		else if (state == STATE.INTRO && gameState) {
+			let i = 7;
 			if (!interval) {
 				interval = setInterval(() => {
 					if (i === 0) {
@@ -139,12 +151,20 @@ const Game: React.FC = () => {
 					context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 					context.current.font = "30px Arial Narrow";
 					context.current.fillStyle = "white";
-					context.current?.fillText(i.toString(), canvasRef.current.width / 2 - 10, canvasRef.current.height / 2);
+					if (i > 5) {
+						context.current?.fillText("Playing against " + gameState.right.username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2);
+					}
+					else if (i > 3) {
+						context.current?.fillText("Ready?", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
+					}
+					else {
+						context.current?.fillText(i.toString(), canvasRef.current.width / 2 - 10, canvasRef.current.height / 2);
+					}
 					i--;
 				}, 1000);
 			}
 		}
-		if (state == STATE.PLAYING && gameState && ball) {
+		else if (state == STATE.PLAYING && gameState && ball) {
 			/* Paddles */
 			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 			context.current.fillStyle = "white";
@@ -174,6 +194,13 @@ const Game: React.FC = () => {
 			context.current.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
 			context.current.fillStyle = "white";
 			context.current.fill();
+		}
+		else if (state == STATE.END && gameState) {
+			context.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+			context.current.font = "30px Arial Narrow";
+			context.current.fillStyle = "white";
+			context.current?.fillText("Game over!", canvasRef.current.width / 2 - 50, canvasRef.current.height / 2);
+			// context.current?.fillText("Winner: " + gameState.winner.username, canvasRef.current.width / 2 - 100, canvasRef.current.height / 2 + 50);
 		}
 	};
 
