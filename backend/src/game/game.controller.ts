@@ -10,7 +10,6 @@ import { socketGateway } from 'src/gateway/socket.gateway';
 export class GameController {
 	constructor(
 		private readonly gameService: GameService,
-		private readonly socketGateway: socketGateway,
 	) {}
 
 	@Get('userID/:userID')

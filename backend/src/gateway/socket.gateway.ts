@@ -11,6 +11,8 @@ import { ChatService } from 'src/chat/chat.service';
 import { Chat } from 'src/entities/Chat.entity';
 import { UserService } from 'src/user/user.service';
 import {v4 as uuidv4} from 'uuid';
+import { CreateGameDTO } from 'src/game/game.dto';
+import { GameService } from 'src/game/game.service';
 
 class userDto {
 	id: number; /* user id */
@@ -39,6 +41,7 @@ export class socketGateway {
 		@Inject('AUTH_SERVICE') private readonly authService: AuthService,
 		private readonly userService: UserService,
 		private readonly chatService: ChatService,
+		private readonly gameService: GameService,
 	) {
 		console.log("socket Gateway constructor");
 	}
@@ -248,10 +251,20 @@ export class socketGateway {
 				this.didBothUsersLeave.set(usersCurrentGame.id, this.didBothUsersLeave.get(usersCurrentGame.id) + 1);
 				if (this.didBothUsersLeave.get(usersCurrentGame.id) == 2) {
 					/* Both users left */
+					console.log('Both users left. CREATIING DRAW!');
+					/* POST REQUEST TO DRAW GAME */
+					const postGame: CreateGameDTO = {
+						mode: "1v1",
+						winner: (await this.userService.findUserByUsername(usersCurrentGame.left.username)).id,
+						loser: (await this.userService.findUserByUsername(usersCurrentGame.right.username)).id,
+						winnerScore: 0,
+						loserScore: 0,
+					}
+
+					await this.gameService.create(postGame);
+
 					this.currentGames.delete(usersCurrentGame.id);
 					this.didBothUsersLeave.delete(usersCurrentGame.id);
-					console.log('Both users left. Deleting game!');
-					/* POST REQUEST TO DRAW GAME */
 				}
 			} else {
 				/* One user left */
@@ -310,11 +323,11 @@ export class socketGateway {
 			game.rightScore += 1;
 		}
 		if (game.leftScore >= 10) {
-			this.handleEndGame(game, game.left);
+			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
 			return;
 		}
 		else if (game.rightScore >= 10) {
-			this.handleEndGame(game, game.right);
+			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
 			return;
 		}
 
@@ -341,20 +354,38 @@ export class socketGateway {
 		client.join('game:' + payload.id);
 	}
 
-	async handleEndGame (game: Game, winner?: Paddle) {
+	async handleEndGame (game: Game, winner?: Paddle, loser?: Paddle, winnerScore?: number, loserScore?: number) {
 		// console.log('Ending game', game.id);
 		this.currentGames.delete(game.id);
 
-		if (!winner) { /* Draw */
+		if (!winner && !loser) { /* Draw */
 			// console.log('Its a draw', winner);
 			this.server.to('game:' + game.id).emit('game/end');
 			this.server.socketsLeave('game:' + game.id);
+			const postGame: CreateGameDTO = {
+				mode: "1v1",
+				winner: (await this.userService.findUserByUsername(game.left.username)).id,
+				loser: (await this.userService.findUserByUsername(game.right.username)).id,
+				winnerScore: 0,
+				loserScore: 0,
+			}
+
+			await this.gameService.create(postGame);
 			return ;
 		}
-		// console.log('The winner is ', winner);
 		/* Remove user from the socket room */
 		this.server.to('game:' + game.id).emit('game/end', { winner: winner.username });
 		this.server.socketsLeave('game:' + game.id);
+
+		const postGame: CreateGameDTO = {
+			mode: "1v1",
+			winner: (await this.userService.findUserByUsername(winner.username)).id,
+			loser: (await this.userService.findUserByUsername(loser.username)).id,
+			winnerScore: winnerScore,
+			loserScore: loserScore,
+		}
+		console.log('POSTING GAME!');
+		await this.gameService.create(postGame);
 	}
 
 	private async createGame (): Promise<Game> {
