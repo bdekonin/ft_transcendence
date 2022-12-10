@@ -160,9 +160,34 @@ export class socketGateway {
 	}
 
 
-	// waitingPlayers: Set<string> = new Set();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	waitingPlayers: Map<string, Socket> = new Map();
 	currentGames: Map<string, Game> = new Map();
+	// Map that stores the number of players that left for each game ID
+	didBothUsersLeave: Map<string, number> = new Map();
+
 	/* Game */
 
 	@SubscribeMessage('game/waiting')
@@ -175,7 +200,9 @@ export class socketGateway {
 		const usersCurrentGame = this.isUserInGame(client.id); /* returns game if user is in a game else null */
 		if (usersCurrentGame) {
 			console.log('User is already in a game');
-			// this.server.emit('game/rejoin', usersCurrentGame);
+			if (this.didBothUsersLeave.has(usersCurrentGame.id)) {
+				this.didBothUsersLeave.delete(usersCurrentGame.id);
+			}
 			this.server.to('game:' + usersCurrentGame.id).emit('game/rejoin', usersCurrentGame);
 			return ;
 		}
@@ -215,6 +242,21 @@ export class socketGateway {
 		if (usersCurrentGame) {
 			/* User is still in a game */
 			console.log('User is still in a game');
+			/* Check if both users left */
+			if (this.didBothUsersLeave.has(usersCurrentGame.id)) {
+				/* Both users left */
+				this.didBothUsersLeave.set(usersCurrentGame.id, this.didBothUsersLeave.get(usersCurrentGame.id) + 1);
+				if (this.didBothUsersLeave.get(usersCurrentGame.id) == 2) {
+					/* Both users left */
+					this.currentGames.delete(usersCurrentGame.id);
+					this.didBothUsersLeave.delete(usersCurrentGame.id);
+					console.log('Both users left. Deleting game!');
+					/* POST REQUEST TO DRAW GAME */
+				}
+			} else {
+				/* One user left */
+				this.didBothUsersLeave.set(usersCurrentGame.id, 1);
+			}
 			return ;
 		}
 		/* Leave game room */
