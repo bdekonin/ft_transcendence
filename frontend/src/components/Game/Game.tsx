@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
 import { drawEnd, drawIntro, drawPlaying, drawWaiting } from './draw';
 import './style.css'
@@ -72,6 +72,7 @@ const Game: React.FC = () => {
 	const socket = useContext(SocketContext);
 	const [state, setState] = useState<STATE>(STATE.WAITING);
 	const location = useLocation();
+	const navigate = useNavigate();
 	
 	/* Canvas */
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -193,10 +194,10 @@ const Game: React.FC = () => {
 		if (!canvasRef.current || !context.current)
 			return;
 		if (state == STATE.WAITING) {
-			drawWaiting(context.current)
+			drawWaiting(canvasRef.current, context.current)
 		}
 		else if (state == STATE.INTRO && gameState) {
-			let i = 7;
+			let i = 10;
 			if (!interval) {
 				interval = setInterval(() => {
 					if (i === 0) {
@@ -223,46 +224,60 @@ const Game: React.FC = () => {
 			});
 		}
 		else if (state == STATE.END && gameState && winner) {
-			drawEnd(gameState.theme, winner, {
-				context: context.current,
-				canvas: canvasRef.current,
-				gameState: gameState,
-			});
+			let i = 5;
+			if (!interval) {
+				interval = setInterval(() => {
+					if (i === 1) {
+						clearInterval(interval);
+						// navigete to home page
+						navigate("/");
+						return;
+					}
+					if (!canvasRef.current || !context.current)
+						return;
+					drawEnd(gameState.theme, i, winner, {
+						context: context.current,
+						canvas: canvasRef.current,
+						gameState: gameState,
+					});
+					i--;
+				}, 1000);
+			}
 		}
 	};
 
 	const update = () => {
 		if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
 			//check top canvas bounds
-			if(ball.y <= 10){
+			if(ball.y < 10){
 				ball.yVel = 1;
 			}
 			
 			//check bottom canvas bounds
-			if(ball.y + ball.height >= 400 - 10){
+			if(ball.y + ball.height > 400 - 10){
 				ball.yVel = -1;
 			}
 			
 			//check left canvas bounds
-			if(ball.x <= 0){
+			if(ball.x < 0){
 				if (state == STATE.PLAYING)
 					socket.emit("game/score", {side: "right", id: gameState.id});
 			}
 			
 			//check right canvas bounds
-			if(ball.x + ball.width >= 700){
+			if(ball.x + ball.width > 700){
 				if (state == STATE.PLAYING)
 					socket.emit("game/score", {side: "left", id: gameState.id});
 			}
 
-			//check player collision
-			if(ball.x <= gameState.left.x + gameState.left.width){
+			//check left player collision
+			if(ball.x + ball.width<= gameState.left.x + gameState.left.width){
 				if(ball.y >= gameState.left.y && ball.y + ball.height <= gameState.left.y + gameState.left.height){
 					ball.xVel = 1;
 				}
-			}
+			} 
 			
-			//check computer collision
+			//check right player collision
 			if(ball.x + ball.width >= gameState.right.x){
 				if(ball.y >= gameState.right.y && ball.y + ball.height <= gameState.right.y + gameState.right.height){
 					ball.xVel = -1;

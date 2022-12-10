@@ -334,7 +334,7 @@ export class socketGateway {
 		const game: Game = {
 			id: uuidv4(),
 			// theme: Theme[Object.keys(Theme)[Math.floor(Math.random() * Object.keys(Theme).length)]],
-			theme: Theme.FOOTBALL,
+			theme: Theme.CLASSIC,
 			left: new Paddle(player1[0], user1.username, 10, 190, true),
 			right: new Paddle(player2[0], user2.username, 700 - 20, 190, false),
 			ball: new Ball(350, 190),

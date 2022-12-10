@@ -1,6 +1,6 @@
 import { Ball, Game, Theme } from "./Game";
 import { drawWaitingForClassicTheme, drawIntroForClassicTheme, drawPlayingForClassicTheme, drawEndForClassicTheme } from "./themes/classic";
-import { drawPlayingForFootballTheme } from "./themes/football";
+import { drawEndForFootballTheme, drawIntroForFootballTheme, drawPlayingForFootballTheme } from "./themes/football";
 
 /* This function makes it easier to store the variables */
 export interface drawInterface {
@@ -11,9 +11,9 @@ export interface drawInterface {
 
 
 /* This function is called by the Game component to draw the game */
-export function drawWaiting(context: CanvasRenderingContext2D) {
+export function drawWaiting(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
 	/* Will alwasy be classic theme, or choose random?? */
-	drawWaitingForClassicTheme(context);
+	drawWaitingForClassicTheme(canvas, context);
 }
 
 export function drawIntro(theme: Theme, i: number, socketID: string, dto: drawInterface) {
@@ -22,8 +22,7 @@ export function drawIntro(theme: Theme, i: number, socketID: string, dto: drawIn
 		drawIntroForClassicTheme(i, socketID, dto);
 	}
 	else if (theme == Theme.FOOTBALL) {
-		drawIntroForClassicTheme(i, socketID, dto);
-		// drawIntroForFootballTheme(i, dto);
+		drawIntroForFootballTheme(i, socketID, dto);
 	}
 }
 
@@ -37,13 +36,12 @@ export function drawPlaying(theme: Theme, ball: Ball, dto: drawInterface) {
 	}
 }
 
-export function drawEnd(theme: Theme, winner: string, dto: drawInterface) {
+export function drawEnd(theme: Theme, i: number, winner: string, dto: drawInterface) {
 	/* Call the appropriate function based on the theme */
 	if (theme == Theme.CLASSIC) {
-		drawEndForClassicTheme(winner, dto);
+		drawEndForClassicTheme(winner, i, dto);
 	}
 	else if (theme == Theme.FOOTBALL) {
-		drawEndForClassicTheme(winner, dto);
-		// drawEndForFootballTheme(dto);
+		drawEndForFootballTheme(winner, i, dto);
 	}
 }
