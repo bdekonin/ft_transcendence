@@ -58,6 +58,7 @@ export function drawPlayingForClassicTheme(ball: Ball, dto: drawInterface) {
 	dto.context?.fillText(dto.gameState.rightScore.toString(), 390, 40); /* Right */
 
 	/* Ball */
+	dto.context.beginPath();
 	dto.context.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
 	dto.context.fillStyle = "white";
 	dto.context.fill();
@@ -80,6 +81,6 @@ export function drawEndForClassicTheme(winner: string, i:number, dto: drawInterf
 	if (i > 1) {
 		const prompt = "Sending you back to the lobby in " + (i).toString() + " seconds";
 		const promptWidth = dto.context.measureText(prompt).width;
-		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 2);
+		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), (dto.canvas.height / 3) * 2);
 	}
 }

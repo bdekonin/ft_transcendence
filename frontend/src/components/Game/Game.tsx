@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
-import { drawEnd, drawIntro, drawPlaying, drawWaiting } from './draw';
+import { Draw } from './draw';
 import './style.css'
 
 export interface Game {
@@ -90,6 +90,7 @@ const Game: React.FC = () => {
 	const [gameState, setGameState] = useState<Game>();
 	const [ball, setBall] = useState<Ball>();
 	const [winner, setWinner] = useState<string | null>(null);
+	const draw = new Draw();
 
 	useEffect(() => {
 		if (location.hash) {
@@ -194,7 +195,7 @@ const Game: React.FC = () => {
 		if (!canvasRef.current || !context.current)
 			return;
 		if (state == STATE.WAITING) {
-			drawWaiting(canvasRef.current, context.current)
+			draw.drawWaiting(canvasRef.current, context.current)
 		}
 		else if (state == STATE.INTRO && gameState) {
 			let i = 10;
@@ -207,7 +208,7 @@ const Game: React.FC = () => {
 					}
 					if (!canvasRef.current || !context.current)
 						return;
-					drawIntro(gameState.theme, i, socket.id, {
+						draw.drawIntro(gameState.theme, i, socket.id, {
 						context: context.current,
 						canvas: canvasRef.current,
 						gameState: gameState,
@@ -217,14 +218,14 @@ const Game: React.FC = () => {
 			}
 		}
 		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
-			drawPlaying(gameState.theme, ball, {
+			draw.drawPlaying(gameState.theme, ball, {
 				context: context.current,
 				canvas: canvasRef.current,
 				gameState: gameState,
 			});
 		}
 		else if (state == STATE.END && gameState && winner) {
-			let i = 5;
+			let i = 10;
 			if (!interval) {
 				interval = setInterval(() => {
 					if (i === 1) {
@@ -235,7 +236,7 @@ const Game: React.FC = () => {
 					}
 					if (!canvasRef.current || !context.current)
 						return;
-					drawEnd(gameState.theme, i, winner, {
+						draw.drawEnd(gameState.theme, i, winner, {
 						context: context.current,
 						canvas: canvasRef.current,
 						gameState: gameState,
