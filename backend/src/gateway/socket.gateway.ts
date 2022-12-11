@@ -212,7 +212,15 @@ export class socketGateway {
 
 		this.waitingPlayers.set(client.id, client);
 		if (this.waitingPlayers.size >= 2) {
+			/* Check if both players arent the same user */
 			const game = await this.createGame();
+
+			if (game.left.username == game.right.username) {
+				this.waitingPlayers.clear();
+				this.currentGames.delete(game.id);
+				return ;
+			}
+
 			/* Adding players to game room */
 			this.waitingPlayers.get(game.left.socket).join('game:' + game.id);
 			this.waitingPlayers.get(game.right.socket).join('game:' + game.id);
