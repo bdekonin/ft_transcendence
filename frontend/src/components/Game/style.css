@@ -8,3 +8,8 @@
 	display: block;
 	background-color: black;
 }
+
+.demo-simple-select-label {
+	margin: 0 auto;
+	display: block;
+}

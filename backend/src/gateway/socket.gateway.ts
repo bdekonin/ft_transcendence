@@ -414,8 +414,6 @@ export class socketGateway {
 		
 		const game: Game = {
 			id: uuidv4(),
-			// theme: Theme[Object.keys(Theme)[Math.floor(Math.random() * Object.keys(Theme).length)]],
-			theme: Theme.CLASSIC,
 			left: new Paddle(player1[0], user1.username, 10, 190, true),
 			right: new Paddle(player2[0], user2.username, 700 - 20, 190, false),
 			ball: new Ball(350, 190),
@@ -427,14 +425,8 @@ export class socketGateway {
 	}
 }
 
-export enum Theme {
-	CLASSIC, /* Classic theme - Default */
-	FOOTBALL, /* Football theme */
-}
-
 interface Game {
 	id: string;
-	theme: Theme;
 	left: Paddle;
 	right: Paddle;
 	ball: Ball;

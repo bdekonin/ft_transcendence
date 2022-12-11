@@ -1,4 +1,5 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { FormControl, InputLabel, MenuItem, Radio, Select, SelectChangeEvent, Switch } from '@mui/material';
+import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
 import { Draw } from './draw';
@@ -73,6 +74,7 @@ const Game: React.FC = () => {
 	const [state, setState] = useState<STATE>(STATE.WAITING);
 	const location = useLocation();
 	const navigate = useNavigate();
+	const [theme, setTheme] = useState<Theme>(Theme.CLASSIC);
 	
 	/* Canvas */
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -208,7 +210,7 @@ const Game: React.FC = () => {
 					}
 					if (!canvasRef.current || !context.current)
 						return;
-						draw.drawIntro(gameState.theme, i, socket.id, {
+						draw.drawIntro(theme, i, socket.id, {
 						context: context.current,
 						canvas: canvasRef.current,
 						gameState: gameState,
@@ -218,7 +220,7 @@ const Game: React.FC = () => {
 			}
 		}
 		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
-			draw.drawPlaying(gameState.theme, ball, {
+			draw.drawPlaying(theme, ball, {
 				context: context.current,
 				canvas: canvasRef.current,
 				gameState: gameState,
@@ -236,7 +238,7 @@ const Game: React.FC = () => {
 					}
 					if (!canvasRef.current || !context.current)
 						return;
-						draw.drawEnd(gameState.theme, i, winner, {
+						draw.drawEnd(theme, i, winner, {
 						context: context.current,
 						canvas: canvasRef.current,
 						gameState: gameState,
@@ -306,14 +308,40 @@ const Game: React.FC = () => {
 		};
 	});
 
+	const handleChange = (event: SelectChangeEvent<number>, child: ReactNode) => {
+		// Change the theme based on the selected value
+		console.log('Changing theme');
+		if (event.target.value === Theme.CLASSIC) {
+			setTheme(Theme.CLASSIC);
+		} else if (event.target.value === Theme.FOOTBALL) {
+			setTheme(Theme.FOOTBALL);
+		}
+	};
+
 	return (
-		<canvas
-			ref={canvasRef}
-			width={700}
-			height={400}
-			className="pong-canvas"
-			style={{ border: "1px solid white" }}
-		/>
+		<div>
+			<canvas
+				ref={canvasRef}
+				width={700}
+				height={400}
+				className="pong-canvas"
+				style={{ border: "1px solid white" }}
+			/>
+			<FormControl variant="outlined">
+			<InputLabel id="demo-simple-select-label">Theme</InputLabel>
+			<Select
+				labelId="demo-simple-select-label"
+				id="demo-simple-select"
+				defaultValue={theme}
+				value={theme}
+				label="Theme"
+				onChange={handleChange}
+			>
+				<MenuItem value={Theme.CLASSIC}>Classic</MenuItem>
+				<MenuItem value={Theme.FOOTBALL}>Football</MenuItem>
+			</Select>
+			</FormControl>
+		</div>
 	  );
 }
 
