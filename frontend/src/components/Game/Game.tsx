@@ -202,8 +202,9 @@ const Game: React.FC = () => {
 		};
 	}, [mouseMoveHandler]);
 
-	let interval: NodeJS.Timeout;
-	// const [interval, setInterval] = useState<NodeJS.Timeout | null>(null);
+	// let interval: NodeJS.Timeout;
+	const [intervalState, setIntervalState] = useState<NodeJS.Timeout | null>(null);
+
 	/* Render next frame */
 	const render = () => {
 		if (!canvasRef.current || !context.current)
@@ -215,11 +216,12 @@ const Game: React.FC = () => {
 		}
 		else if (state == STATE.INTRO && gameState) {
 			let i = 10;
-			if (!interval) {
+			if (!intervalState) {
 				console.log('setting interval');
-				interval = setInterval(() => {
+				const temp = setInterval(() => {
 					if (i === 0) {
-						clearInterval(interval);
+						if (intervalState)
+							clearInterval(intervalState);
 						setState(STATE.PLAYING);
 						return;
 					}
@@ -233,6 +235,7 @@ const Game: React.FC = () => {
 					});
 					i--;
 				}, 1000);
+				setIntervalState(temp);
 			}
 		}
 		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
@@ -244,10 +247,11 @@ const Game: React.FC = () => {
 		}
 		else if (state == STATE.END && gameState && winner) {
 			let i = 10;
-			if (!interval) {
-				interval = setInterval(() => {
+			if (!intervalState) {
+				const temp = setInterval(() => {
 					if (i === 1) {
-						clearInterval(interval);
+						if (intervalState)
+							clearInterval(intervalState);
 						// navigete to home page
 						navigate("/");
 						return;
@@ -261,6 +265,7 @@ const Game: React.FC = () => {
 					});
 					i--;
 				}, 1000);
+				setIntervalState(temp);
 			}
 		}
 	};
