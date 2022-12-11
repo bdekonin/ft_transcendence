@@ -65,6 +65,9 @@ export enum Theme {
 	
 	// The football theme
 	FOOTBALL,
+
+	// Space theme
+	SPACE,
 }
 
 
@@ -92,7 +95,15 @@ const Game: React.FC = () => {
 	const [gameState, setGameState] = useState<Game>();
 	const [ball, setBall] = useState<Ball>();
 	const [winner, setWinner] = useState<string | null>(null);
-	const draw = new Draw();
+	const [draw, setDraw] = useState<Draw | null>();
+
+	useEffect(() => {
+		if (!draw) {
+			if (canvasRef.current && context.current) {
+				setDraw(new Draw(canvasRef.current.height, canvasRef.current.width));
+			}
+		}
+	}, [canvasRef]);
 
 	useEffect(() => {
 		if (location.hash) {
@@ -192,9 +203,12 @@ const Game: React.FC = () => {
 	}, [mouseMoveHandler]);
 
 	let interval: NodeJS.Timeout;
+	// const [interval, setInterval] = useState<NodeJS.Timeout | null>(null);
 	/* Render next frame */
 	const render = () => {
 		if (!canvasRef.current || !context.current)
+			return;
+		if (!draw)
 			return;
 		if (state == STATE.WAITING) {
 			draw.drawWaiting(theme, canvasRef.current, context.current)
@@ -202,6 +216,7 @@ const Game: React.FC = () => {
 		else if (state == STATE.INTRO && gameState) {
 			let i = 10;
 			if (!interval) {
+				console.log('setting interval');
 				interval = setInterval(() => {
 					if (i === 0) {
 						clearInterval(interval);
@@ -210,10 +225,11 @@ const Game: React.FC = () => {
 					}
 					if (!canvasRef.current || !context.current)
 						return;
-						draw.drawIntro(theme, i, socket.id, {
-						context: context.current,
-						canvas: canvasRef.current,
-						gameState: gameState,
+					console.log('draw I!!!!');
+					draw.drawIntro(theme, i, socket.id, {
+					context: context.current,
+					canvas: canvasRef.current,
+					gameState: gameState,
 					});
 					i--;
 				}, 1000);
@@ -316,6 +332,9 @@ const Game: React.FC = () => {
 		} else if (event.target.value === Theme.FOOTBALL) {
 			setTheme(Theme.FOOTBALL);
 		}
+		else if (event.target.value === Theme.SPACE) {
+			setTheme(Theme.SPACE);
+		}
 	};
 
 	return (
@@ -339,6 +358,7 @@ const Game: React.FC = () => {
 			>
 				<MenuItem value={Theme.CLASSIC}>Classic</MenuItem>
 				<MenuItem value={Theme.FOOTBALL}>Football</MenuItem>
+				<MenuItem value={Theme.SPACE}>Space</MenuItem>
 			</Select>
 			</FormControl>
 		</div>

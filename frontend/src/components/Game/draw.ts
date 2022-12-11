@@ -1,6 +1,7 @@
 import { Ball, Game, Theme } from "./Game";
-import { drawWaitingForClassicTheme, drawIntroForClassicTheme, drawPlayingForClassicTheme, drawEndForClassicTheme } from "./themes/classic";
-import { drawEndForFootballTheme, drawIntroForFootballTheme, drawPlayingForFootballTheme, drawWaitingForFootballTheme } from "./themes/football";
+import { Classic } from "./themes/classic";
+import { Football } from "./themes/football";
+import { Space } from "./themes/space";
 
 /* This function makes it easier to store the variables */
 export interface drawInterface {
@@ -12,90 +13,68 @@ export interface drawInterface {
 export class Draw {
 
 	// private christmasBackgroundImage: HTMLImageElement;
+	private classicTheme: Classic;
+	private footballTheme: Football;
+	private spaceTheme: Space;
 
-	constructor() {
-		// this.christmasBackgroundImage = new Image();
-		// this.christmasBackgroundImage.src = "https://www.freepik.com/free-vector/christmas-background-pixel_961323.htm";
+	private width: number;
+	private height: number;
 
-		// this.christmasBackgroundImage.onload = () => {
-		// 	console.log("Loaded image");
-		// }
+	constructor(width: number, height: number) {
+
+		this.width = width;
+		this.height = height;
+
+		this.classicTheme = new Classic();
+		this.footballTheme = new Football();
+		this.spaceTheme = new Space();
 	}
 
 	drawWaiting(theme: Theme, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
 		/* Will alwasy be classic theme, or choose random?? */
 		if (theme == Theme.CLASSIC) {
-			drawWaitingForClassicTheme(canvas, context);
+			this.classicTheme.drawWaiting(canvas, context);
 		}
 		else if (theme == Theme.FOOTBALL) {
-			drawWaitingForFootballTheme(canvas, context);
+			this.footballTheme.drawWaiting(canvas, context);
+		}
+		else if (theme == Theme.SPACE) {
+			this.spaceTheme.drawWaiting(canvas, context);
 		}
 	}
 	drawIntro(theme: Theme, i: number, socketID: string, dto: drawInterface) {
 		/* Call the appropriate function based on the theme */
 		if (theme == Theme.CLASSIC) {
-			drawIntroForClassicTheme(i, socketID, dto);
+			this.classicTheme.drawIntro(i, socketID, dto);
 		}
 		else if (theme == Theme.FOOTBALL) {
-			drawIntroForFootballTheme(i, socketID, dto);
+			this.footballTheme.drawIntro(i, socketID, dto);
+		}
+		else if (theme == Theme.SPACE) {
+			this.spaceTheme.drawIntro(i, socketID, dto);
 		}
 	}
 	drawPlaying(theme: Theme, ball: Ball, dto: drawInterface) {
 		/* Call the appropriate function based on the theme */
 		if (theme == Theme.CLASSIC) {
-			drawPlayingForClassicTheme(ball, dto);
+			this.classicTheme.drawPlaying(ball, dto);
 		}
 		else if (theme == Theme.FOOTBALL) {
-			drawPlayingForFootballTheme(ball, dto);
+			this.footballTheme.drawPlaying(ball, dto);
+		}
+		else if (theme == Theme.SPACE) {
+			this.spaceTheme.drawPlaying(ball, dto);
 		}
 	}
 	drawEnd(theme: Theme, i: number, winner: string, dto: drawInterface) {
-		/* Call the appropriate function based on the theme */
-		// dto.context.drawImage(this.christmasBackgroundImage, 0, 0, dto.canvas.width, dto.canvas.height);
-
 		if (theme == Theme.CLASSIC) {
-			drawEndForClassicTheme(winner, i, dto);
+			this.classicTheme.drawEnd(winner, i, dto);
 		}
 		else if (theme == Theme.FOOTBALL) {
-			drawEndForFootballTheme(winner, i, dto);
+			this.footballTheme.drawEnd(winner, i, dto);
+		}
+		else if (theme == Theme.SPACE) {
+			this.spaceTheme.drawEnd(winner, i, dto);
 		}
 	}
 }
-
-
-
-/* This function is called by the Game component to draw the game */
-// function drawWaiting(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-// 	/* Will alwasy be classic theme, or choose random?? */
-// 	drawWaitingForClassicTheme(canvas, context);
-// }
-
-// function drawIntro(theme: Theme, i: number, socketID: string, dto: drawInterface) {
-// 	/* Call the appropriate function based on the theme */
-// 	if (theme == Theme.CLASSIC) {
-// 		drawIntroForClassicTheme(i, socketID, dto);
-// 	}
-// 	else if (theme == Theme.FOOTBALL) {
-// 		drawIntroForFootballTheme(i, socketID, dto);
-// 	}
-// }
-
-// function drawPlaying(theme: Theme, ball: Ball, dto: drawInterface) {
-// 	/* Call the appropriate function based on the theme */
-// 	if (theme == Theme.CLASSIC) {
-// 		drawPlayingForClassicTheme(ball, dto);
-// 	}
-// 	else if (theme == Theme.FOOTBALL) {
-// 		drawPlayingForFootballTheme(ball, dto);
-// 	}
-// }
-
-// function drawEnd(theme: Theme, i: number, winner: string, dto: drawInterface) {
-// 	/* Call the appropriate function based on the theme */
-// 	if (theme == Theme.CLASSIC) {
-// 		drawEndForClassicTheme(winner, i, dto);
-// 	}
-// 	else if (theme == Theme.FOOTBALL) {
-// 		drawEndForFootballTheme(winner, i, dto);
-// 	}
-// }
