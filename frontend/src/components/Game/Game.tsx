@@ -197,7 +197,7 @@ const Game: React.FC = () => {
 		if (!canvasRef.current || !context.current)
 			return;
 		if (state == STATE.WAITING) {
-			draw.drawWaiting(canvasRef.current, context.current)
+			draw.drawWaiting(theme, canvasRef.current, context.current)
 		}
 		else if (state == STATE.INTRO && gameState) {
 			let i = 10;

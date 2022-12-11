@@ -4,13 +4,38 @@ import { drawEndForClassicTheme, drawIntroForClassicTheme, drawWaitingForClassic
 
 
 export function drawWaitingForFootballTheme(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-	drawWaitingForClassicTheme(canvas, context);
+	drawFootballPitch(context, canvas);
+
+	context.font = "30px Arial Narrow";
+	context.fillStyle = "white";
+	const prompt = "Waiting for other player...";
+	const promptWidth = context.measureText(prompt).width;
+	context.fillText(prompt, (canvas.width / 2) - (promptWidth / 2), canvas.height / 2);
 }
 export function drawIntroForFootballTheme(i: number, socketID: string, dto: drawInterface) {
-	drawIntroForClassicTheme(i, socketID, dto)
+	drawFootballPitch(dto.context, dto.canvas);
+
+	dto.context.clearRect(0, 0, dto.canvas.width, dto.canvas.height);
+	dto.context.font = "30px Arial Narrow";
+	dto.context.fillStyle = "white";
+	if (i > 5) {
+		const username = dto.gameState.left.socket != socketID ? dto.gameState.left.username : dto.gameState.right.username;
+		const prompt = "Playing against " + username;
+		const promptWidth = dto.context.measureText(prompt).width;
+		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 2);
+	}
+	else if (i > 3) {
+		const prompt = "Ready?";
+		const promptWidth = dto.context.measureText(prompt).width;
+		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 2);
+	}
+	else {
+		const prompt = i.toString();
+		const promptWidth = dto.context.measureText(prompt).width;
+		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 2);
+	}
 }
 export function drawPlayingForFootballTheme(ball: Ball, dto: drawInterface) {
-
 	drawFootballPitch(dto.context, dto.canvas);
 
 	/* Paddles */
@@ -47,12 +72,10 @@ export function drawEndForFootballTheme(winner: string, i:number, dto: drawInter
 	dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 3);
 
 	/* Sending the user back to the lobby after 5 seconds */
-	if (i > 5)
-		return ;
-	else {
+	if (i > 1) {
 		const prompt = "Sending you back to the lobby in " + (i).toString() + " seconds";
 		const promptWidth = dto.context.measureText(prompt).width;
-		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), dto.canvas.height / 2);
+		dto.context?.fillText(prompt, (dto.canvas.width / 2) - (promptWidth / 2), (dto.canvas.height / 3) * 2);
 	}
 }
 

@@ -5,6 +5,7 @@ import { Ball } from "../Game";
 
 /* Private functions, not accessible outside of this file */
 export function drawWaitingForClassicTheme(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+	context.clearRect(0, 0, canvas.width, canvas.height);
 	context.font = "30px Arial Narrow";
 	context.fillStyle = "white";
 	const prompt = "Waiting for other player...";

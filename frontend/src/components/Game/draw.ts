@@ -1,6 +1,6 @@
 import { Ball, Game, Theme } from "./Game";
 import { drawWaitingForClassicTheme, drawIntroForClassicTheme, drawPlayingForClassicTheme, drawEndForClassicTheme } from "./themes/classic";
-import { drawEndForFootballTheme, drawIntroForFootballTheme, drawPlayingForFootballTheme } from "./themes/football";
+import { drawEndForFootballTheme, drawIntroForFootballTheme, drawPlayingForFootballTheme, drawWaitingForFootballTheme } from "./themes/football";
 
 /* This function makes it easier to store the variables */
 export interface drawInterface {
@@ -22,9 +22,14 @@ export class Draw {
 		// }
 	}
 
-	drawWaiting(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+	drawWaiting(theme: Theme, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
 		/* Will alwasy be classic theme, or choose random?? */
-		drawWaitingForClassicTheme(canvas, context);
+		if (theme == Theme.CLASSIC) {
+			drawWaitingForClassicTheme(canvas, context);
+		}
+		else if (theme == Theme.FOOTBALL) {
+			drawWaitingForFootballTheme(canvas, context);
+		}
 	}
 	drawIntro(theme: Theme, i: number, socketID: string, dto: drawInterface) {
 		/* Call the appropriate function based on the theme */
