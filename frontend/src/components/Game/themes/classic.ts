@@ -37,35 +37,35 @@ export class Classic {
 	}
 
 	drawPlaying(ball: Ball, dto: drawInterface) {
-	dto.context.clearRect(0, 0, dto.canvas.width, dto.canvas.height);
-	/* Paddles */
-	dto.context.fillStyle = "white";
-	dto.context.fillRect(dto.gameState.left.x, dto.gameState.left.y, dto.gameState.left.width, dto.gameState.left.height);
-	dto.context.fillStyle = "white";
-	dto.context.fillRect(dto.gameState.right.x, dto.gameState.right.y, dto.gameState.right.width, dto.gameState.right.height);
-	dto.context.fillRect(dto.gameState.left.x, dto.gameState.left.y, dto.gameState.left.width, dto.gameState.left.height);
+		dto.context.clearRect(0, 0, dto.canvas.width, dto.canvas.height);
+		/* Paddles */
+		dto.context.fillStyle = "white";
+		dto.context.fillRect(dto.gameState.left.x, dto.gameState.left.y, dto.gameState.left.width, dto.gameState.left.height);
+		dto.context.fillStyle = "white";
+		dto.context.fillRect(dto.gameState.right.x, dto.gameState.right.y, dto.gameState.right.width, dto.gameState.right.height);
+		dto.context.fillRect(dto.gameState.left.x, dto.gameState.left.y, dto.gameState.left.width, dto.gameState.left.height);
 
-	/* Draw middle dotted line */
-	dto.context.beginPath();
-	for (let i = 0; i < dto.canvas.height; i += 30) {
-		dto.context.moveTo(dto.canvas.width / 2, i);
-		dto.context.lineTo(dto.canvas.width / 2, i + 15);
-	}
-	dto.context.strokeStyle = "white";
-	dto.context.lineWidth = 2;
-	dto.context.stroke();
+		/* Draw middle dotted line */
+		dto.context.beginPath();
+		for (let i = 0; i < dto.canvas.height; i += 30) {
+			dto.context.moveTo(dto.canvas.width / 2, i);
+			dto.context.lineTo(dto.canvas.width / 2, i + 15);
+		}
+		dto.context.strokeStyle = "white";
+		dto.context.lineWidth = 2;
+		dto.context.stroke();
 
-	/* Score */
-	dto.context.font = "30px Arial Narrow";
-	dto.context.fillStyle = "white";
-	dto.context?.fillText(dto.gameState.leftScore.toString(), 300, 40); /* Left */
-	dto.context?.fillText(dto.gameState.rightScore.toString(), 390, 40); /* Right */
+		/* Score */
+		dto.context.font = "30px Arial Narrow";
+		dto.context.fillStyle = "white";
+		dto.context?.fillText(dto.gameState.leftScore.toString(), 300, 40); /* Left */
+		dto.context?.fillText(dto.gameState.rightScore.toString(), 390, 40); /* Right */
 
-	/* Ball */
-	dto.context.beginPath();
-	dto.context.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
-	dto.context.fillStyle = "white";
-	dto.context.fill();
+		/* Ball */
+		dto.context.beginPath();
+		dto.context.arc(ball.x, ball.y, ball.height, 0, Math.PI * 2);
+		dto.context.fillStyle = "white";
+		dto.context.fill();
 	}
 
 	drawEnd(winner: string, i:number, dto: drawInterface) {
