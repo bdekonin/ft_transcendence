@@ -202,8 +202,33 @@ const Game: React.FC = () => {
 		};
 	}, [mouseMoveHandler]);
 
-	// let interval: NodeJS.Timeout;
-	const [intervalState, setIntervalState] = useState<NodeJS.Timeout | null>(null);
+	const [count, setCount] = useState(10);
+
+	// define an effect that decrements the count every second
+	useEffect(() => {
+		const interval = setInterval(() => {
+			if (state == STATE.INTRO) {
+				if (count <= 0) {
+					setState(STATE.PLAYING);
+					setCount(10);
+					return ;
+				}
+				setCount(count - 1);
+			}
+			if (state == STATE.END) {
+				if (count <= 0) {
+					clearInterval(interval);
+					navigate("/");
+					return ;
+				}
+				setCount(count - 1);
+			}
+		}, 1000);
+	
+		// return a cleanup function to stop the interval when the component unmounts
+		return () => clearInterval(interval);
+	}, [count, state, navigate]);
+
 
 	/* Render next frame */
 	const render = () => {
@@ -214,29 +239,12 @@ const Game: React.FC = () => {
 		if (state == STATE.WAITING) {
 			draw.drawWaiting(theme, canvasRef.current, context.current)
 		}
-		else if (state == STATE.INTRO && gameState) {
-			let i = 10;
-			if (!intervalState) {
-				console.log('setting interval');
-				const temp = setInterval(() => {
-					if (i === 0) {
-						if (intervalState)
-							clearInterval(intervalState);
-						setState(STATE.PLAYING);
-						return;
-					}
-					if (!canvasRef.current || !context.current)
-						return;
-					console.log('draw I!!!!');
-					draw.drawIntro(theme, i, socket.id, {
-					context: context.current,
-					canvas: canvasRef.current,
-					gameState: gameState,
-					});
-					i--;
-				}, 1000);
-				setIntervalState(temp);
-			}
+		if (state == STATE.INTRO && gameState) {
+			draw.drawIntro(theme, count, socket.id, {
+				context: context.current,
+				canvas: canvasRef.current,
+				gameState: gameState,
+			});
 		}
 		else if ((state == STATE.SPECTATOR || state == STATE.PLAYING) && gameState && ball) {
 			draw.drawPlaying(theme, ball, {
@@ -246,27 +254,11 @@ const Game: React.FC = () => {
 			});
 		}
 		else if (state == STATE.END && gameState && winner) {
-			let i = 10;
-			if (!intervalState) {
-				const temp = setInterval(() => {
-					if (i === 1) {
-						if (intervalState)
-							clearInterval(intervalState);
-						// navigete to home page
-						navigate("/");
-						return;
-					}
-					if (!canvasRef.current || !context.current)
-						return;
-						draw.drawEnd(theme, i, winner, {
-						context: context.current,
-						canvas: canvasRef.current,
-						gameState: gameState,
-					});
-					i--;
-				}, 1000);
-				setIntervalState(temp);
-			}
+			draw.drawEnd(theme, count, winner, {
+				context: context.current,
+				canvas: canvasRef.current,
+				gameState: gameState,
+			});
 		}
 	};
 
@@ -276,18 +268,18 @@ const Game: React.FC = () => {
 			if(ball.y < 10){
 				ball.yVel = 1;
 			}
-			
+
 			//check bottom canvas bounds
 			if(ball.y + ball.height > 400 - 10){
 				ball.yVel = -1;
 			}
-			
+
 			//check left canvas bounds
 			if(ball.x < 0){
 				if (state == STATE.PLAYING)
 					socket.emit("game/score", {side: "right", id: gameState.id});
 			}
-			
+
 			//check right canvas bounds
 			if(ball.x + ball.width > 700){
 				if (state == STATE.PLAYING)
@@ -295,12 +287,12 @@ const Game: React.FC = () => {
 			}
 
 			//check left player collision
-			if(ball.x + ball.width<= gameState.left.x + gameState.left.width){
+			if(ball.x <= gameState.left.x + gameState.left.width + 10){
 				if(ball.y >= gameState.left.y && ball.y + ball.height <= gameState.left.y + gameState.left.height){
 					ball.xVel = 1;
 				}
 			} 
-			
+
 			//check right player collision
 			if(ball.x + ball.width >= gameState.right.x){
 				if(ball.y >= gameState.right.y && ball.y + ball.height <= gameState.right.y + gameState.right.height){
@@ -330,8 +322,6 @@ const Game: React.FC = () => {
 	});
 
 	const handleChange = (event: SelectChangeEvent<number>, child: ReactNode) => {
-		// Change the theme based on the selected value
-		console.log('Changing theme');
 		if (event.target.value === Theme.CLASSIC) {
 			setTheme(Theme.CLASSIC);
 		} else if (event.target.value === Theme.FOOTBALL) {
