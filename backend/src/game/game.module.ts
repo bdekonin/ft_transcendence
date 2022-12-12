@@ -16,9 +16,9 @@ import { Membership } from 'src/entities/Membership.entity';
 
 @Module({
 	imports: [
+		forwardRef(() => AppModule),
 		UserModule, GameModule,
 		TypeOrmModule.forFeature([GameHistory, User, Membership]),
-		forwardRef(() => AppModule)
 	],
 	controllers: [
 		MembershipController,

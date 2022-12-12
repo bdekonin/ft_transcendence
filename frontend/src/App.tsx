@@ -10,19 +10,21 @@ import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
 import Settings from "./components/Settings/Settings";
 import Chat from "./components/Chat/Chat";
-import React, { useEffect } from "react";
-import { socket, SocketContext } from "./context/socket";
+import React, { useContext, useEffect } from "react";
+import { SocketContext } from "./context/socket";
+import Game from "./components/Game/Game";
 
 const App:React.FC = () =>
 {
 	const minute = 60 * 1000; /* 1 Minute * 1 second */
+	const socket = useContext(SocketContext);
 	document.body.style.background = "#474E68";
 
 	useEffect(() => {
 		// interval
 		const interval = setInterval(() => {
 			socket.emit('ping');
-		}, minute * 5);
+		}, minute * 1);
 
 		// interval.
 	});
@@ -38,6 +40,7 @@ const App:React.FC = () =>
 				<Route path='/friends' element={<Friends />}/>
 				<Route path='/social' element={<Social />}/>
 				<Route path='/settings' element={<Settings />}/>
+				<Route path='/game' element={<Game />}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>

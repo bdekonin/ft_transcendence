@@ -1,0 +1,15 @@
+/* body {
+	text-align: center;
+} */
+.pong-canvas {
+	width: 700px;
+	height: 400px;
+	margin: 0 auto;
+	display: block;
+	background-color: black;
+}
+
+.demo-simple-select-label {
+	margin: 0 auto;
+	display: block;
+}
