@@ -100,7 +100,7 @@ export class socketGateway {
 		/* Add client to every chat he is in */
 		client.join('chat:' + payload.chatID);
 
-		this.chatService.joinChat(user.id, payload.chatID);
+		// this.chatService.joinChat(user.id, payload.chatID);
 	}
 
 	@SubscribeMessage('chat/leave')

@@ -90,6 +90,13 @@ export class SocialService
 			throw new NotFoundException('Friendship not found');
 		// if (friendship.status != 'accepted')
 		// 	throw new BadRequestException('You are not friends with this user');
+
+		if (friendship.status == 'accepted') {
+			const chatID = await this.chatService.getPrivateChat(sender.id, reciever.id)
+			if (chatID)
+				this.chatService.leaveChat(friendship.sender.id, chatID.id);
+		}
+
 		return await this.repo.remove(friendship);
 	}
 	async block(senderID: number, recieverID: number): Promise<Friend> {
@@ -110,6 +117,11 @@ export class SocialService
 				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
 			],
 		});
+		if (friendship) {
+			const chatID = await this.chatService.getPrivateChat(sender.id, reciever.id)
+			if (chatID)
+				this.chatService.leaveChat(friendship.sender.id, chatID.id);
+		}
 
 		/* If friendship already exist change to blocked */
 		if (friendship) {
@@ -125,6 +137,7 @@ export class SocialService
 		}
 		return this.repo.save(friendship);
 	}
+
 	async unblock(senderID: number, recieverID: number): Promise<Friend> {
 		if (senderID == recieverID)
 			throw new BadRequestException('You cannot unfollow yourself');

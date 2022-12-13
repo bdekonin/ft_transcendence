@@ -102,7 +102,7 @@ export class ChatService {
 		if (filter === 'public')
 			chats = await this.getChatTypePublic(userID);
 		else if (filter === 'protected')
-			chats = await this.getChatTypePrivate(userID);
+			chats = await this.getChatTypeProtected(userID);
 		else if (filter === 'all')
 			 return await this.getChatTypeAll(userID);
 		else /* Joined */
@@ -137,6 +137,9 @@ export class ChatService {
 			throw new BadRequestException("Chat is private");
 		}
 
+		console.log('chat.type: ' + chat.type);
+		console.log('dto: ', dto);
+
 		if (chat.type === ChatType.GROUP_PROTECTED) {
 			if (chat.password !== dto.password) {
 				throw new BadRequestException("Password is invalid.");
@@ -164,6 +167,7 @@ export class ChatService {
 			throw new BadRequestException("User is not part of this chat");
 		}
 		if (chat.users.length === 2 && chat.type === ChatType.PRIVATE) {
+
 			return await this.chatRepo.delete(chatID);
 		}
 		if (chat.users.length === 1) {
@@ -340,7 +344,7 @@ export class ChatService {
 		});
 		return filteredChats;
 	}
-	private async getChatTypePrivate(id: number): Promise<Chat[]> {
+	private async getChatTypeProtected(id: number): Promise<Chat[]> {
 		const chats =  await this.chatRepo.find({
 			relations: ['users'],
 			where: {
@@ -352,6 +356,28 @@ export class ChatService {
 			return !chat.users.some(user => user.id === id);
 		});
 		return filteredChats;
+	}
+	private async getChatTypePrivates(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.PRIVATE,
+			},
+		});
+
+		const filteredChats = chats.filter(chat => {
+			return chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
+	}
+
+	async getPrivateChat(idOne: number, idTwo: number): Promise<Chat> {
+		const chats = await this.getChatTypePrivates(idOne);
+		const filteredChats = chats.filter(chat => {
+			return chat.users.some(user => user.id === idTwo);
+		});
+
+		return filteredChats[0];
 	}
 
 	private async getChatTypeAll(id: number) {

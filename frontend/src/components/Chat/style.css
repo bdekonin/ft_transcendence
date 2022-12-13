@@ -1,7 +1,8 @@
 
 .block {
 	/* width: 300px; */
-	height: 600px;
+	/* height: 600px; */
+	height: 1000px;
 	display: inline-block;
 	vertical-align: middle;
 	text-align: center;
@@ -51,7 +52,7 @@
 	/* color: white */
 	font-family: monospace;
 }
-.channels .general .add {
+.channels .add {
 	width: 100%;
 	height: 30px;
 	background-color: green;
@@ -68,4 +69,9 @@
 }
 .channels .general .chat .type {
 	color: grey;
+}
+
+.channels .general .chat.crossection {
+	background-color: purple;
+	text-align: center;
 }

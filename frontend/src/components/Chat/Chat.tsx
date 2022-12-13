@@ -9,11 +9,14 @@ import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
 import MessageIcon from '@mui/icons-material/Message';
+import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
 
 interface User {
 	id: number;
@@ -55,6 +58,10 @@ const Chat: React.FC = () => {
 
 	/* Refresh */
 	const [pong, setPong] = useState('');
+
+	/* Create Chat Dialog Options */
+	const [chatDialogName, setChatDialogName] = useState<string>('');
+	const [chatDialogPassword, setChatDialogPassword] = useState<string>('');
 
 	document.body.style.background = '#323232';
 
@@ -106,8 +113,8 @@ const Chat: React.FC = () => {
 	}, [user, pong]);
 
 	useEffect(() => {
-		if (currentChat && joinedChats)
-			return ;
+		// if (currentChat && joinedChats)
+		// 	return ;
 
 		if (joinedChats.length === 0)
 			return ;
@@ -143,27 +150,26 @@ const Chat: React.FC = () => {
 
 	const leaveChannel = (chatID: number) => {
 		socket.emit('chat/leave', { chatID: chatID });
-		joinedChats.forEach((chatLoop, index) => {
-			if (chatID === chatLoop.id) {
-				joinedChats.splice(index, 1);
-				setJoinedChats([...joinedChats]);
-			}
-		});
-		if (currentChat?.id === chatID) {
-			setCurrentChat(null);
-		}
+		setPong(new Date().toISOString());
+		joinedChats.splice(joinedChats.findIndex(chat => chat.id === chatID), 1);
+		setJoinedChats([...joinedChats]);
 	}
 
 	function joinPublic(chat: Chat) {
 		const payload = {
 			chatID: chat.id
 		}
+
+		console.log('joinPublic', payload);
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			sendJoinEmitter( chat.id );
+			setPong(new Date().toISOString());
 		})
 		.catch(err => {
-			navigate('/login');
+			if (err.response.data.statusCode === 418)
+				navigate('/login');
+			alert(err.response.data.message)
 		});
 	}
 	function joinProtected(chat: Chat) {
@@ -171,6 +177,7 @@ const Chat: React.FC = () => {
 			chatID: chat.id,
 			password: prompt('Please enter the password')
 		}
+		console.log('joinProtected', payload);
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			setPong(new Date().toISOString());
@@ -184,64 +191,188 @@ const Chat: React.FC = () => {
 		});
 	}
 
-	function renderPrivateChatBox() {
-
-	}
-
-	function renderChatBox(chat: any) {
-		if (!currentChat)
+	const handleChatClick = (chat: Chat, joined: boolean) => {
+		console.log('currentChat', currentChat);
+		if (currentChat?.id === chat.id)
 			return;
+		console.log('chat', chat);
 
-		const selected = currentChat.id == chat.id;
+		if (joined == true) {
+			setCurrentChat(chat);
+			return;
+		}
+		else if (chat.type === 'GROUP') {
+			joinPublic(chat);
+		}
+		else if (chat.type === 'GROUP_PROTECTED') {
+			joinProtected(chat);
+		}
+	}
+	function renderChatBox(chat: any, joined: boolean) {
+		let selected;
+		if (!currentChat)
+			selected = false;
+		else
+			selected = currentChat.id == chat.id;
+
 		if (chat.type === 'PRIVATE') {
 			return (
-				<div className={selected ? 'chat selected' : 'chat' } key={chat.id}>
+				<div className={selected ? 'chat selected' : 'chat' } key={chat.id} onClick={(event) => handleChatClick(chat, joined)}>
 					<p className='title' >{ chat.name }</p>
-					<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
-						<MessageIcon />
-					</IconButton>
+					{
+						joined == true ?
+						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+							<MessageIcon />
+						</IconButton>
+						:
+						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+							<AddIcon />
+						</IconButton>
+					}
 					<p className='type' >{ 'private' }</p>
 				</div>
 			)
 		}
 		else {
 			return (
-				<div className={selected ? 'chat selected' : 'chat' } key={chat.id}>
+				<div className={selected ? 'chat selected' : 'chat' } key={chat.id} onClick={(event) => handleChatClick(chat, joined)}>
 					<p className='title' >{ chat.name }</p>
-					<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
-						<ClearIcon />
-					</IconButton>
+					{
+						joined == true ?
+						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
+							<ClearIcon />
+						</IconButton>
+						:
+						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+							<AddIcon />
+						</IconButton>
+					}
 					<p className='type' >{ chat.type == 'GROUP_PROTECTED' ? 'protected' : 'public' }</p>
 				</div>
 			)
 		}
 	}
 
-	function renderChannelChats(divName: string) {
-		if (!currentChat)
-			return;
-		return (
-			<div>
-				<h1>General</h1>
-				<div className={divName}>
-					<button className='add'>+</button>
-					{
-						joinedChats.map((chat: Chat) => {
-							return ( renderChatBox(chat) )
-						})
-					}
-				</div>
-			</div>
-		)
+	/* Handle Dialogs */
+	const [open, setOpen] = useState(false);
+
+	const handleChatCreateDialogClickOpen = () => {
+		setOpen(true);
+	};
+
+	const handleChatCreateDialog = () => {
+		/* Parsing chatDialogPassword and chatDialogName */
+		if (chatDialogName === '') {
+			alert('Name cannot be empty');
+			return ;
+		}
+		if (chatDialogName.length > 20) {
+			alert('Name cannot be longer than 20 characters');
+			return ;
+		}
+		if (chatDialogName.length < 3) {
+			alert('Name must be at least 3 characters long');
+			return ;
+		}
+		if (chatDialogPassword && chatDialogPassword.length > 20) {
+			alert('Password cannot be longer than 20 characters');
+			return ;
+		}
+		if (chatDialogPassword && chatDialogPassword.length < 6) {
+			alert('Password must be at least 6 characters long');
+			return ;
+		}
+		let chatPayload;
+		if (chatDialogPassword) { /* GROUP_PROTECTED */
+			chatPayload = {
+				name: chatDialogName,
+				type: 'GROUP_PROTECTED',
+				password: chatDialogPassword,
+			}
+		}
+		else { /* GROUP_PUBLIC */
+			chatPayload = {
+				name: chatDialogName,
+				type: 'GROUP',
+			}
+		}
+		axios.post('http://localhost:3000/chat/' + user?.id + '/create', chatPayload, { withCredentials: true })
+		.then(res => {
+			console.log('res', res);
+			setPong(new Date().toISOString());
+			alert('Success');
+			setOpen(false);
+		})
+		.catch(err => {
+			console.log('err', err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			alert(err.response.data.message)
+		});
+
+		setChatDialogName('');
+		setChatDialogPassword('');
 	}
+
+	const handleChatCreateDialogClose = () => {
+		setOpen(false);
+	};
+
 
 
 	function renderChannels(divName: string) {
+		console.log('publicChats.lenght', publicChats.length);
+		console.log('joinedChats.lenght', joinedChats.length);
+		console.log('protectedChats.lenght', protectedChats.length);
+
 		return (
 			<div className={divName}>
-				{
-					renderChannelChats('general')
-				}
+				<h1>Channels</h1>
+				<button className='add' onClick={handleChatCreateDialogClickOpen}>+</button>
+				<div className='general'>
+					{
+						/* Joined Chats */
+						currentChat ?
+						<div className={ 'chat crossection' }>
+							<p className='title' >{ 'Joined Chats' }</p>
+						</div>
+							:
+						<div className={ 'chat crossection' }>
+							<p className='title' >{ 'No chats joined ' }</p>
+						</div>
+					}
+					{
+						joinedChats.map((chat: Chat) => {
+							return ( renderChatBox(chat, true) )
+						})
+					}
+
+					{
+						/* Public Chats */
+						publicChats.length > 0 &&
+						<div className={ 'chat crossection' }>
+							<p className='title' >{ 'Public Chats' }</p>
+						</div>
+					}
+					{
+						publicChats.map((chat: Chat) => {
+							return ( renderChatBox(chat, false) )
+						})
+					}
+
+					{
+						/* Protected Chats */
+						protectedChats.length > 0 &&
+							<div className={ 'chat crossection' }>
+								<p className='title' >{ 'Password Protected Chats' }</p>
+							</div>
+					}
+					{
+						protectedChats.map((chat: Chat) => {
+							return ( renderChatBox(chat, false) )
+						})
+					}
+				</div>
 			</div>
 		)
 	}
@@ -305,14 +436,14 @@ const Chat: React.FC = () => {
 	}
 
 	function renderPlayers(divName: string) {
-		if (!currentChat)
-			return ;
+		// if (!currentChat)
+		// 	return ;
 		return (
 			<div className={divName}>
 				<h3>Players</h3>
 				<ul>
 					{
-						currentChat.users.length == 0 ? <p>No players</p> :
+						currentChat == null ? <p>No players</p> :
 						currentChat.users.map(player => {
 							return (
 								<li key={player.id}>
@@ -332,6 +463,41 @@ const Chat: React.FC = () => {
 			{renderMessages("block messages")}
 			{/* {renderChatBox("chat-box")} */}
 			{renderPlayers("block players")}
+
+		<Dialog open={open} onClose={handleChatCreateDialogClose}>
+			<DialogTitle>Create Group</DialogTitle>
+			<DialogContent>
+				<DialogContentText>
+				To create a password-protected group, simply enter a password when prompted. If you do not enter a password, the group will be open to anyone. To create a private chat with another person, you must first follow that person.
+				</DialogContentText>
+				<TextField
+					autoFocus
+					margin="dense"
+					id="groupname"
+					label="Group Name"
+					type="text"
+					required={true}
+					fullWidth
+					onChange={event => setChatDialogName(event.currentTarget.value)}
+					variant="standard"
+				/>
+				<TextField
+					autoFocus
+					margin="dense"
+					id="password"
+					label="Password"
+					type="password"
+					required={false}
+					fullWidth
+					onChange={event => setChatDialogPassword(event.currentTarget.value)}
+					variant="standard"
+				/>
+			</DialogContent>
+			<DialogActions>
+				<Button onClick={handleChatCreateDialogClose} color='error'>Cancel</Button>
+				<Button onClick={handleChatCreateDialog}>Subscribe</Button>
+			</DialogActions>
+		</Dialog>
 		</div>
 	);
 }
