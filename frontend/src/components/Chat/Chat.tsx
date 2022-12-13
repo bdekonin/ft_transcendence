@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 import './style.css'
 import { SocketContext } from '../../context/socket';
-import { Socket } from 'socket.io-client';
+
+import IconButton from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 interface User {
 	id: number;
@@ -234,58 +236,115 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	function renderRooms() {
+
+	const [channelBoxMode, setChannelBoxMode] = useState('general'); /* Change to enum */
+
+	function renderChannelGeneral(divName: string) {
 		return (
-			<div className="rooms">
-				<h3>Users in this chat</h3>
-				{renderUsers()}
-				<h3>Joined Rooms</h3>
-				<ul>
+			<div>
+				<h1>General</h1>
+				<div className={divName}>
+					<button className='add'>+</button>
 					{
-						joinedChats.length == 0 ? <p>No joined rooms</p> :
-						joinedChats.map(chat => {
+						joinedChats.map((chat: Chat) => {
 							return (
-								<li key={chat.id}>
-									<p className={chat.unread ? 'room-name-clickable unread' : 'room-name-clickable'} onClick={() => setCurrentChat(chat)}>{chat.name}</p>
-								</li>
-							);
+								<div className='chat' key={chat.id}>
+									<p>{ chat.name }</p>
+									<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+										<MoreVertIcon />
+									</IconButton>
+									<p>{ 'joined' }</p>
+								</div>
+							)
 						})
 					}
-				</ul>
-				<h3>Public Rooms</h3>
-				<ul>
-					{
-						publicChats.length == 0 ? <p>No public rooms</p> :
-						publicChats.map(chat => {
-							return (
-								<li key={chat.id}>
-									<p className="room-name-clickable" onClick={() => joinPublic(chat)}>{chat.name}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-				<h3>Private Rooms</h3>
-				<ul>
-					{
-						protectedChats.length == 0 ? <p>No private rooms</p> :
-						protectedChats.map(chat => {
-							return (
-								<li key={chat.id}>
-									<p className="room-name-clickable" onClick={() => joinProtected(chat)}>{chat.name}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-				<h3>Action Buttons</h3>
-				{renderActionButtons()}
+				</div>
 			</div>
 		)
 	}
-	function renderMessages() {
+	function renderChannelDM(divName: string) {
 		return (
-			<div className="messages">
+			<div>
+				<h1>DM</h1>
+				<div className={divName}>
+
+				</div>
+			</div>
+		)
+	}
+
+
+
+	function buttonDM() {
+		setChannelBoxMode('dm');
+	}
+	function buttonGeneral() {
+		setChannelBoxMode('general');
+	}
+
+
+	function renderChannels(divName: string) {
+			return (
+				<div className={divName}>
+					{
+						channelBoxMode == 'general' ? renderChannelGeneral('general') : renderChannelDM('dm')
+					}
+					<div className='channel-buttons'>
+						<button onClick={buttonGeneral}>General</button>
+						<button onClick={buttonDM}>DM</button>
+					</div>
+				</div>
+			)
+
+		// return (
+		// 	<div className={divName}>
+		// 		<h3>Joined Rooms</h3>
+		// 		<ul>
+		// 			{
+		// 				joinedChats.length == 0 ? <p>No joined rooms</p> :
+		// 				joinedChats.map(chat => {
+		// 					return (
+		// 						<li key={chat.id}>
+		// 							<p className={chat.unread ? 'room-name-clickable unread' : 'room-name-clickable'} onClick={() => setCurrentChat(chat)}>{chat.name}</p>
+		// 						</li>
+		// 					);
+		// 				})
+		// 			}
+		// 		</ul>
+		// 		<h3>Public Rooms</h3>
+		// 		<ul>
+		// 			{
+		// 				publicChats.length == 0 ? <p>No public rooms</p> :
+		// 				publicChats.map(chat => {
+		// 					return (
+		// 						<li key={chat.id}>
+		// 							<p className="room-name-clickable" onClick={() => joinPublic(chat)}>{chat.name}</p>
+		// 						</li>
+		// 					);
+		// 				})
+		// 			}
+		// 		</ul>
+		// 		<h3>Private Rooms</h3>
+		// 		<ul>
+		// 			{
+		// 				protectedChats.length == 0 ? <p>No private rooms</p> :
+		// 				protectedChats.map(chat => {
+		// 					return (
+		// 						<li key={chat.id}>
+		// 							<p className="room-name-clickable" onClick={() => joinProtected(chat)}>{chat.name}</p>
+		// 						</li>
+		// 					);
+		// 				})
+		// 			}
+		// 		</ul>
+		// 		<h3>Action Buttons</h3>
+		// 		{renderActionButtons()}
+		// 	</div>
+		// )
+	}
+	function renderMessages(divName: string) {
+		return (
+			<div className={divName}>
 				<h2 className='chatName'>{currentChat.name}</h2>
 				{
 					messages.map((message, index)=> {
@@ -302,12 +361,12 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	function renderChatBox() {
+	function renderChatBox(divName: string) {
 		if (currentChat.id == 0) {
 			return ;
 		}
 		return (
-			<div className="chat-box">
+			<div className={divName}>
 				<input
 					type="text"
 					placeholder="Type message.."
@@ -333,12 +392,33 @@ const Chat: React.FC = () => {
 		console.log('Emitting message', payload);
 		socket.emit('chat/new-chat', payload);
 	}
+
+	function renderPlayers(divName: string) {
+		return (
+			<div className={divName}>
+				<h3>Players</h3>
+				<ul>
+					{
+						currentChat.users.length == 0 ? <p>No players</p> :
+						currentChat.users.map(player => {
+							return (
+								<li key={player.id}>
+									<p className="room-name-clickable">{player.username}</p>
+								</li>
+							);
+						})
+					}
+				</ul>
+			</div>
+		)
+	}
 	
 	return (
 		<div className="main-container">
-			{renderRooms()}
-			{renderMessages()}
-			{renderChatBox()}
+			{renderChannels("block channels")}
+			{renderMessages("block messages")}
+			{/* {renderChatBox("chat-box")} */}
+			{renderPlayers("block players")}
 		</div>
 	);
 }
