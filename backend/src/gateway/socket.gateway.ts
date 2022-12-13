@@ -101,6 +101,9 @@ export class socketGateway {
 		client.join('chat:' + payload.chatID);
 
 		// this.chatService.joinChat(user.id, payload.chatID);
+
+		/* Update all users in chat */
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users');
 	}
 
 	@SubscribeMessage('chat/leave')
@@ -112,6 +115,9 @@ export class socketGateway {
 		client.leave('chat:' + payload.chatID);
 
 		this.chatService.leaveChat(user.id, payload.chatID);
+
+		/* Update all users in chat */
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users');
 	}
 	
 	@SubscribeMessage('chat/new-chat')
