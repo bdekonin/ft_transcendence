@@ -8,6 +8,7 @@ import { SocketContext } from '../../context/socket';
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
+import MessageIcon from '@mui/icons-material/Message';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -42,7 +43,7 @@ const Chat: React.FC = () => {
 	
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
-	const [user, setUser] = useState<User>();
+	const [user, setUser] = useState<User | null>(null);
 	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
@@ -57,30 +58,6 @@ const Chat: React.FC = () => {
 
 	document.body.style.background = '#323232';
 
-
-	useEffect(() => {
-		if (!socket || !currentChat)
-			return;
-		socket.on('chat/refresh-message', (incomingPayload: Message) => {
-			if (incomingPayload.parent.id === currentChat.id){
-				setMessages((messages) => [incomingPayload, ...messages]);
-			}
-			else {
-				/* Enable notification for that channel */
-			}
-		})
-		socket.on('chat/refresh-chats', () => {
-			console.log('refreshing chats');
-			// window.location.reload();
-			setPong(new Date().toISOString());
-			/* Refresh chats */
-		})
-		return () => {
-			socket.off('chat/refresh-message');
-			socket.off('chat/refresh-chats');
-		}
-	});
-
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
 		.then(res => {
@@ -92,7 +69,22 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, []);
+	}, []); /* Renders only once */
+
+	/* Means there is a new message so update messages when the chatID == currentChatID*/
+	useEffect(() => {
+		socket.on('chat/refresh-message', (payload: Message) => {
+			if (payload.parent.id === currentChat?.id){
+				setMessages((messages) => [payload, ...messages]);
+			}
+			else {
+				/* Enable notification for that channel */
+			}
+		})
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 	/* Retrieving User's Chats */
 	useEffect(() => {
@@ -113,19 +105,18 @@ const Chat: React.FC = () => {
 		});
 	}, [user, pong]);
 
-	/* Setting the current chat after retrieving chats */
 	useEffect(() => {
-		if (joinedChats.length == 0) {
-			if (pong == '')
-				setCurrentChat({id: 0, name: '', users: [], unread: false, type: ''});
-			}
-		else {
-			if (pong == '')
-				setCurrentChat(joinedChats[0]);
-		}
-	}, [joinedChats, pong]);
+		if (currentChat && joinedChats)
+			return ;
 
-	/* Retrieving messages and avatars of the currentChat */
+		if (joinedChats.length === 0)
+			return ;
+		
+		setCurrentChat(joinedChats[0]);
+
+	}, [joinedChats]);
+
+	/* Retrieving stats of the currentChat */
 	useEffect(() => {
 		if (!currentChat)
 			return;
@@ -139,40 +130,28 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, [currentChat, pong]);
+	}, [currentChat]);
 
-	/* Retrieving avatars of the currentChat */
-	// useEffect(() => {
-	// 	if (currentChat.id == 0)
-	// 		return;
 
-	// 	currentChat.users.forEach((user) => {
-	// 		axios.get('http://localhost:3000/user/' + user.id + '/avatar', { withCredentials: true })
-	// 		.then(res => {
-	// 			// user['avatar'] = res.data.avatar;
-	// 			console.log('res');
-	// 		})
-	// 		.catch(err => {
-	// 			console.log('err', err);
-	// 			if (err.response.data.statusCode === 401)
-	// 				navigate('/login');	
-	// 			alert(err.response.data.message)
-	// 		});
-	// 	});
-	// }, [currentChat, pong]);
+
+
+
 
 	function sendJoinEmitter(chatID: number) {
 		socket.emit('chat/join', { chatID: chatID });
 	}
 
-	function sendLeaveEmitter(chatID: number) {
+	const leaveChannel = (chatID: number) => {
 		socket.emit('chat/leave', { chatID: chatID });
-		joinedChats.forEach((chat, index) => {
-			if (chat.id === chatID) {
+		joinedChats.forEach((chatLoop, index) => {
+			if (chatID === chatLoop.id) {
 				joinedChats.splice(index, 1);
 				setJoinedChats([...joinedChats]);
 			}
 		});
+		if (currentChat?.id === chatID) {
+			setCurrentChat(null);
+		}
 	}
 
 	function joinPublic(chat: Chat) {
@@ -181,7 +160,6 @@ const Chat: React.FC = () => {
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			// setPong(new Date().toISOString());			setCurrentChat(chat);
 			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
@@ -206,19 +184,40 @@ const Chat: React.FC = () => {
 		});
 	}
 
-	const [channelBoxMode, setChannelBoxMode] = useState('general'); /* Change to enum */
+	function renderPrivateChatBox() {
 
-	const leaveChannel = (chatID: number) => {
-		socket.emit('chat/leave', { chatID: chatID });
-		joinedChats.forEach((chatLoop, index) => {
-			if (chatID === chatLoop.id) {
-				joinedChats.splice(index, 1);
-				setJoinedChats([...joinedChats]);
-			}
-		});
 	}
 
-	function renderChannelGeneral(divName: string) {
+	function renderChatBox(chat: any) {
+		if (!currentChat)
+			return;
+
+		const selected = currentChat.id == chat.id;
+		if (chat.type === 'PRIVATE') {
+			return (
+				<div className={selected ? 'chat selected' : 'chat' } key={chat.id}>
+					<p className='title' >{ chat.name }</p>
+					<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+						<MessageIcon />
+					</IconButton>
+					<p className='type' >{ 'private' }</p>
+				</div>
+			)
+		}
+		else {
+			return (
+				<div className={selected ? 'chat selected' : 'chat' } key={chat.id}>
+					<p className='title' >{ chat.name }</p>
+					<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
+						<ClearIcon />
+					</IconButton>
+					<p className='type' >{ chat.type == 'GROUP_PROTECTED' ? 'protected' : 'public' }</p>
+				</div>
+			)
+		}
+	}
+
+	function renderChannelChats(divName: string) {
 		if (!currentChat)
 			return;
 		return (
@@ -228,101 +227,23 @@ const Chat: React.FC = () => {
 					<button className='add'>+</button>
 					{
 						joinedChats.map((chat: Chat) => {
-							if (chat.type == 'GROUP_PROTECTED' || chat.type == 'GROUP')
-								return (
-									<div className={currentChat.id == chat.id ? 'chat selected' : 'chat' } key={chat.id}>
-										<p className='title' >{ chat.name }</p>
-										<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
-											<ClearIcon />
-										</IconButton>
-										<p className='type' >{ chat.type == 'GROUP_PROTECTED' ? 'private' : 'public' } </p>
-									</div>
-								)
+							return ( renderChatBox(chat) )
 						})
 					}
 				</div>
 			</div>
 		)
 	}
-	function renderChannelDM(divName: string) {
-		return (
-			<div>
-				<h1>DM</h1>
-				<div className={divName}>
-
-				</div>
-			</div>
-		)
-	}
-
-
-
-	function buttonDM() {
-		setChannelBoxMode('dm');
-	}
-	function buttonGeneral() {
-		setChannelBoxMode('general');
-	}
 
 
 	function renderChannels(divName: string) {
-			return (
-				<div className={divName}>
-					{
-						channelBoxMode == 'general' ? renderChannelGeneral('general') : renderChannelDM('dm')
-					}
-					<div className='channel-buttons'>
-						<button onClick={buttonGeneral}>General</button>
-						<button onClick={buttonDM}>DM</button>
-					</div>
-				</div>
-			)
-
-		// return (
-		// 	<div className={divName}>
-		// 		<h3>Joined Rooms</h3>
-		// 		<ul>
-		// 			{
-		// 				joinedChats.length == 0 ? <p>No joined rooms</p> :
-		// 				joinedChats.map(chat => {
-		// 					return (
-		// 						<li key={chat.id}>
-		// 							<p className={chat.unread ? 'room-name-clickable unread' : 'room-name-clickable'} onClick={() => setCurrentChat(chat)}>{chat.name}</p>
-		// 						</li>
-		// 					);
-		// 				})
-		// 			}
-		// 		</ul>
-		// 		<h3>Public Rooms</h3>
-		// 		<ul>
-		// 			{
-		// 				publicChats.length == 0 ? <p>No public rooms</p> :
-		// 				publicChats.map(chat => {
-		// 					return (
-		// 						<li key={chat.id}>
-		// 							<p className="room-name-clickable" onClick={() => joinPublic(chat)}>{chat.name}</p>
-		// 						</li>
-		// 					);
-		// 				})
-		// 			}
-		// 		</ul>
-		// 		<h3>Private Rooms</h3>
-		// 		<ul>
-		// 			{
-		// 				protectedChats.length == 0 ? <p>No private rooms</p> :
-		// 				protectedChats.map(chat => {
-		// 					return (
-		// 						<li key={chat.id}>
-		// 							<p className="room-name-clickable" onClick={() => joinProtected(chat)}>{chat.name}</p>
-		// 						</li>
-		// 					);
-		// 				})
-		// 			}
-		// 		</ul>
-		// 		<h3>Action Buttons</h3>
-		// 		{renderActionButtons()}
-		// 	</div>
-		// )
+		return (
+			<div className={divName}>
+				{
+					renderChannelChats('general')
+				}
+			</div>
+		)
 	}
 	function renderMessages(divName: string) {
 		if (currentChat == null)
@@ -349,27 +270,27 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	function renderChatBox(divName: string) {
-		if (!currentChat) {
-			return ;
-		}
-		return (
-			<div className={divName}>
-				<input
-					type="text"
-					placeholder="Type message.."
-					onChange={event => setChatBoxMsg(event.currentTarget.value)}
-					name={chatBoxMsg}
-					maxLength={256}>
-				</input>
-				<button
-					type="submit"
-					onClick={(event) => postMessage(event)}>
-						Send
-				</button>
-			</div>
-		)
-	}
+	// function renderChatBox(divName: string) {
+	// 	if (!currentChat) {
+	// 		return ;
+	// 	}
+	// 	return (
+	// 		<div className={divName}>
+	// 			<input
+	// 				type="text"
+	// 				placeholder="Type message.."
+	// 				onChange={event => setChatBoxMsg(event.currentTarget.value)}
+	// 				name={chatBoxMsg}
+	// 				maxLength={256}>
+	// 			</input>
+	// 			<button
+	// 				type="submit"
+	// 				onClick={(event) => postMessage(event)}>
+	// 					Send
+	// 			</button>
+	// 		</div>
+	// 	)
+	// }
 
 	function postMessage(event:any) {
 		if (!currentChat)
