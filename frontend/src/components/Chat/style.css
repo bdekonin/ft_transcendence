@@ -30,10 +30,26 @@
 }
 
 /* Channels styling */
+.channels .general .chat {
+	background-color: #1e1e1e;
+	text-align: left;
+	/* width: 100%; */
+	height: 5%;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-bottom: grey 1px solid;
+}
+.channels .general .chat.selected {
+	background-color: #323232;
+}
+.channels .general .chat:hover {
+	background-color: #545454;
+}
 .channels .general .chat p {
 	margin: 0;
 	margin-left: 5px;
-	color: white
+	/* color: white */
+	font-family: monospace;
 }
 .channels .general .add {
 	width: 100%;
@@ -46,17 +62,10 @@
 	left: 90%;
 	height: 30px;
 	width: 30px;
-
 }
-
-.channels .general .chat {
-	background-color: #323232;
-	text-align: left;
-	/* width: 100%; */
-	height: 5%;
-	padding-top: 5px;
-	padding-bottom: 5px;
+.channels .general .chat .title {
+	color: white;
 }
-.channels .general .chat:hover {
-	background-color: #282828;
+.channels .general .chat .type {
+	color: grey;
 }

@@ -99,6 +99,8 @@ export class socketGateway {
 		console.log('Join chat', payload);
 		/* Add client to every chat he is in */
 		client.join('chat:' + payload.chatID);
+
+		this.chatService.joinChat(user.id, payload.chatID);
 	}
 
 	@SubscribeMessage('chat/leave')
@@ -108,6 +110,8 @@ export class socketGateway {
 			return;
 		console.log('Leave chat', payload);
 		client.leave('chat:' + payload.chatID);
+
+		this.chatService.leaveChat(user.id, payload.chatID);
 	}
 	
 	@SubscribeMessage('chat/new-chat')

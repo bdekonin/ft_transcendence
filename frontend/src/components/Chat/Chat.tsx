@@ -7,6 +7,12 @@ import { SocketContext } from '../../context/socket';
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ClearIcon from '@mui/icons-material/Clear';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 interface User {
 	id: number;
@@ -15,6 +21,7 @@ interface User {
 
 interface Chat {
 	id: number;
+	type: string;
 	name: string;
 	users: User[];
 	unread: boolean;
@@ -36,7 +43,7 @@ const Chat: React.FC = () => {
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
-	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: [], unread: false});
+	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
 	
@@ -52,6 +59,8 @@ const Chat: React.FC = () => {
 
 
 	useEffect(() => {
+		if (!socket || !currentChat)
+			return;
 		socket.on('chat/refresh-message', (incomingPayload: Message) => {
 			if (incomingPayload.parent.id === currentChat.id){
 				setMessages((messages) => [incomingPayload, ...messages]);
@@ -92,6 +101,7 @@ const Chat: React.FC = () => {
 		axios.get('http://localhost:3000/chat/' + user?.id + '/chats?filter=all', { withCredentials: true })
 		.then(res => {
 			setJoinedChats(res.data.joined);
+			console.log('joinedChats', res.data.joined);
 			setPublicChats(res.data.public);
 			setProtectedChats(res.data.protected);
 		})
@@ -107,7 +117,7 @@ const Chat: React.FC = () => {
 	useEffect(() => {
 		if (joinedChats.length == 0) {
 			if (pong == '')
-				setCurrentChat({id: 0, name: '', users: [], unread: false});
+				setCurrentChat({id: 0, name: '', users: [], unread: false, type: ''});
 			}
 		else {
 			if (pong == '')
@@ -117,7 +127,7 @@ const Chat: React.FC = () => {
 
 	/* Retrieving messages and avatars of the currentChat */
 	useEffect(() => {
-		if (currentChat.id == 0)
+		if (!currentChat)
 			return;
 		axios.get('http://localhost:3000/chat/' + user?.id + '/messages/' + currentChat.id, { withCredentials: true })
 		.then(res => {
@@ -157,6 +167,12 @@ const Chat: React.FC = () => {
 
 	function sendLeaveEmitter(chatID: number) {
 		socket.emit('chat/leave', { chatID: chatID });
+		joinedChats.forEach((chat, index) => {
+			if (chat.id === chatID) {
+				joinedChats.splice(index, 1);
+				setJoinedChats([...joinedChats]);
+			}
+		});
 	}
 
 	function joinPublic(chat: Chat) {
@@ -165,8 +181,7 @@ const Chat: React.FC = () => {
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			// setPong(new Date().toISOString());
-			setCurrentChat(chat);
+			// setPong(new Date().toISOString());			setCurrentChat(chat);
 			sendJoinEmitter( chat.id );
 		})
 		.catch(err => {
@@ -191,55 +206,21 @@ const Chat: React.FC = () => {
 		});
 	}
 
-	function renderUsers() {
-		return (
-			<div className='user-icons'>
-				{
-					/* print out the users in the chat */
-					currentChat.users.map((user: User) => {
-						return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
-					})
-				}
-			</div>
-		)
-	}
-	function renderActionButtons() {
-		return (
-			<div className='action-buttons'>
-				<button onClick={() => {
-					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
-					.then(res => {
-						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
-						// setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
-						setPong(new Date().toISOString());
-						sendLeaveEmitter( currentChat.id );
-					})
-					.catch(err => {
-						console.log('err', err);
-						if (err.response.data.statusCode === 401)
-							navigate('/login');
-						alert(err.response.data.message)
-					});
-				}}>Leave Current Chat</button>
-
-				<button onClick={() => {
-					console.log('user', user);
-					console.log('currentChat', currentChat);
-					console.log('messages', messages);
-					console.log('chatBoxMsg', chatBoxMsg);
-					
-					/* Chats */
-					console.log('joinedChats', joinedChats);
-					console.log('publicChats', publicChats);
-					console.log('protectedChats', protectedChats);
-				}}>Debug</button>
-			</div>
-		)
-	}
-
 	const [channelBoxMode, setChannelBoxMode] = useState('general'); /* Change to enum */
 
+	const leaveChannel = (chatID: number) => {
+		socket.emit('chat/leave', { chatID: chatID });
+		joinedChats.forEach((chatLoop, index) => {
+			if (chatID === chatLoop.id) {
+				joinedChats.splice(index, 1);
+				setJoinedChats([...joinedChats]);
+			}
+		});
+	}
+
 	function renderChannelGeneral(divName: string) {
+		if (!currentChat)
+			return;
 		return (
 			<div>
 				<h1>General</h1>
@@ -247,15 +228,16 @@ const Chat: React.FC = () => {
 					<button className='add'>+</button>
 					{
 						joinedChats.map((chat: Chat) => {
-							return (
-								<div className='chat' key={chat.id}>
-									<p>{ chat.name }</p>
-									<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
-										<MoreVertIcon />
-									</IconButton>
-									<p>{ 'joined' }</p>
-								</div>
-							)
+							if (chat.type == 'GROUP_PROTECTED' || chat.type == 'GROUP')
+								return (
+									<div className={currentChat.id == chat.id ? 'chat selected' : 'chat' } key={chat.id}>
+										<p className='title' >{ chat.name }</p>
+										<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
+											<ClearIcon />
+										</IconButton>
+										<p className='type' >{ chat.type == 'GROUP_PROTECTED' ? 'private' : 'public' } </p>
+									</div>
+								)
 						})
 					}
 				</div>
@@ -343,6 +325,12 @@ const Chat: React.FC = () => {
 		// )
 	}
 	function renderMessages(divName: string) {
+		if (currentChat == null)
+			return (
+				<div className={divName}>
+					<h1>Choose a chat</h1>
+				</div>
+			)
 		return (
 			<div className={divName}>
 				<h2 className='chatName'>{currentChat.name}</h2>
@@ -362,7 +350,7 @@ const Chat: React.FC = () => {
 		)
 	}
 	function renderChatBox(divName: string) {
-		if (currentChat.id == 0) {
+		if (!currentChat) {
 			return ;
 		}
 		return (
@@ -384,6 +372,8 @@ const Chat: React.FC = () => {
 	}
 
 	function postMessage(event:any) {
+		if (!currentChat)
+			return ;
 		const payload = {
 			"senderID": user?.id,
 			"chatID": currentChat.id,
@@ -394,6 +384,8 @@ const Chat: React.FC = () => {
 	}
 
 	function renderPlayers(divName: string) {
+		if (!currentChat)
+			return ;
 		return (
 			<div className={divName}>
 				<h3>Players</h3>
