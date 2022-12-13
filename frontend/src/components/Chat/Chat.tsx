@@ -113,14 +113,11 @@ const Chat: React.FC = () => {
 	}, [user, pong]);
 
 	useEffect(() => {
-		// if (currentChat && joinedChats)
-		// 	return ;
-
-		if (joinedChats.length === 0)
+		if (joinedChats.length === 0) {
+			setCurrentChat(null);
 			return ;
-		
+		}
 		setCurrentChat(joinedChats[0]);
-
 	}, [joinedChats]);
 
 	/* Retrieving stats of the currentChat */
@@ -139,18 +136,22 @@ const Chat: React.FC = () => {
 		});
 	}, [currentChat]);
 
-
-
-
-
-
 	function sendJoinEmitter(chatID: number) {
 		socket.emit('chat/join', { chatID: chatID });
 	}
 
 	const leaveChannel = (chatID: number) => {
 		socket.emit('chat/leave', { chatID: chatID });
-		setPong(new Date().toISOString());
+		// setPong(new Date().toISOString());
+
+		const chat = joinedChats.find(chat => chat.id === chatID);
+
+		if (chat) {
+			if (chat.type === 'GROUP' && chat.users.length !== 1)
+				setPublicChats([...publicChats, chat]);
+			else if (chat.type === 'GROUP_PROTECTED' && chat.users.length !== 1)
+				setProtectedChats([...protectedChats, chat]);
+		}
 		joinedChats.splice(joinedChats.findIndex(chat => chat.id === chatID), 1);
 		setJoinedChats([...joinedChats]);
 	}
@@ -401,43 +402,8 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	// function renderChatBox(divName: string) {
-	// 	if (!currentChat) {
-	// 		return ;
-	// 	}
-	// 	return (
-	// 		<div className={divName}>
-	// 			<input
-	// 				type="text"
-	// 				placeholder="Type message.."
-	// 				onChange={event => setChatBoxMsg(event.currentTarget.value)}
-	// 				name={chatBoxMsg}
-	// 				maxLength={256}>
-	// 			</input>
-	// 			<button
-	// 				type="submit"
-	// 				onClick={(event) => postMessage(event)}>
-	// 					Send
-	// 			</button>
-	// 		</div>
-	// 	)
-	// }
-
-	function postMessage(event:any) {
-		if (!currentChat)
-			return ;
-		const payload = {
-			"senderID": user?.id,
-			"chatID": currentChat.id,
-			"message": chatBoxMsg
-		}
-		console.log('Emitting message', payload);
-		socket.emit('chat/new-chat', payload);
-	}
 
 	function renderPlayers(divName: string) {
-		// if (!currentChat)
-		// 	return ;
 		return (
 			<div className={divName}>
 				<h3>Players</h3>
@@ -461,7 +427,6 @@ const Chat: React.FC = () => {
 		<div className="main-container">
 			{renderChannels("block channels")}
 			{renderMessages("block messages")}
-			{/* {renderChatBox("chat-box")} */}
 			{renderPlayers("block players")}
 
 		<Dialog open={open} onClose={handleChatCreateDialogClose}>
