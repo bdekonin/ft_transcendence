@@ -101,7 +101,6 @@ const Chat: React.FC = () => {
 		axios.get('http://localhost:3000/chat/' + user?.id + '/chats?filter=all', { withCredentials: true })
 		.then(res => {
 			setJoinedChats(res.data.joined);
-			console.log('joinedChats', res.data.joined);
 			setPublicChats(res.data.public);
 			setProtectedChats(res.data.protected);
 		})
@@ -118,6 +117,14 @@ const Chat: React.FC = () => {
 			setCurrentChat(null);
 			return ;
 		}
+		joinedChats[0].users.sort((a, b) => {
+			if (a.id === user?.id)
+				return -1;
+			else if (b.id === user?.id)
+				return 1;
+			else
+				return 0;
+		});
 		setCurrentChat(joinedChats[0]);
 	}, [joinedChats]);
 
@@ -163,7 +170,6 @@ const Chat: React.FC = () => {
 			chatID: chat.id
 		}
 
-		console.log('joinPublic', payload);
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			sendJoinEmitter( chat.id );
@@ -180,7 +186,6 @@ const Chat: React.FC = () => {
 			chatID: chat.id,
 			password: prompt('Please enter the password')
 		}
-		console.log('joinProtected', payload);
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			setRefreshChats(new Date().toISOString());
@@ -195,12 +200,20 @@ const Chat: React.FC = () => {
 	}
 
 	const handleChatClick = (chat: Chat, joined: boolean) => {
-		console.log('currentChat', currentChat);
 		if (currentChat?.id === chat.id)
 			return;
-		console.log('chat', chat);
-
 		if (joined == true) {
+
+			// sort players
+			chat.users.sort((a, b) => {
+				if (a.id === user?.id)
+					return -1;
+				else if (b.id === user?.id)
+					return 1;
+				else
+					return 0;
+			});
+
 			setCurrentChat(chat);
 			return;
 		}
@@ -297,7 +310,6 @@ const Chat: React.FC = () => {
 		}
 		axios.post('http://localhost:3000/chat/' + user?.id + '/create', chatPayload, { withCredentials: true })
 		.then(res => {
-			console.log('res', res);
 			setRefreshChats(new Date().toISOString());
 			alert('Success');
 			setOpen(false);
@@ -408,6 +420,11 @@ const Chat: React.FC = () => {
 		)
 	}
 	function renderPlayers(divName: string) {
+		if (!user) {
+			return (
+				<p>Loading ...</p>
+			)
+		}
 		return (
 			<div className={divName}>
 				<h3>Players</h3>
