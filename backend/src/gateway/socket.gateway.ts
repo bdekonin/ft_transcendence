@@ -135,6 +135,9 @@ export class socketGateway {
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
 	}
 
+
+	
+
 	@SubscribeMessage('ping')
 	async handlePing (client: Socket, payload: Date) {
 		const user = await this.findUser(client)

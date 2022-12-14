@@ -6,7 +6,6 @@ import './style.css'
 import { SocketContext } from '../../context/socket';
 
 import IconButton from '@mui/material/IconButton';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
 import MessageIcon from '@mui/icons-material/Message';
 import TextField from '@mui/material/TextField';
@@ -176,7 +175,7 @@ const Chat: React.FC = () => {
 			setRefreshChats(new Date().toISOString());
 		})
 		.catch(err => {
-			if (err.response.data.statusCode === 418)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
@@ -189,11 +188,11 @@ const Chat: React.FC = () => {
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			setRefreshChats(new Date().toISOString());
-			alert('Success');
 			sendJoinEmitter( chat.id );
+			alert('Success');
 		})
 		.catch(err => {
-			if (err.response.data.statusCode === 418)
+			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			alert(err.response.data.message)
 		});
@@ -425,6 +424,12 @@ const Chat: React.FC = () => {
 				<p>Loading ...</p>
 			)
 		}
+			// <div className='block channels'>
+			// 	<div className='title'>
+			// 		<h1>Channels</h1>
+			// 	</div>
+			// 	<div className='content'></div>
+
 		return (
 			<div className={divName}>
 				<h3>Players</h3>
@@ -447,7 +452,7 @@ const Chat: React.FC = () => {
 	return (
 		<div className="main-container">
 			{renderChannels()}
-			{renderMessages("block messages")}
+			{renderMessages()}
 			{renderPlayers("block players")}
 
 		<Dialog open={open} onClose={handleChatCreateDialogClose}>

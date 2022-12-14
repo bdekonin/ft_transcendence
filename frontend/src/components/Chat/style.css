@@ -58,7 +58,7 @@
 }
 .block.channels .content .add {
 	height: 30px;
-	background-color: green;
+	background-color: #27ae60;
 	border: 0;
 	margin-bottom: 5px;
 	margin: 5px;
@@ -96,7 +96,7 @@
 }
 
 .block.channels > .title {
-	background-color: #b887ff;
+	background-color: #8e44ad;
 	height: 10%;
 	display: flex;
 	align-items: center;
