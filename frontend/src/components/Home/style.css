@@ -1,0 +1,58 @@
+.background {
+	background-image: url('./background.png');
+	/* background-size: cover; */
+	/* background-position-x: 0px; */
+	margin: 0px;
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+
+	position: absolute;
+	left: 0px;
+}
+
+.homepage .logo {
+	/* position: relative; */
+	/* left: 50%;
+	top: 15%; */
+	
+	margin-top: 5%;
+	margin-left: 50%;
+	transform: translate(-50%);
+}
+
+.homepage .navigate {
+	/* position: absolute; */
+	/* left: 50%;*/
+	/* margin-left: 50%;
+	transform: translate(-50%); */
+}
+
+.homepage .navigate a{
+	font-family: 'Press Start 2P';
+	color: #fff;
+	/* margin-top: 5%; */
+	/* margin-left: 47%; */
+	/* transform: translate(-50%); */
+	/* position: relative; */
+	/* font-size: 25px; */
+	/* margin-bottom: 15px; */
+	/* margin: auto; */
+	/* text-decoration: none; */
+	/* transform: translate(-50%, -50%); */
+
+}
+
+.homepage .navigate a:hover{
+	color: var(--accent-color);
+	--accent-color: #00ffff;
+}
+
+@font-face {
+	font-family: 'custom-font';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url(https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3nYivN04w.woff2) format('woff2');
+	unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
