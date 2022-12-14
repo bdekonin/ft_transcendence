@@ -56,12 +56,13 @@ const Chat: React.FC = () => {
 	const [publicChats, setPublicChats] = useState<Chat[]>([]);
 	const [protectedChats, setProtectedChats] = useState<Chat[]>([]);
 
-	/* Refresh */
-	const [pong, setPong] = useState('');
+	/* Refresh Chats*/
+	const [refreshChats, setRefreshChats] = useState('');
 
 	/* Create Chat Dialog Options */
 	const [chatDialogName, setChatDialogName] = useState<string>('');
 	const [chatDialogPassword, setChatDialogPassword] = useState<string>('');
+	const [open, setOpen] = useState(false);
 
 	document.body.style.background = '#323232';
 
@@ -110,7 +111,7 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			alert(err.response.data.message)
 		});
-	}, [user, pong]);
+	}, [user, refreshChats]);
 
 	useEffect(() => {
 		if (joinedChats.length === 0) {
@@ -136,13 +137,14 @@ const Chat: React.FC = () => {
 		});
 	}, [currentChat]);
 
+
 	function sendJoinEmitter(chatID: number) {
 		socket.emit('chat/join', { chatID: chatID });
 	}
 
 	const leaveChannel = (chatID: number) => {
 		socket.emit('chat/leave', { chatID: chatID });
-		// setPong(new Date().toISOString());
+		// setRefreshChats(new Date().toISOString());
 
 		const chat = joinedChats.find(chat => chat.id === chatID);
 
@@ -165,7 +167,7 @@ const Chat: React.FC = () => {
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			sendJoinEmitter( chat.id );
-			setPong(new Date().toISOString());
+			setRefreshChats(new Date().toISOString());
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 418)
@@ -181,7 +183,7 @@ const Chat: React.FC = () => {
 		console.log('joinProtected', payload);
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			setPong(new Date().toISOString());
+			setRefreshChats(new Date().toISOString());
 			alert('Success');
 			sendJoinEmitter( chat.id );
 		})
@@ -254,13 +256,9 @@ const Chat: React.FC = () => {
 		}
 	}
 
-	/* Handle Dialogs */
-	const [open, setOpen] = useState(false);
-
 	const handleChatCreateDialogClickOpen = () => {
 		setOpen(true);
 	};
-
 	const handleChatCreateDialog = () => {
 		/* Parsing chatDialogPassword and chatDialogName */
 		if (chatDialogName === '') {
@@ -300,7 +298,7 @@ const Chat: React.FC = () => {
 		axios.post('http://localhost:3000/chat/' + user?.id + '/create', chatPayload, { withCredentials: true })
 		.then(res => {
 			console.log('res', res);
-			setPong(new Date().toISOString());
+			setRefreshChats(new Date().toISOString());
 			alert('Success');
 			setOpen(false);
 		})
@@ -314,73 +312,80 @@ const Chat: React.FC = () => {
 		setChatDialogName('');
 		setChatDialogPassword('');
 	}
-
 	const handleChatCreateDialogClose = () => {
 		setOpen(false);
 	};
 
 
 
-	function renderChannels(divName: string) {
-		console.log('publicChats.lenght', publicChats.length);
-		console.log('joinedChats.lenght', joinedChats.length);
-		console.log('protectedChats.lenght', protectedChats.length);
-
+	function renderChannels() {
 		return (
-			<div className={divName}>
-				<h1>Channels</h1>
-				<button className='add' onClick={handleChatCreateDialogClickOpen}>+</button>
-				<div className='general'>
-					{
-						/* Joined Chats */
-						currentChat ?
-						<div className={ 'chat crossection' }>
-							<p className='title' >{ 'Joined Chats' }</p>
-						</div>
-							:
-						<div className={ 'chat crossection' }>
-							<p className='title' >{ 'No chats joined ' }</p>
-						</div>
-					}
-					{
-						joinedChats.map((chat: Chat) => {
-							return ( renderChatBox(chat, true) )
-						})
-					}
-
-					{
-						/* Public Chats */
-						publicChats.length > 0 &&
-						<div className={ 'chat crossection' }>
-							<p className='title' >{ 'Public Chats' }</p>
-						</div>
-					}
-					{
-						publicChats.map((chat: Chat) => {
-							return ( renderChatBox(chat, false) )
-						})
-					}
-
-					{
-						/* Protected Chats */
-						protectedChats.length > 0 &&
+			<div className='block channels'>
+				<div className='title'>
+					<h1>Channels</h1>
+				</div>
+				<div className='content'>
+					<button className='add' onClick={handleChatCreateDialogClickOpen}>+</button>
+					<div className='general'>
+						{
+							/* Joined Chats */
+							currentChat ?
 							<div className={ 'chat crossection' }>
-								<p className='title' >{ 'Password Protected Chats' }</p>
+								<p className='title' >{ 'Joined Chats' }</p>
 							</div>
-					}
-					{
-						protectedChats.map((chat: Chat) => {
-							return ( renderChatBox(chat, false) )
-						})
-					}
+								:
+								<div>
+								<div className={ 'chat crossection' }>
+									<p className='title' >{ 'Joined Chats' }</p>
+								</div>
+								<div className={'chat error'}>
+									<p >{ 'No chats joined' }</p>
+									{
+										
+									}
+								</div>
+							</div>
+						}
+						{
+							joinedChats.map((chat: Chat) => {
+								return ( renderChatBox(chat, true) )
+							})
+						}
+
+						{
+							/* Public Chats */
+							publicChats.length > 0 &&
+							<div className={ 'chat crossection' }>
+								<p className='title' >{ 'Public Chats' }</p>
+							</div>
+						}
+						{
+							publicChats.map((chat: Chat) => {
+								return ( renderChatBox(chat, false) )
+							})
+						}
+
+						{
+							/* Protected Chats */
+							protectedChats.length > 0 &&
+							<div className={ 'chat crossection' }>
+									<p className='title' >{ 'Password Protected Chats' }</p>
+								</div>
+						}
+						{
+							protectedChats.map((chat: Chat) => {
+								return ( renderChatBox(chat, false) )
+							})
+						}
+					</div>
 				</div>
 			</div>
 		)
 	}
 	function renderMessages(divName: string) {
 		if (currentChat == null)
-			return (
-				<div className={divName}>
+		return (
+			<div className={divName}>
 					<h1>Choose a chat</h1>
 				</div>
 			)
@@ -402,7 +407,6 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-
 	function renderPlayers(divName: string) {
 		return (
 			<div className={divName}>
@@ -425,7 +429,7 @@ const Chat: React.FC = () => {
 	
 	return (
 		<div className="main-container">
-			{renderChannels("block channels")}
+			{renderChannels()}
 			{renderMessages("block messages")}
 			{renderPlayers("block players")}
 

@@ -16,10 +16,15 @@
 	width: calc(60% - 20px);
 }
 
+.main-container {
+	font-family: monospace;
+}
+
 
 
 .channels {
-	background-color: red;
+	/* background-color: red; */
+	background-color: #1e1e1e;
 }
 
 .messages {
@@ -31,7 +36,7 @@
 }
 
 /* Channels styling */
-.channels .general .chat {
+.block.channels .content .general .chat {
 	background-color: #1e1e1e;
 	text-align: left;
 	/* width: 100%; */
@@ -40,38 +45,61 @@
 	padding-bottom: 5px;
 	border-bottom: grey 1px solid;
 }
-.channels .general .chat.selected {
+.block.channels .content .general .chat.selected {
 	background-color: #323232;
 }
-.channels .general .chat:hover {
+.block.channels .content .general .chat:hover {
 	background-color: #545454;
 }
-.channels .general .chat p {
+.block.channels .content .general .chat p {
 	margin: 0;
 	margin-left: 5px;
 	/* color: white */
-	font-family: monospace;
 }
-.channels .add {
-	width: 100%;
+.block.channels .content .add {
 	height: 30px;
 	background-color: green;
 	border: 0;
 	margin-bottom: 5px;
+	margin: 5px;
+	width: 98%;
 }
-.channels .general .options {
+.block.channels .content .general .options {
 	left: 90%;
 	height: 30px;
 	width: 30px;
 }
-.channels .general .chat .title {
+.block.channels .content .general .chat .title {
 	color: white;
 }
-.channels .general .chat .type {
+.block.channels .content .general .chat.error {
+	color: white;
+	height: 60px;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+}
+.block.channels .content .general .chat .type {
 	color: grey;
 }
 
-.channels .general .chat.crossection {
+.block.channels .general .chat.crossection {
 	background-color: #7a7a7a;
 	text-align: center;
+}
+
+.block.channels > .title h1 {
+	color: white;
+	top: 40%;
+}
+
+.block.channels > .title {
+	background-color: #b887ff;
+	height: 10%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
 }
