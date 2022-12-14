@@ -13,6 +13,7 @@ import Chat from "./components/Chat/Chat";
 import React, { useContext, useEffect } from "react";
 import { SocketContext } from "./context/socket";
 import Game from "./components/Game/Game";
+import Protected from "./Auth";
 
 const App:React.FC = () =>
 {
@@ -33,14 +34,14 @@ const App:React.FC = () =>
 		<SocketContext.Provider value={socket}>
 		<Router>
 			<Routes>
-				<Route path='/' element={<Home/>}/>
-				<Route path='/chat' element={<Chat/>}/>
+				<Route path='/' element={<Protected><Home/></Protected>}/>
+				<Route path='/chat' element={<Protected><Chat/></Protected>}/>
 				<Route path='/login' element={<Login />}/>
-				<Route path='/profile' element={<Profile />}/>
-				<Route path='/friends' element={<Friends />}/>
-				<Route path='/social' element={<Social />}/>
-				<Route path='/settings' element={<Settings />}/>
-				<Route path='/game' element={<Game />}/>
+				<Route path='/profile' element={<Protected><Profile /></Protected>}/>
+				<Route path='/friends' element={<Protected><Friends /></Protected>}/>
+				<Route path='/social' element={<Protected><Social /></Protected>}/>
+				<Route path='/settings' element={<Protected><Settings /></Protected>}/>
+				<Route path='/game' element={<Protected><Game /></Protected>}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>
