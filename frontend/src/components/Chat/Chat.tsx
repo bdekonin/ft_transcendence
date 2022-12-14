@@ -16,6 +16,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
+import Channels from './Channels';
 
 interface User {
 	id: number;
@@ -448,12 +449,18 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	
+
 	return (
 		<div className="main-container">
 			{renderChannels()}
-			{renderMessages()}
+			{renderMessages('block messages')}
 			{renderPlayers("block players")}
+
+			<Channels
+				user={user}
+				currentChat={currentChat}
+				setCurrentChat={setCurrentChat}
+			/>
 
 		<Dialog open={open} onClose={handleChatCreateDialogClose}>
 			<DialogTitle>Create Group</DialogTitle>
