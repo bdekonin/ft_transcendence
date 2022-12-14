@@ -1,7 +1,6 @@
 import axios from 'axios';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/home.css';
 import './style.css'
 
 const Home: FC = () => {
@@ -16,48 +15,46 @@ const Home: FC = () => {
 	}, []);
 
 	return (
-		<div className='background'>
-
-			<div 
-				className='homepage'>
-				<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
-				<img
-					className='logo' 
-					src={require('./logo.png')}/>
-					<ul className='navigate'>
-						<li><a
-								onClick={() => {navigate('/game')}}>Game</a></li>
-						<li><a
-								onClick={() => {navigate('/chat')}}>Chat</a></li>
-						<li><a
-								onClick={() => {navigate('/friends')}}>Friends</a></li>
-						<li><a
-								onClick={() => {navigate('/social')}}>Social</a></li>
-						<li><a
-								onClick={() => {navigate('/profile')}}>Profile</a></li>
-						<li><a
-								onClick={() => {navigate('/settings')}}>Settings</a></li>
-					</ul>
-
+		
+	<div className='homepage'>
+	<div className='background'/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
+			<img
+				className='logo' 
+				src={require('./logo.png')}/>
+				<ul className='navigate'>
+					<li><a
+							onClick={() => {navigate('/game')}}>Game</a></li>
+					<li><a
+							onClick={() => {navigate('/chat')}}>Chat</a></li>
+					<li><a
+							onClick={() => {navigate('/friends')}}>Friends</a></li>
+					<li><a
+							onClick={() => {navigate('/social')}}>Social</a></li>
+					<li><a
+							onClick={() => {navigate('/profile')}}>Profile</a></li>
+					<li><a
+							onClick={() => {navigate('/settings')}}>Settings</a></li>
+				</ul>
 
 
 
 
-				{/* <h1>This is the HomePage!</h1>
-				<div className='navigator'>s
-				<button onClick={() => {navigate('/game')}}>Game</button>
-				<br />
-				<button onClick={() => {navigate('/chat')}}>Chat</button>
-				<br />
-				<button onClick={() => {navigate('/friends')}}>Friends</button>
-				<br />
-				<button onClick={() => {navigate('/social')}}>Socials</button>
-				<br />
-				<button onClick={() => {navigate('/profile')}}>Profile</button>
-				<br />
-			<button onClick={() => {navigate('/settings')}}>Settings</button> */}
-				{/* </div> */}
-			</div>
+
+			{/* <h1>This is the HomePage!</h1>
+			<div className='navigator'>s
+			<button onClick={() => {navigate('/game')}}>Game</button>
+			<br />
+			<button onClick={() => {navigate('/chat')}}>Chat</button>
+			<br />
+			<button onClick={() => {navigate('/friends')}}>Friends</button>
+			<br />
+			<button onClick={() => {navigate('/social')}}>Socials</button>
+			<br />
+			<button onClick={() => {navigate('/profile')}}>Profile</button>
+			<br />
+		<button onClick={() => {navigate('/settings')}}>Settings</button> */}
+			{/* </div> */}
 		</div>
 	);
 
