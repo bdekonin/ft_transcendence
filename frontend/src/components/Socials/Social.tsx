@@ -2,6 +2,7 @@ import axios from "axios";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/socials.css";
+import './style.css'
 
 interface User {
 	id: number;
@@ -54,15 +55,23 @@ const Social: FC = () => {
 		return users.map((user) => {
 			return (
 				<div key={user.id} className='userblock'>
-					<div className="data">
-						<h1>{user.username}</h1>
-						<img src={avatars.find(elem => elem.id == user.id)?.avatar} alt="avatar" />
+					<div className="avatarblock">
+						<img
+							className="avatar"
+							src={avatars.find(elem => elem.id == user.id)?.avatar} 
+							alt="avatar picture" />
 					</div>
 					<div className="data">
-						<h2>{user.wins} Wins</h2>
-						<h2>{user.loses} Loses</h2>
+						<h1 className="username">{user.username}</h1>
+						<h2 className="stats">{user.wins} Wins</h2>
+						<h2 className="stats">{user.loses} Loses</h2>
+
 					</div>
-					<button onClick={() => {
+					
+					{/* <div className="stats"> */}
+						{/* </div> */}
+					{/* </div> */}
+					{/* <button onClick={() => {
 						axios.put("http://localhost:3000/social/"+user.id+"/follow", {}, {withCredentials: true})
 						.then(res => {
 							console.log(res.data);
@@ -70,7 +79,7 @@ const Social: FC = () => {
 						.catch((error) => {
 							console.log(error);
 						});
-					}}>Follow</button>
+					}}>Follow</button> */}
 				</div>
 			);
 		});
@@ -78,9 +87,17 @@ const Social: FC = () => {
 
 	return (
 		<div className="socials">
-			<h1 className="header">Socials</h1>
+			<div className="background"/>
+			{/* <link rel="preload" href="./transfonter.org-20221214-233247/MinecraftTen.woff2" as="font" type="font/woff2"></link> */}
+			{/* <img
+				className="background"
+			src={require("./background.jpg")} alt="" /> */}
+			<img 
+			className="header"
+			src={require('./Logo.png')} alt="" />
+			{/* <h1 className="header">Socials</h1> */}
 			<button onClick={goHome}>Home</button>
-			{getUsers()}
+				{getUsers()}
 		</div>
 	);
 }

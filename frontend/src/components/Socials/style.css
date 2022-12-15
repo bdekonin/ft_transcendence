@@ -1,0 +1,75 @@
+.socials {
+	overflow: hidden;
+}
+
+.socials .header {
+	margin-left: 50%;
+	transform: translateX(-50%);
+	display: block;
+}
+
+.socials .background {
+
+	background-image: url('./background.jpg');
+	position: fixed;
+
+	top:0px;
+	right:0px;
+	bottom:0px;
+	left:0px;
+	height: 100%;
+	z-index: -1;
+}
+
+.socials .userblock {
+	position: relative;
+	margin-top: 10px;
+	max-height: 200px;
+	max-width: 100%;
+}
+
+.socials .avatarblock {
+	height: 100%;
+	width: 200px;
+	display: inline-block;
+}
+
+.socials .avatar {
+	width: 100%;
+}
+
+.socials .data {
+	position: absolute;
+	display: inline-block;
+	height: 100%;
+	width: 100%;
+}
+
+.socials .username {
+	margin: 0px;
+	margin-bottom: 20px;
+	margin-top: 15px;
+	font-family: "Minecraft Ten";
+	font-size: 55px;
+	color: white;
+	text-shadow: 5px 5px black;
+}
+
+
+.socials .stats {
+	margin: 0px;
+	font-family: "Minecraft Ten";
+	font-weight: normal;
+	font-size: 25px;
+	color: white;
+	text-shadow: 5px 5px black;
+}
+
+@font-face {
+    font-family: 'Minecraft Ten';
+    src: url('./transfonter.org-20221214-233247/MinecraftTen.woff2') format('woff2'),
+        url('./transfonter.org-20221214-233247/MinecraftTen.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
