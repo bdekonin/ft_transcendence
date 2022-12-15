@@ -1,7 +1,6 @@
 import axios from "axios";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/socials.css";
 import './style.css'
 
 interface User {
