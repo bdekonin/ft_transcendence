@@ -112,7 +112,6 @@ export class ChatController {
 		@Body() dto: JoinChatDto,
 	) {
 		const output = await this.chatService.joinChat(userID, dto);
-		this.socketGateway.server.emit('chat/refresh-chats');
 		return output;
 	}
 
@@ -124,7 +123,6 @@ export class ChatController {
 		@Param('chatID', ParseIntPipe) chatID: number,
 	) {
 		const output = await this.chatService.leaveChat(userID, chatID);
-		this.socketGateway.server.emit('chat/refresh-chats');
 		return output;
 	}
 

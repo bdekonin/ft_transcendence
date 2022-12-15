@@ -16,6 +16,7 @@ import { GameService } from 'src/game/game.service';
 
 class userDto {
 	id: number; /* user id */
+	username?: string;
 }
 
 
@@ -99,18 +100,13 @@ export class socketGateway {
 		/* Add client to every chat he is in */
 		client.join('chat:' + payload.chatID);
 
-		/* get all users in chat */
-		const users = await this.chatService.getUsers(payload.chatID);
-
-		// remove user from users if he is still in the list
-		users.map((user, index) => {
-			if (user.id == payload.userID) {
-				users.splice(index, 1);
-			}
-		});
+		const payloadToBeSent = {
+			id: payload.chatID,
+			user: user,
+		}
 
 		/* Update all users in chat */
-		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users', users);
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users-join', payloadToBeSent);
 	}
 
 	@SubscribeMessage('chat/leave')
@@ -123,19 +119,17 @@ export class socketGateway {
 		/* get all users in chat */
 		const users = await this.chatService.getUsers(payload.chatID);
 		if (!users) {
-			this.server.to('chat:' + payload.chatID).emit('chat/refresh-chats');
+			this.server.emit('chat/refresh-chats');
 			return ;
 		}
 
-		// remove user from users if he is still in the list
-		users.map((user, index) => {
-			if (user.id == payload.userID) {
-				users.splice(index, 1);
-			}
-		});
+		const payloadToBeSent = {
+			id: payload.chatID,
+			user: user,
+		}
 
 		/* Update all users in chat */
-		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users', users);
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users-leave', payloadToBeSent);
 	}
 	
 	@SubscribeMessage('chat/new-chat')
@@ -184,13 +178,14 @@ export class socketGateway {
 
 	private async findUser (client: Socket): Promise<userDto> {
 		const cookies = this.parseCookies(client.handshake.headers.cookie);
-		const user = await this.authService.verifyJWT(cookies['jwt'])
-		if (!user)
+		const userID = await this.authService.verifyJWT(cookies['jwt'])
+		if (!userID)
 			return null;
 
-		if (!await this.authService.findUserById(user.id))
+		const user = await this.authService.findUserById(userID.sub)
+		if (!user)
 			return null;
-		return { id: user.sub };
+		return { id: user.id, username: user.username };
 	}
 
 

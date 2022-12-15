@@ -17,6 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import Channels from './Channel/Channels';
+import Players from './Players/Players';
 
 interface User {
 	id: number;
@@ -170,20 +171,14 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	function renderPlayers(divName: string) {
+	function renderPlayers() {
 		if (!user) {
 			return (
 				<p>Loading ...</p>
 			)
 		}
-			// <div className='block channels'>
-			// 	<div className='title'>
-			// 		<h1>Channels</h1>
-			// 	</div>
-			// 	<div className='content'></div>
-
 		return (
-			<div className={divName}>
+			<div className='block players'>
 				<h3>Players</h3>
 				<ul>
 					{
@@ -211,7 +206,11 @@ const Chat: React.FC = () => {
 				setCurrentChat={setCurrentChat}
 				/>
 			{renderMessages('block messages')}
-			{renderPlayers("block players")}
+			{renderPlayers()}
+			<Players
+				user={user}
+				currentChat={currentChat}
+			/>
 		</div>
 	);
 }

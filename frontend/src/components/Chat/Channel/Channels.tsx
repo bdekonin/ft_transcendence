@@ -111,8 +111,8 @@ const Channels: React.FC<{
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
-			socket.emit('chat/join', { chatID: chat.id });
-			
+			socket.emit('chat/join', { chatID: chat.id }); /* Join the room / Let other users know that a new user joined */
+			setRefreshChats(new Date().toISOString());
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
@@ -127,8 +127,8 @@ const Channels: React.FC<{
 		}
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
+			socket.emit('chat/join', { chatID: chat.id }); /* Join the room / Let other users know that a new user joined */
 			setRefreshChats(new Date().toISOString());
-			socket.emit('chat/join', { chatID: chat.id });
 
 			alert('Success');
 		})
