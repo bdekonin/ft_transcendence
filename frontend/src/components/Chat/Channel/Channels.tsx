@@ -112,7 +112,7 @@ const Channels: React.FC<{
 		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			socket.emit('chat/join', { chatID: chat.id });
-			setRefreshChats(new Date().toISOString());
+			
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
@@ -141,13 +141,6 @@ const Channels: React.FC<{
 	const handleChatClick = (chat: Chat, joined: boolean) => {
 		if (currentChat?.id === chat.id)
 			return;
-
-		/* Check if chat.id is in joinedChats */
-		if (chat.id === currentChat?.id)
-			return;
-		
-
-		console.log('handleChatClick');
 		if (joined == true) {
 
 			// sort players
@@ -159,7 +152,6 @@ const Channels: React.FC<{
 				else
 					return 0;
 			});
-
 			setCurrentChat(chat);
 			return;
 		}
@@ -172,29 +164,33 @@ const Channels: React.FC<{
 	}
 
 	const leaveChannel = (chatID: number) => {
-		socket.emit('chat/leave', { chatID: chatID });
-		// setRefreshChats(new Date().toISOString());
-
-		const chat = joinedChats.find(chat => chat.id === chatID);
-
-		if (chat) {
-			if (chat.type === 'GROUP' && chat.users.length !== 1)
-				setPublicChats([...publicChats, chat]);
-			else if (chat.type === 'GROUP_PROTECTED' && chat.users.length !== 1)
-				setProtectedChats([...protectedChats, chat]);
-		}
-		joinedChats.splice(joinedChats.findIndex(chat => chat.id === chatID), 1);
-		setJoinedChats([...joinedChats]);
+		axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + chatID, { withCredentials: true })
+		.then(res => {
+			socket.emit('chat/leave', { chatID: chatID });
+			setRefreshChats(new Date().toISOString());
+			if (currentChat?.id === chatID)
+				setCurrentChat(null);
+		})
+		.catch(err => {
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			alert(err.response.data.message)
+		});
 	}
 
 	useEffect(() => {
 		if (!currentChat)
 			return;
 
-		if (joinedChats.length > 0)
+
+		if (joinedChats.length > 0) {
+			console.log('joined chats!!!!!!!!!!!!!!!!!!!!!!!!!!');
 			setCurrentChat(joinedChats[0]);
-		else
+		}
+		else {
+			console.log('no joined chats');
 			setCurrentChat(null);
+		}
 	}, [joinedChats]);
 
 
@@ -251,21 +247,18 @@ const Channels: React.FC<{
 			<div>
 				{
 					/* Joined Chats */
-					currentChat ?
-					<div className={ 'chat crossection' }>
-						<p className='title' >{ 'Joined Chats' }</p>
-					</div>
-						:
 					<div>
 						<div className={ 'chat crossection' }>
 							<p className='title' >{ 'Joined Chats' }</p>
 						</div>
-						<div className={'chat error'}>
-							<p >{ 'No chats joined' }</p>
-							{
-								
-							}
-						</div>
+						{
+							joinedChats.length == 0 ?
+							<div className={'chat error'}>
+								<p >{ 'No chats joined' }</p>
+							</div>
+							:
+							<></>
+						}
 					</div>
 				}
 				{

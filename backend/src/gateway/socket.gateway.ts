@@ -92,32 +92,50 @@ export class socketGateway {
 
 	/* Chats */
 	@SubscribeMessage('chat/join')
-	async handleJoinChatMultiple (client: Socket, payload: any) {
+	async handleJoinChannel (client: Socket, payload: any) {
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-		console.log('Join chat', payload);
 		/* Add client to every chat he is in */
 		client.join('chat:' + payload.chatID);
 
-		// this.chatService.joinChat(user.id, payload.chatID);
+		/* get all users in chat */
+		const users = await this.chatService.getUsers(payload.chatID);
+
+		// remove user from users if he is still in the list
+		users.map((user, index) => {
+			if (user.id == payload.userID) {
+				users.splice(index, 1);
+			}
+		});
 
 		/* Update all users in chat */
-		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users');
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users', users);
 	}
 
 	@SubscribeMessage('chat/leave')
-	async handleLeaveChat (client: Socket, payload: any) {
+	async handleLeaveChannel (client: Socket, payload: any) {
 		const user = await this.findUser(client)
 		if (!user)
 			return;
-		console.log('Leave chat', payload);
 		client.leave('chat:' + payload.chatID);
 
-		this.chatService.leaveChat(user.id, payload.chatID);
+		/* get all users in chat */
+		const users = await this.chatService.getUsers(payload.chatID);
+		if (!users) {
+			this.server.to('chat:' + payload.chatID).emit('chat/refresh-chats');
+			return ;
+		}
+
+		// remove user from users if he is still in the list
+		users.map((user, index) => {
+			if (user.id == payload.userID) {
+				users.splice(index, 1);
+			}
+		});
 
 		/* Update all users in chat */
-		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users');
+		this.server.to('chat:' + payload.chatID).emit('chat/refresh-users', users);
 	}
 	
 	@SubscribeMessage('chat/new-chat')

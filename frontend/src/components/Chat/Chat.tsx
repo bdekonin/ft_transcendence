@@ -130,18 +130,18 @@ const Chat: React.FC = () => {
 
 	/* Retrieving stats of the currentChat */
 	useEffect(() => {
-		if (!currentChat)
-			return;
-		axios.get('http://localhost:3000/chat/' + user?.id + '/messages/' + currentChat.id, { withCredentials: true })
-		.then(res => {
-			setMessages(res.data);
-		})
-		.catch(err => {
-			console.log('err', err);
-			if (err.response.data.statusCode === 401)
-				navigate('/login');
-			alert(err.response.data.message)
-		});
+		// if (!currentChat)
+		// 	return;
+		// axios.get('http://localhost:3000/chat/' + user?.id + '/messages/' + currentChat.id, { withCredentials: true })
+		// .then(res => {
+		// 	setMessages(res.data);
+		// })
+		// .catch(err => {
+		// 	console.log('err', err);
+		// 	if (err.response.data.statusCode === 401)
+		// 		navigate('/login');
+		// 	alert(err.response.data.message)
+		// });
 	}, [currentChat]);
 
 
