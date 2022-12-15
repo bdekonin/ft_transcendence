@@ -50,20 +50,6 @@ const Chat: React.FC = () => {
 	const [user, setUser] = useState<User | null>(null);
 	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
-	
-	/* Chats */
-	const [joinedChats, setJoinedChats] = useState<Chat[]>([]);
-	const [publicChats, setPublicChats] = useState<Chat[]>([]);
-	const [protectedChats, setProtectedChats] = useState<Chat[]>([]);
-
-	/* Refresh Chats*/
-	const [refreshChats, setRefreshChats] = useState('');
-
-	/* Create Chat Dialog Options */
-	const [chatDialogName, setChatDialogName] = useState<string>('');
-	const [chatDialogPassword, setChatDialogPassword] = useState<string>('');
-	const [open, setOpen] = useState(false);
 
 	document.body.style.background = '#323232';
 
@@ -95,57 +81,6 @@ const Chat: React.FC = () => {
 		}
 	}, [socket]);
 
-	/* Retrieving User's Chats */
-	useEffect(() => {
-		if (!user)
-			return;
-		axios.get('http://localhost:3000/chat/' + user?.id + '/chats?filter=all', { withCredentials: true })
-		.then(res => {
-			setJoinedChats(res.data.joined);
-			setPublicChats(res.data.public);
-			setProtectedChats(res.data.protected);
-		})
-		.catch(err => {
-			console.log('err', err);
-			if (err.response.data.statusCode === 401)
-				navigate('/login');
-			alert(err.response.data.message)
-		});
-	}, [user, refreshChats]);
-
-	useEffect(() => {
-		if (joinedChats.length === 0) {
-			setCurrentChat(null);
-			return ;
-		}
-		joinedChats[0].users.sort((a, b) => {
-			if (a.id === user?.id)
-				return -1;
-			else if (b.id === user?.id)
-				return 1;
-			else
-				return 0;
-		});
-		setCurrentChat(joinedChats[0]);
-	}, [joinedChats]);
-
-	/* Retrieving stats of the currentChat */
-	useEffect(() => {
-		// if (!currentChat)
-		// 	return;
-		// axios.get('http://localhost:3000/chat/' + user?.id + '/messages/' + currentChat.id, { withCredentials: true })
-		// .then(res => {
-		// 	setMessages(res.data);
-		// })
-		// .catch(err => {
-		// 	console.log('err', err);
-		// 	if (err.response.data.statusCode === 401)
-		// 		navigate('/login');
-		// 	alert(err.response.data.message)
-		// });
-	}, [currentChat]);
-
-
 	function renderMessages(divName: string) {
 		if (currentChat == null)
 		return (
@@ -171,42 +106,15 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
-	function renderPlayers() {
-		if (!user) {
-			return (
-				<p>Loading ...</p>
-			)
-		}
-		return (
-			<div className='block players'>
-				<h3>Players</h3>
-				<ul>
-					{
-						currentChat == null ? <p>No players</p> :
-						currentChat.users.map(player => {
-							return (
-								<li key={player.id}>
-									<p className="room-name-clickable">{player.username}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-			</div>
-		)
-	}
 
 	return (
 		<div className="main-container">
-			{/* {renderChannels()} */}
-
 			<Channels
 				user={user}
 				currentChat={currentChat}
 				setCurrentChat={setCurrentChat}
 				/>
 			{renderMessages('block messages')}
-			{renderPlayers()}
 			<Players
 				user={user}
 				currentChat={currentChat}

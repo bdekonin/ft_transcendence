@@ -1,7 +1,9 @@
+import { Collapse } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../../../context/socket';
 import Chat from '../Chat';
+import PlayerBox from './PlayerBox';
 
 
 
@@ -53,15 +55,26 @@ const Players: React.FC<{
 		}
 	}, [currentChat]);
 
+
+
 	return (
-		<div>
+		<div className='block players'>
+			<div className='title'>
+				<h1>Players</h1>
+			</div>
+
+			<div className='content'>
 			{
-				users.map((user) => (
-					<div key={user.id}>
-						{user.username}
-					</div>
-				))
+				currentChat == null ? <p>No players</p> :
+					users.map((user) => {
+						return (
+							<div>
+								<PlayerBox key={user.id} open={false} username={user.username}></PlayerBox>
+							</div>
+						);
+					})
 			}
+			</div>
 		</div>
 	);
 }
