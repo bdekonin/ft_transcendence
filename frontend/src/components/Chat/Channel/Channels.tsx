@@ -17,9 +17,11 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
+import PublicGroup from './PublicGroup';
+import ProtectedGroup from './ProtectedGroup';
 
 
-type User = {
+export type User = {
 	id: number;
 	username: string;
 };
@@ -41,12 +43,6 @@ const Channels: React.FC<{
 
 	/* Refresh chats */
 	const [refreshChats, setRefreshChats] = useState<string>('');
-
-
-	/* Create Chat Dialog Options */
-	const [chatDialogName, setChatDialogName] = useState<string>('');
-	const [chatDialogPassword, setChatDialogPassword] = useState<string>('');
-	const [open, setOpen] = useState(false);
 
 	/* Gets all chats for the current user and sets them in the application state */
 
@@ -307,67 +303,30 @@ const Channels: React.FC<{
 		)
 	}
 
-	const handleChatCreateDialogClickOpen = () => {
-		setOpen(true);
-	};
-	const handleChatCreateDialog = () => {
-		/* Parsing chatDialogPassword and chatDialogName */
-		if (chatDialogName === '') {
-			alert('Name cannot be empty');
-			return ;
-		}
-		if (chatDialogName.length > 20) {
-			alert('Name cannot be longer than 20 characters');
-			return ;
-		}
-		if (chatDialogName.length < 3) {
-			alert('Name must be at least 3 characters long');
-			return ;
-		}
-		if (chatDialogPassword && chatDialogPassword.length > 20) {
-			alert('Password cannot be longer than 20 characters');
-			return ;
-		}
-		if (chatDialogPassword && chatDialogPassword.length < 6) {
-			alert('Password must be at least 6 characters long');
-			return ;
-		}
-		let chatPayload;
-		if (chatDialogPassword) { /* GROUP_PROTECTED */
-			chatPayload = {
-				name: chatDialogName,
-				type: 'GROUP_PROTECTED',
-				password: chatDialogPassword,
-			}
-		}
-		else { /* GROUP_PUBLIC */
-			chatPayload = {
-				name: chatDialogName,
-				type: 'GROUP',
-			}
-		}
-		axios.post('http://localhost:3000/chat/' + user?.id + '/create', chatPayload, { withCredentials: true })
-		.then(res => {
-			setRefreshChats(new Date().toISOString());
-			alert('Success');
-			setOpen(false);
-		})
-		.catch(err => {
-			console.log('err', err);
-			if (err.response.data.statusCode === 401)
-				navigate('/login');
-			alert(err.response.data.message)
-		});
+	const [publicDialogOpen, setPublicDialogOpen] = useState(false);
+	const [protectedDialog, setprotectedDialog] = useState(false);
+	const [joinPasswordDialog, setJoinPasswordDialog] = useState(false);
 
-		setChatDialogName('');
-		setChatDialogPassword('');
+	const handlePublicDialogClose = () => {
+		setPublicDialogOpen(false);
+	};
+	const handlePublicDialogOpen = () => {
+		setPublicDialogOpen(true);
 	}
-	const handleChatCreateDialogClose = () => {
-		setOpen(false);
+
+	const handleProtectedDialogClose = () => {
+		setprotectedDialog(false);
 	};
+	const handleProtectedDialogOpen = () => {
+		setprotectedDialog(true);
+	}
 
-
-
+	const handleJoinPasswordDialogClose = () => {
+		setJoinPasswordDialog(false);
+	};
+	const handleJoinPasswordDialogOpen = () => {
+		setJoinPasswordDialog(true);
+	}
 
 	if (!user)
 		return <CircularProgress />;
@@ -378,7 +337,8 @@ const Channels: React.FC<{
 					<h1>Channels</h1>
 				</div>
 				<div className='content'>
-					<button className='add' onClick={handleChatCreateDialogClickOpen}>+</button>
+					<button className='add' onClick={handlePublicDialogOpen}>Create Public Group</button>
+					<button className='add' onClick={handleProtectedDialogOpen}>Create Protected Group</button>
 					<div className='general'>
 						{ renderJoinedChats() }
 						{ renderPublicChats() }
@@ -386,7 +346,18 @@ const Channels: React.FC<{
 					</div>
 				</div>
 
-				<Dialog open={open} onClose={handleChatCreateDialogClose}>
+				<PublicGroup
+					user={user}
+					open={publicDialogOpen}
+					setOpen={handlePublicDialogClose}
+				/>
+				<ProtectedGroup
+					user={user}
+					open={protectedDialog}
+					setOpen={handleProtectedDialogClose}
+				/>
+
+				{/* <Dialog open={open} onClose={handleChatCreateDialogClose}>
 					<DialogTitle>Create Group</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
@@ -419,7 +390,7 @@ const Channels: React.FC<{
 						<Button onClick={handleChatCreateDialogClose} color='error'>Cancel</Button>
 						<Button onClick={handleChatCreateDialog}>Subscribe</Button>
 					</DialogActions>
-				</Dialog>
+				</Dialog> */}
 			</div>
 		);
 };
