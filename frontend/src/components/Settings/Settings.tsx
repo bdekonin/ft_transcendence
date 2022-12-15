@@ -51,8 +51,9 @@ const Settings:React.FC = () => {
 
 	return (
 		<div className="settings">
+			<div className="background"/>
 			<button onClick={() => {navigate('/')}}>Home</button>
-			<h1 className="header">Settings</h1>
+			<img className='header' src={require('./logo.png')}/>
 			<div className="block1">
 				<h2>Username: </h2>
 				<input type="text" value={userNameDef} maxLength={14} onChange={(e) => {setUserNameDef(e.target.value)}}/>
