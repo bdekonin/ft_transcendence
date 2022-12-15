@@ -388,4 +388,21 @@ export class ChatService {
 		}
 		return payload;
 	}
+
+	async getUsers(chatID: number): Promise<User[]> {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID,
+			}
+		});
+		if (!chat)
+			return null;
+		return chat.users;
+	}
+
+
+
+
+
 }

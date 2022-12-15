@@ -75,8 +75,9 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() createDto: createChatDto,
 	) {
+		const output = await this.chatService.createChat(userID, createDto);
 		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.createChat(userID, createDto);
+		return output;
 	}
 
 	/* Message */
@@ -110,8 +111,8 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() dto: JoinChatDto,
 	) {
-		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.joinChat(userID, dto);
+		const output = await this.chatService.joinChat(userID, dto);
+		return output;
 	}
 
 	@Delete('leave/:chatID')
@@ -121,8 +122,8 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('chatID', ParseIntPipe) chatID: number,
 	) {
-		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.leaveChat(userID, chatID);
+		const output = await this.chatService.leaveChat(userID, chatID);
+		return output;
 	}
 
 	@Get('chats')

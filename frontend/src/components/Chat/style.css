@@ -62,7 +62,10 @@
 	border: 0;
 	margin-bottom: 5px;
 	margin: 5px;
-	width: 98%;
+	width: 46%;
+	color: white;
+	/* font-family: ; */
+	text-transform: uppercase;
 }
 .block.channels .content .general .options {
 	left: 90%;
