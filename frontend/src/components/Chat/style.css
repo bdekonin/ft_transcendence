@@ -164,18 +164,20 @@
 	background-color: #1e1e1e;
 }
 
+
+
+
+
 .block.players .content .Collapsible__contentInner .buttons {
 	max-height: 300px;
 	/* Center childs in middle of player-box */
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
 }
 
 
 .block.players .content .Collapsible__contentInner .action-button {
-	background-color: #8e44ad;
+	/* background-color: #8e44ad; */
 	width: 70%;
 	height: 20px;
 	/* Center in middle of player-box */
@@ -188,34 +190,26 @@
 	text-transform: uppercase;
 }
 
-.block.players .content .Collapsible__contentInner .action-button.invite {
+.block.players .content .Collapsible__contentInner .buttons .add-block {
+	display: flex;
+	/* flex-direction: row; */
+	/* align-items: center; */
+	/* justify-content: space-between; */
 }
 
-.block.players .content .Collapsible__contentInner .action-button.profile {
-}
-
-.block.players .content .Collapsible__contentInner .action-button.add {
-}
-
+.block.players .content .Collapsible__contentInner .action-button.add,
 .block.players .content .Collapsible__contentInner .action-button.block {
-}
-
-
-/* Render next to eachother */
-.block.players .content .Collapsible__contentInner .action-button.mute {
 	width: 20%;
-	float: left;
 }
 
+.block.players .content .Collapsible__contentInner .buttons .mute-kick {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.block.players .content .Collapsible__contentInner .action-button.mute,
 .block.players .content .Collapsible__contentInner .action-button.kick {
 	width: 20%;
-	float: left;
-}
-
-
-.block.players .content .Collapsible__contentInner .action-button.ban {
-}
-
-
-.block.players .content .Collapsible__contentInner .action-button.set-admin {
 }

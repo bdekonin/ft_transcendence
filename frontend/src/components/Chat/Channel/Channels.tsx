@@ -356,41 +356,6 @@ const Channels: React.FC<{
 					open={protectedDialog}
 					setOpen={handleProtectedDialogClose}
 				/>
-
-				{/* <Dialog open={open} onClose={handleChatCreateDialogClose}>
-					<DialogTitle>Create Group</DialogTitle>
-					<DialogContent>
-						<DialogContentText>
-						To create a password-protected group, simply enter a password when prompted. If you do not enter a password, the group will be open to anyone. To create a private chat with another person, you must first follow that person.
-						</DialogContentText>
-						<TextField
-							autoFocus
-							margin="dense"
-							id="groupname"
-							label="Group Name"
-							type="text"
-							required={true}
-							fullWidth
-							onChange={event => setChatDialogName(event.currentTarget.value)}
-							variant="standard"
-						/>
-						<TextField
-							autoFocus
-							margin="dense"
-							id="password"
-							label="Password"
-							type="password"
-							required={false}
-							fullWidth
-							onChange={event => setChatDialogPassword(event.currentTarget.value)}
-							variant="standard"
-						/>
-					</DialogContent>
-					<DialogActions>
-						<Button onClick={handleChatCreateDialogClose} color='error'>Cancel</Button>
-						<Button onClick={handleChatCreateDialog}>Subscribe</Button>
-					</DialogActions>
-				</Dialog> */}
 			</div>
 		);
 };
