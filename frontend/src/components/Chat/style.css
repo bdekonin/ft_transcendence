@@ -50,6 +50,7 @@
 }
 .block.channels .content .general .chat:hover {
 	background-color: #545454;
+	cursor: pointer;
 }
 .block.channels .content .general .chat p {
 	margin: 0;
@@ -65,6 +66,7 @@
 	width: 46%;
 	color: white;
 	/* font-family: ; */
+	cursor: pointer;
 	text-transform: uppercase;
 }
 .block.channels .content .general .options {
@@ -107,6 +109,11 @@
 }
 
 
+
+
+
+
+
 /* Players styling */
 .block.players > .title h1 {
 	color: white;
@@ -121,25 +128,94 @@
 	font-size: 20px;
 }
 
-.block.players .content .player-box {
+.block.players .content .Collapsible {
 	position: relative; /* This property is added to make the player-box a containing block for absolutely positioned elements */
 	background-color: #1e1e1e;
 	text-align: left;
 	color: white;
-	width: auto;
-	height: 5%;
-	max-height: 40px;
+	/* width: auto; */
+	/* height: 5%; */
 	padding-top: 5px;
 	padding-bottom: 5px;
 	border-bottom: grey 1px solid;
 	padding-left: 5%;
-  }
-  
-  .block.players .content .options {
+}
+
+.block.players .content .Collapsible__trigger {
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.block.players .content .Collapsible .options {
 	position: absolute; /* This element will be positioned absolutely relative to the player-box element */
 	left: 90%; /* This will position the left edge of the options element 90% of the way across the player-box element */
 	top: 0; /* This will position the top edge of the options element at the top of the player-box element */
 	background-color: transparent;
 	border: none;
-  }
-  
+}
+
+.block.players .content .Collapsible .menu {
+	color: #8e44ad;
+	max-width: 100px;
+}
+
+.block.players .content .Collapsible__contentOuter {
+	background-color: #1e1e1e;
+}
+
+.block.players .content .Collapsible__contentInner .buttons {
+	max-height: 300px;
+	/* Center childs in middle of player-box */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+
+.block.players .content .Collapsible__contentInner .action-button {
+	background-color: #8e44ad;
+	width: 70%;
+	height: 20px;
+	/* Center in middle of player-box */
+	margin: 0 auto;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border: none;
+	color: white;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+.block.players .content .Collapsible__contentInner .action-button.invite {
+}
+
+.block.players .content .Collapsible__contentInner .action-button.profile {
+}
+
+.block.players .content .Collapsible__contentInner .action-button.add {
+}
+
+.block.players .content .Collapsible__contentInner .action-button.block {
+}
+
+
+/* Render next to eachother */
+.block.players .content .Collapsible__contentInner .action-button.mute {
+	width: 20%;
+	float: left;
+}
+
+.block.players .content .Collapsible__contentInner .action-button.kick {
+	width: 20%;
+	float: left;
+}
+
+
+.block.players .content .Collapsible__contentInner .action-button.ban {
+}
+
+
+.block.players .content .Collapsible__contentInner .action-button.set-admin {
+}

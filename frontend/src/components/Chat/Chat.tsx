@@ -116,7 +116,7 @@ const Chat: React.FC = () => {
 				/>
 			{renderMessages('block messages')}
 			<Players
-				user={user}
+				currentUser={user}
 				currentChat={currentChat}
 			/>
 		</div>

@@ -37,8 +37,8 @@ const PlayerBox: React.FC<IProps> = ({ open, username }) => {
 				<div>
 					{
 						isOpen &&
-						<div className="p-3">
-							{'children'}
+						<div className="menu">
+							{'childrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildrenchildren'}
 						</div>
 					}
 				</div>

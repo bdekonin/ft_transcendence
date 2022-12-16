@@ -1,11 +1,11 @@
-import { Collapse } from '@mui/material';
+import { Button, Collapse } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../../../context/socket';
 import Chat from '../Chat';
 import PlayerBox from './PlayerBox';
-
-
+import Collapsible from 'react-collapsible';
+import Stack from '@mui/material/Stack';
 
 type User = {
 	id: number;
@@ -18,9 +18,9 @@ type ChannelPayload = {
 }
 
 const Players: React.FC<{
-	user: User | null;
+	currentUser: User | null;
 	currentChat: Chat | null;
-}> = ({ currentChat }) => {
+}> = ({ currentUser, currentChat }) => {
 
 	const socket = useContext(SocketContext);
 
@@ -55,7 +55,42 @@ const Players: React.FC<{
 		}
 	}, [currentChat]);
 
+	// https://github.com/glennflanagan/react-collapsible#readme
 
+	function renderButtons(user: User) {
+		if (!currentChat)
+			return;
+
+		const isOwner = true;
+
+		if (currentChat.type != 'PRIVATE') {
+			return (
+				<div className='buttons'>
+					<Button variant='contained' className='action-button invite'>Invite To Game</Button>
+					<Button variant='contained' className='action-button profile'>Profile</Button>
+					<Button variant='contained' className='action-button add'>Add</Button>
+					<Button variant='contained' className='action-button block'>Block</Button>
+					{
+						isOwner &&
+						<Button variant='contained' className='action-button mute'>Mute</Button>
+					}
+					{
+						isOwner &&
+						<Button variant='contained' className='action-button kick'>Kick</Button>
+					}
+					{
+						isOwner &&
+						<Button variant='contained' className='action-button ban'>Ban</Button>
+					}
+					{
+						isOwner &&
+						<Button variant='contained' className='action-button set-admin' >Set Admin</Button>
+					}
+				</div>
+			);
+		}
+
+	}
 
 	return (
 		<div className='block players'>
@@ -65,11 +100,22 @@ const Players: React.FC<{
 
 			<div className='content'>
 			{
-				currentChat == null ? <p>No players</p> :
+				currentChat == null || currentUser == null ? <p>No players</p> :
 					users.map((user) => {
 						return (
 							<div>
-								<PlayerBox key={user.id} open={false} username={user.username}></PlayerBox>
+								{
+									currentUser.id == user.id &&
+									<div className='Collapsible'>
+										{user.username + ' (You)'}
+									</div>	
+								}
+								{
+									currentUser.id != user.id &&
+									<Collapsible tabIndex={user.id} trigger={user.username}>
+										{renderButtons(user)}
+									</Collapsible>
+								}
 							</div>
 						);
 					})
