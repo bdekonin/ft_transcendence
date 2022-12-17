@@ -29,7 +29,10 @@ interface Chat {
 	type: string;
 	name: string;
 	users: User[];
-	unread: boolean;
+
+	adminIDs: number[];
+	bannedIDs: number[];
+	mutedIDs: number[];
 }
 interface Message {
 	id: number;

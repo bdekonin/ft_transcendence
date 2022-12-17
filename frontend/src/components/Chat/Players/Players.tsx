@@ -36,6 +36,8 @@ const Players: React.FC<{
 
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
+	const [admin, setAdmin] = useState<boolean>(false);
+
 	useEffect(() => {
 		if (socket) {
 			socket.on('chat/refresh-users-join', (payload: ChannelPayload) => {
@@ -76,7 +78,12 @@ const Players: React.FC<{
 				}
 			});
 			setFriendships(parsedData);
+
+			console.log('friendships', friendships);
+			console.log('parsedData', parsedData);
 		})
+
+		setAdmin(isAdmin(currentUser as User));
 
 	}, [currentChat]);
 
@@ -89,11 +96,14 @@ const Players: React.FC<{
 	 * 
 	 * @return {boolean} - Returns true if the user has the desired friendship status, false otherwise
 	*/
-	function isAlready(isWhat: string, user: User) {
+	function isAlready(isWhat: string, user: User): boolean {
 		const friendship = friendships.find(friendship => friendship.user.id == user.id);
 		if (friendship)
 			return friendship.status == isWhat;
 		return false;
+	}
+	function isAdmin(user: User): boolean {
+		return currentChat?.adminIDs.includes(user.id) as boolean;
 	}
 
 
@@ -110,7 +120,7 @@ const Players: React.FC<{
 		if (!currentChat)
 			return;
 
-		const isOwner = true;
+		// const admin = isAdmin(currentUser as User);
 
 		console.log('friendships', friendships);
 
@@ -154,26 +164,26 @@ const Players: React.FC<{
 					</div>
 					<div className='mute-kick'>
 						{
-							isOwner &&
+							admin &&
 							<Button variant='contained' className='action-button mute'>
 								Mute
 							</Button>
 						}
 						{
-							isOwner &&
+							admin &&
 							<Button variant='contained' className='action-button kick'>
 								Kick
 							</Button>
 						}
 					</div>
 					{
-						isOwner &&
+						admin &&
 						<Button variant='contained' className='action-button ban'>
 							Ban
 						</Button>
 					}
 					{
-						isOwner &&
+						admin &&
 						<Button variant='contained' className='action-button set-admin' >
 							Set Admin
 						</Button>
@@ -199,12 +209,14 @@ const Players: React.FC<{
 								{
 									currentUser.id == user.id &&
 									<div className='Collapsible'>
-										{'[YOU] ' + user.username}
+										{
+										isAdmin(user) ? '[YOU ADMIN] ' + user.username : '[YOU] ' + user.username
+										}
 									</div>	
 								}
 								{
 									currentUser.id != user.id &&
-									<Collapsible trigger={'[ADMIN] ' + user.username}>
+									<Collapsible trigger={isAdmin(user) ? '[ADMIN] ' + user.username : '[USER] ' + user.username}>
 										{renderButtons(user)}
 									</Collapsible>
 								}

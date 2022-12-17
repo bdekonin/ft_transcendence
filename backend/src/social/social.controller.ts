@@ -111,9 +111,9 @@ export class SocialController {
 			// sort friends by status
 			const pending = allFriends.filter(friend => friend.status == 'pending');
 			const friends = allFriends.filter(friend => friend.status == 'accepted');
-			// const sent = allFriends.filter(friend => friend.status == 'sent');
-			// const blocked = allFriends.filter(friend => friend.status == 'blocked');
-			return [...pending, ...friends];
+			const sent = allFriends.filter(friend => friend.status == 'sent');
+			const blocked = allFriends.filter(friend => friend.status == 'blocked');
+			return [...pending, ...friends, ...blocked, ...sent];
 			// return { pending, friends };
 		}
 	}

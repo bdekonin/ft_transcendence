@@ -23,9 +23,15 @@ export class Chat {
 	@Column({ nullable: true })
 	name: string; /* groupchat name or the other users username */
 
-	// @ManyToOne(() => User)
-	// @JoinColumn()
-	// admins: User[];
+
+	@Column("int", { array: true })
+	adminIDs: number[];
+
+	@Column("int", { array: true, nullable: true })
+	bannedIDs: number[];
+
+	@Column("int", { array: true, nullable: true })
+	mutedIDs: number[];
 
 	@ManyToMany(() => User, (user) => user.chats, {
 		onDelete: 'CASCADE',

@@ -200,6 +200,9 @@ export class ChatService {
 			name: chat.name,
 			users: chat.users,
 			password: chat.password,
+			adminIDs: [
+				userID
+			],
 		});
 		return await this.chatRepo.save(newChat);
 	}
@@ -400,6 +403,8 @@ export class ChatService {
 			return null;
 		return chat.users;
 	}
+
+	
 
 
 
