@@ -30,6 +30,7 @@ export class SocialController {
 	{
 		const output = await this.socialService.follow(user.id, otherID);
 		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
 		return output;
 	}
 
@@ -46,6 +47,7 @@ export class SocialController {
 	{
 		const output = await this.socialService.unfollow(user.id, otherID);
 		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
 		return output;
 	}
 
@@ -62,6 +64,7 @@ export class SocialController {
 	{
 		const output = await this.socialService.block(user.id, otherID);
 		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
 		return output;
 	}
 
@@ -78,6 +81,7 @@ export class SocialController {
 	{
 		const output = await this.socialService.unblock(user.id, otherID);
 		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
 		return output;
 	}
 

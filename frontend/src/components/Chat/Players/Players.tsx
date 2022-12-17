@@ -53,11 +53,16 @@ const Players: React.FC<{
 					setUsers((users) => users.filter((user) => user.id !== payload.user.id));
 				}
 			});
+
+			socket.on('chat/refresh-friendships', () => {
+				console.log('chat/refresh-friendships');
+			});
 		}
 
 		return () => {
 			socket.off('chat/refresh-users-join');
 			socket.off('chat/refresh-users-leave');
+			socket.off('chat/refresh-friendships');
 		}
 	});
 

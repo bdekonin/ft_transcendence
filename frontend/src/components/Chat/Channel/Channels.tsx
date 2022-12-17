@@ -179,6 +179,20 @@ const Channels: React.FC<{
 			return;
 
 
+			const currentChatId = currentChat.id;
+			const joinedChatIds = joinedChats.map(chat => chat.id);
+			const hasCurrentChatId = joinedChatIds.some(id => id === currentChatId);
+
+
+			console.log('hasCurrentChatId', hasCurrentChatId);
+			console.log('currentChatId', currentChatId);
+			console.log('joinedChatIds', joinedChatIds);
+		if (hasCurrentChatId) {
+			return ;
+		}
+
+
+		/* Check if currentChat.id is in joinedChats */
 		if (joinedChats.length > 0) {
 			console.log('joined chats!!!!!!!!!!!!!!!!!!!!!!!!!!');
 			setCurrentChat(joinedChats[0]);
