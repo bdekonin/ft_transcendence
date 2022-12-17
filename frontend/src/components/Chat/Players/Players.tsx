@@ -54,6 +54,10 @@ const Players: React.FC<{
 				}
 			});
 
+			/*
+			** @todo Fix automatic friendship refresh
+			** @body Follow will automatically change to unfollow when the user is followed after the refresh
+			*/
 			socket.on('chat/refresh-friendships', () => {
 				console.log('chat/refresh-friendships');
 			});
