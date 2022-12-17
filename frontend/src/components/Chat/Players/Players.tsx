@@ -38,6 +38,8 @@ const Players: React.FC<{
 
 	const [admin, setAdmin] = useState<boolean>(false);
 
+
+
 	useEffect(() => {
 		if (socket) {
 			socket.on('chat/refresh-users-join', (payload: ChannelPayload) => {
@@ -59,6 +61,18 @@ const Players: React.FC<{
 			** @body Follow will automatically change to unfollow when the user is followed after the refresh
 			*/
 			socket.on('chat/refresh-friendships', () => {
+				axios.get('http://localhost:3000/social', { withCredentials: true })
+				.then(res => {
+					// parse data
+					const parsedData: Friendship[] = res.data.map((friendship: any) => {
+						const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
+						return {
+							status: friendship.status,
+							user: otherUser,
+						}
+					});
+					setFriendships(parsedData);
+				})
 				console.log('chat/refresh-friendships');
 			});
 		}
@@ -135,6 +149,13 @@ const Players: React.FC<{
 
 		const isFriend = isAlready('accepted', user);
 		const isBlocked = isAlready('blocked', user);
+		const isPending = isAlready('pending', user);
+		const isSent = isAlready('sent', user);
+
+		console.log('isSent', isSent);
+		console.log('isPending', isPending);
+		console.log('isBlocked', isBlocked);
+		console.log('isFriend', isFriend);
 
 		if (currentChat.type != 'PRIVATE') {
 			return (
