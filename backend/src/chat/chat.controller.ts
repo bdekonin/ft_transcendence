@@ -158,6 +158,14 @@ export class ChatController {
 
 	}
 
+	@Get('admins/:chatID')
+	async getAdmins(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+	) {
+		return await this.chatService.getAdmins(chatID);
+	}
+
 	@Post('promote/:chatID/')
 	async promoteUser(
 		@Param('userID', ParseIntPipe) userID: number, // Admin
@@ -166,10 +174,21 @@ export class ChatController {
 	) {
 
 		const output = await this.chatService.promoteUser(chatID, userID, promoteUserID);
-		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-admins');
 		return output;
 	}
 
+	@Post('demote/:chatID')
+	async demoteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('demoteUserID') demoteUserID: number, // User to ban
+	) {
+
+		const output = await this.chatService.demoteUser(chatID, userID, demoteUserID);
+		this.socketGateway.server.emit('chat/refresh-admins');
+		return output;
+	}
 
 
 

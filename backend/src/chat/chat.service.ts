@@ -33,11 +33,6 @@ export class ChatService {
 			},
 		});
 
-
-		console.log('chatID: ' + chatID);
-		console.log('userID: ' + userID);
-		console.log('promoteUserID: ' + promoteUserID);
-		console.log('chat: ' + chat);
 		if (!chat) {
 			throw new BadRequestException("Chat does not exist");
 		}
@@ -57,6 +52,46 @@ export class ChatService {
 		chat.adminIDs.push(promoteUserID);
 		return await this.chatRepo.save(chat);
 	}
+	async demoteUser(chatID: number, userID: number, demoteUserID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === demoteUserID)) {
+			throw new BadRequestException("demoteUserID is not part of this chat");
+		}
+
+		if (!chat.adminIDs.some(adminID => adminID === userID)) {
+			throw new BadRequestException("userID is not an admin of this chat");
+		}
+		if (!chat.adminIDs.some(adminID => adminID === demoteUserID)) {
+			throw new BadRequestException("demoteUserID is not an admin of this chat");
+		}
+		chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== demoteUserID);
+		return await this.chatRepo.save(chat);
+	}
+
+	async getAdmins(chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		return chat.adminIDs;
+	}
+
+
+
 	// async get() {
 	// 	const value = await this.cacheManager.get('key');
 	// 	if (value)

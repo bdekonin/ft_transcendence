@@ -7,7 +7,7 @@ import Collapsible from 'react-collapsible';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handleSetAdmin } from './ButtonHandlers';
+import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote } from './ButtonHandlers';
 
 type User = {
 	id: number;
@@ -37,6 +37,8 @@ const Players: React.FC<{
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	const [admin, setAdmin] = useState<boolean>(false);
+
+	const [admins, setAdmins] = useState<number[]>([]);
 
 
 
@@ -75,12 +77,21 @@ const Players: React.FC<{
 				})
 				console.log('chat/refresh-friendships');
 			});
+			// /chat/:userID/admins/:chatID
+			socket.on('chat/refresh-admins', () => {
+				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
+				.then(res => {
+					setAdmins(res.data);
+					console.log('chat/refresh-admins', res.data);
+				})
+			});
 		}
 
 		return () => {
 			socket.off('chat/refresh-users-join');
 			socket.off('chat/refresh-users-leave');
 			socket.off('chat/refresh-friendships');
+			socket.off('chat/refresh-admins');
 		}
 	});
 
@@ -126,7 +137,8 @@ const Players: React.FC<{
 		return false;
 	}
 	function isAdmin(user: User): boolean {
-		return currentChat?.adminIDs.includes(user.id) as boolean;
+		console.log('admins', admins);
+		return admins.includes(user.id) as boolean;
 	}
 
 
@@ -141,6 +153,9 @@ const Players: React.FC<{
 
 	function renderButtons(user: User) {
 		if (!currentChat)
+			return;
+
+		if (!admins)
 			return;
 
 		// const admin = isAdmin(currentUser as User);
@@ -213,10 +228,17 @@ const Players: React.FC<{
 						</Button>
 					}
 					{
-						admin &&
+						admin && !isAdmin(user) &&
 						<Button variant='contained' className='action-button set-admin'
-							onClick={() => { handleSetAdmin(currentUser as User, user, currentChat) }}>
+							onClick={() => { handlePromote(currentUser as User, user, currentChat) }}>
 							Set Admin
+						</Button>
+					}
+					{
+						admin && isAdmin(user) &&
+						<Button variant='contained' className='action-button set-admin'
+							onClick={() => { handleDemote(currentUser as User, user, currentChat) }}>
+							Unset Admin
 						</Button>
 					}
 				</div>
@@ -241,7 +263,7 @@ const Players: React.FC<{
 									currentUser.id == user.id &&
 									<div className='Collapsible'>
 										{
-										isAdmin(user) ? '[YOU ADMIN] ' + user.username : '[YOU] ' + user.username
+											isAdmin(user) ? '[YOU ADMIN] ' + user.username : '[YOU] ' + user.username
 										}
 									</div>	
 								}

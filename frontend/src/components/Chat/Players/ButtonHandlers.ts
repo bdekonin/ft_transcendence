@@ -64,7 +64,7 @@ export function handleBan() {
 
 }
 
-export function handleSetAdmin(currentUser: User, user: User, currentChat: Chat) {
+export function handlePromote(currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -82,3 +82,20 @@ export function handleSetAdmin(currentUser: User, user: User, currentChat: Chat)
 	});
 }
 
+export function handleDemote(currentUser: User, user: User, currentChat: Chat) {
+	if (currentUser.id === user.id)
+		return ;
+	if (!currentUser || !user || !currentChat)
+		return ;
+
+
+	const data = { promoteUserID: user.id };
+
+	axios.post("http://localhost:3000/chat/" + currentUser.id + "/demote/" + currentChat.id, data, {withCredentials: true})
+	.catch((err) => {
+		if (err.response.data.statusCode === 401)
+			return ;
+		else
+			alert(err.response.data.message)
+	});
+}
