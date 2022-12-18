@@ -41,7 +41,6 @@ const Players: React.FC<{
 	const [admins, setAdmins] = useState<number[]>([]);
 
 
-
 	useEffect(() => {
 		if (socket) {
 			socket.on('chat/refresh-users-join', (payload: ChannelPayload) => {
@@ -77,12 +76,12 @@ const Players: React.FC<{
 				})
 				console.log('chat/refresh-friendships');
 			});
-			// /chat/:userID/admins/:chatID
+
 			socket.on('chat/refresh-admins', () => {
 				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 				.then(res => {
 					setAdmins(res.data);
-					console.log('chat/refresh-admins', res.data);
+					setAdmin(isAdmin(currentUser as User));
 				})
 			});
 		}
@@ -112,15 +111,16 @@ const Players: React.FC<{
 				}
 			});
 			setFriendships(parsedData);
-
-			console.log('friendships', friendships);
-			console.log('parsedData', parsedData);
 		})
 
-		setAdmin(isAdmin(currentUser as User));
-
+		axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
+		.then(res => {
+			setAdmins(res.data);
+			setAdmin(isAdmin(currentUser as User));
+		})
+		
+		
 	}, [currentChat]);
-
 
 	/**
 	 * Function to check if a user has a certain friendship status
@@ -137,10 +137,8 @@ const Players: React.FC<{
 		return false;
 	}
 	function isAdmin(user: User): boolean {
-		console.log('admins', admins);
 		return admins.includes(user.id) as boolean;
 	}
-
 
 
 
@@ -155,10 +153,10 @@ const Players: React.FC<{
 		if (!currentChat)
 			return;
 
-		if (!admins)
-			return;
+		// if (!admins)
+		// 	return;
 
-		// const admin = isAdmin(currentUser as User);
+		const admin2 = isAdmin(currentUser as User);
 
 		console.log('friendships', friendships);
 
@@ -209,33 +207,33 @@ const Players: React.FC<{
 					</div>
 					<div className='mute-kick'>
 						{
-							admin &&
+							admin2 &&
 							<Button variant='contained' className='action-button mute'>
 								Mute
 							</Button>
 						}
 						{
-							admin &&
+							admin2 &&
 							<Button variant='contained' className='action-button kick'>
 								Kick
 							</Button>
 						}
 					</div>
 					{
-						admin &&
+						admin2 &&
 						<Button variant='contained' className='action-button ban'>
 							Ban
 						</Button>
 					}
 					{
-						admin && !isAdmin(user) &&
+						admin2 && !isAdmin(user) &&
 						<Button variant='contained' className='action-button set-admin'
 							onClick={() => { handlePromote(currentUser as User, user, currentChat) }}>
 							Set Admin
 						</Button>
 					}
 					{
-						admin && isAdmin(user) &&
+						admin2 && isAdmin(user) &&
 						<Button variant='contained' className='action-button set-admin'
 							onClick={() => { handleDemote(currentUser as User, user, currentChat) }}>
 							Unset Admin

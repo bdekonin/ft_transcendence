@@ -89,7 +89,7 @@ export function handleDemote(currentUser: User, user: User, currentChat: Chat) {
 		return ;
 
 
-	const data = { promoteUserID: user.id };
+	const data = { demoteUserID: user.id };
 
 	axios.post("http://localhost:3000/chat/" + currentUser.id + "/demote/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
