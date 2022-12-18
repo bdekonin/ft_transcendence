@@ -139,17 +139,48 @@ export class ChatController {
 		return await this.chatService.getChats(userID, filter);
 	}
 
+	@Post('ban/:chatID/:userID')
+	async banUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('bannedID') bannedID: number, // User to ban
+		@Body('time') time: string, // Time to ban for
+	) {
+
+	}
+
+	@Post('unban/:chatID/:userID')
+	async unbanUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('bannedID') bannedID: number, // User to ban
+	) {
+
+	}
+
+	@Post('promote/:chatID/')
+	async promoteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('promoteUserID') promoteUserID: number, // User to ban
+	) {
+
+		const output = await this.chatService.promoteUser(chatID, userID, promoteUserID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		return output;
+	}
+
 
 
 
 	/* Temporary */
-	@Get('get')
-	get() {
-		return this.chatService.get();
-	}
+	// @Get('get')
+	// get() {
+	// 	return this.chatService.get();
+	// }
 
-	@Get('set')
-	set() {
-		return this.chatService.set();
-	}
+	// @Get('set')
+	// set() {
+	// 	return this.chatService.set();
+	// }
  }

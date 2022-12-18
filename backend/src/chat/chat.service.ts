@@ -24,18 +24,50 @@ export class ChatService {
 
 
 
+	/* Promote */
+	async promoteUser(chatID: number, userID: number, promoteUserID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
 
-	async get() {
-		const value = await this.cacheManager.get('key');
-		if (value)
-			return { value: value };
-		else
-			return { value: 'no value' };
+
+		console.log('chatID: ' + chatID);
+		console.log('userID: ' + userID);
+		console.log('promoteUserID: ' + promoteUserID);
+		console.log('chat: ' + chat);
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === promoteUserID)) {
+			throw new BadRequestException("promoteUserID is not part of this chat");
+		}
+
+		if (!chat.adminIDs.some(adminID => adminID === userID)) {
+			throw new BadRequestException("userID is not an admin of this chat");
+		}
+		if (chat.adminIDs.some(adminID => adminID === promoteUserID)) {
+			throw new BadRequestException("promoteUserID is already an admin of this chat");
+		}
+		chat.adminIDs.push(promoteUserID);
+		return await this.chatRepo.save(chat);
 	}
-	async set() {
-		const seconds = 10; // TODO - change to 600
-		return await this.cacheManager.set('key', 'value', seconds);
-	}
+	// async get() {
+	// 	const value = await this.cacheManager.get('key');
+	// 	if (value)
+	// 		return { value: value };
+	// 	else
+	// 		return { value: 'no value' };
+	// }
+	// async set() {
+	// 	const seconds = 10; // TODO - change to 600
+	// 	return await this.cacheManager.set('key', 'value', seconds);
+	// }
 
 	/* Message */
 	async sendMessage(chatID: number, userID: number, message: string): Promise<Message> {
@@ -174,6 +206,11 @@ export class ChatService {
 			return await this.chatRepo.delete(chatID);
 		}
 		chat.users = chat.users.filter(user => user.id !== userID);
+
+		if (chat.adminIDs.some(adminID => adminID === userID)) {
+			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
+		}
+
 		return await this.chatRepo.save(chat);
 	}
 

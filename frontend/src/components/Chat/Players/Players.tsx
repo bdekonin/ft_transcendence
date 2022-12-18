@@ -214,7 +214,8 @@ const Players: React.FC<{
 					}
 					{
 						admin &&
-						<Button variant='contained' className='action-button set-admin' >
+						<Button variant='contained' className='action-button set-admin'
+							onClick={() => { handleSetAdmin(currentUser as User, user, currentChat) }}>
 							Set Admin
 						</Button>
 					}

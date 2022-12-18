@@ -24,14 +24,28 @@ export class Chat {
 	name: string; /* groupchat name or the other users username */
 
 
+	
+	
 	@Column("int", { array: true })
 	adminIDs: number[];
+	
+	// This code defines two properties, 'banned' and 'muted', which are both arrays of objects
+	// containing information about a ban or mute.
 
-	@Column("int", { array: true, nullable: true })
-	bannedIDs: number[];
+	@Column('simple-json', {nullable: true})
+	banned: {
+		bannedID: string; /* The user who banned the other user */
+		unbannedTime: string; /* When the user will be unbanned */
+		bannedTime: string; /* When the user was banned */
+	}[];
 
-	@Column("int", { array: true, nullable: true })
-	mutedIDs: number[];
+	@Column('simple-json', {nullable: true})
+	muted: {
+		mutedID: string; /* The user who banned the other user */
+		unmuteTime: string; /* When the user will be unbanned */
+		muteTime: string; /* When the user was banned */
+	}[];
+
 
 	@ManyToMany(() => User, (user) => user.chats, {
 		onDelete: 'CASCADE',
