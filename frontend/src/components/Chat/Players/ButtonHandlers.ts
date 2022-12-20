@@ -64,7 +64,7 @@ export function handleKick() {
 // @Param('chatID', ParseIntPipe) chatID: number, // Chat
 // @Body('bannedID') bannedID: number, // User to ban
 // @Body('time') time: string, // Time to ban for
-export function handleBan(currentUser: User, user: User, currentChat: Chat) {
+export function handleBan(currentUser: User, user: User, currentChat: Chat, time_in_seconds: number) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -72,7 +72,7 @@ export function handleBan(currentUser: User, user: User, currentChat: Chat) {
 
 	const data = {
 		bannedID: user.id,
-		time: "30"  /* Time in seconds */
+		time: time_in_seconds.toString()  /* Time in seconds */
 	}
 	axios.post("http://localhost:3000/chat/" + user.id + "/ban/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {

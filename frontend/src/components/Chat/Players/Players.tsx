@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote } from './ButtonHandlers';
+import BanDialog from './BanDialog';
 
 type User = {
 	id: number;
@@ -243,7 +244,8 @@ const Players: React.FC<{
 					{
 						admin &&
 						<Button variant='contained' className='action-button ban' 
-							onClick={() => { handleBan(currentUser as User, user, currentChat) }}>
+							// onClick={() => { handleBan(currentUser as User, user, currentChat) }}>
+							onClick={() => { handleBanDialogOpen(user) }}>
 							Ban
 						</Button>
 					}
@@ -302,15 +304,26 @@ const Players: React.FC<{
 				</div>
 			);
 		}
-
 	}
+
+
+	const [banDialogOpen, setBanDialogOpen] = useState(false);
+	const [banUserDialog, setBanUserDialog] = useState<User | null>(null);
+
+	const handleBanDialogClose = () => {
+		setBanDialogOpen(false);
+	};
+	const handleBanDialogOpen = (user: User) => {
+		setBanDialogOpen(true);
+		setBanUserDialog(user);
+	}
+
 
 	return (
 		<div className='block players'>
 			<div className='title'>
 				<h1>Players</h1>
-			</div>
-
+			</div> 
 			<div className='content'>
 			{
 				currentChat == null || currentUser == null ? <p>No players</p> :
@@ -336,6 +349,13 @@ const Players: React.FC<{
 					})
 			}
 			</div>
+			<BanDialog
+				currentUser={currentUser as User}
+				currentChat={currentChat as Chat}
+				bannedUser={banUserDialog as User}
+				open={banDialogOpen}
+				setOpen={handleBanDialogClose}
+			/>
 		</div>
 	);
 }

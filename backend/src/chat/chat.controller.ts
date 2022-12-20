@@ -148,7 +148,6 @@ export class ChatController {
 	) {
 		const output = await this.chatService.banUser(userID, chatID, bannedID, time);
 		this.socketGateway.server.emit('chat/refresh-chats');
-		// this.socketGateway.server.emit('chat/refresh-users-leave');
 
 		const payloadToBeSent = {
 			id: chatID,
@@ -156,8 +155,6 @@ export class ChatController {
 				id: bannedID,
 			},
 		}
-
-		/* Update all users in chat */
 		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
 		return output;
 	}
