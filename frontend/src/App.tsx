@@ -4,7 +4,6 @@ import {
 	Routes,
   } from "react-router-dom";
 import Home from "./components/Home/Home";
-import Login from "./components/Login/Login";
 import Friends from "./components/Friends/Friends";
 import Social from "./components/Socials/Social";
 import Profile from "./components/Profile/Profile";
@@ -14,6 +13,7 @@ import React, { useContext, useEffect } from "react";
 import { SocketContext } from "./context/socket";
 import Game from "./components/Game/Game";
 import Protected from "./Auth";
+import Login from "./components/Login/Login/Login";
 
 const App:React.FC = () =>
 {
