@@ -22,10 +22,25 @@ const Social: FC = () => {
 	const [users, setUsers] = useState<User[]>([]);
 	const [avatars, setAvatars] = useState<Avatars[]>([]);
 
+	const [currentUser, setCurrentUser] = useState<User | null>(null);
+
 	document.body.style.backgroundColor = "#474E68"; //very nice color
 
 	//Getting the users details
 	useEffect(() => {
+
+		axios.get("http://localhost:3000/user", {withCredentials: true})
+		.then(res => {
+			setCurrentUser(res.data);
+		})
+		.catch((error) => {
+			console.log(error);
+			navigate("/login");
+		});
+
+
+
+
 		axios.get("http://localhost:3000/user/all", {withCredentials: true})
 		.then(res => {
 			console.log(res.data);
@@ -51,7 +66,9 @@ const Social: FC = () => {
 	function goHome(){ navigate("/"); }
 
 	function getUsers() {
+		if (!currentUser) return <h1>Loading...</h1>;
 		return users.map((user) => {
+			if (user.id == currentUser.id) return;
 			return (
 				<div key={user.id} className='userblock'>
 					<div className="avatarblock">
