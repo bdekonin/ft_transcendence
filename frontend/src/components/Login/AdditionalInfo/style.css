@@ -1,13 +1,14 @@
-.additionalinfo #bm {
-	width: 100%;
-	height: 100%;
+.additionalinfo .background {
+	background-image: url('./images/4622688.png');
+	background-size: cover;
 	position: fixed;
 	z-index: -1;
 	top:0px;
 	right:0px;
 	bottom:0px;
 	left:0px;
-	/* background-color: red; */
+	width: 100%;
+	height: 100%;
 }
 
 .additionalinfo .header {
@@ -17,6 +18,78 @@
 	margin-top: 20px;
 	color: black;
 
+}
+
+.additionalinfo .invalidinput {
+	position: absolute;
+	color: red;
+	margin: 0;
+}
+
+.additionalinfo .text {
+	font-family: 'FlappyBirdy';
+	font-size: 50px;
+	margin-bottom: 0px;
+}
+
+.additionalinfo .input {
+	/* height: 20px; */
+	font-size: larger;
+
+}
+
+.additionalinfo .previewimage {
+	width: 200px;
+	height: 200px;
+	/* position: relative; */
+}
+
+.additionalinfo button {
+	padding: 10px;
+}
+
+.additionalinfo .previewcontainer {
+	display: inline;
+}
+
+.additionalinfo #remove{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 20px;
+	height: 20px;
+}
+
+.additionalinfo .avatarlist {
+	width: 400px; 
+	height: 400px;
+	background-color: darkgray;
+	overflow:hidden;
+	overflow-y:visible; 
+	/* margin: 0; */
+	/* margin-right: 0; */
+	display: inline-block;
+	outline: black solid 5px;
+	position: relative;
+}
+
+.additionalinfo .avatarlist img {
+	margin: 20px;
+	width: 150px;
+	height: 150px;
+	/* border: 5px solid red; */
+}
+
+.additionalinfo .avatarlist .selected {
+	/* border: 5px solid red; */
+	outline-color: red;
+	outline-width: 5px;
+	outline-style: solid;
+}
+
+.additionalinfo button {
+	margin-left: 20px;
+	background-color: lightgray;
 }
 
 @font-face {

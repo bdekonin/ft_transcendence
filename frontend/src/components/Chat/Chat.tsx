@@ -195,7 +195,8 @@ const Chat: React.FC = () => {
 				{
 					/* print out the users in the chat */
 					currentChat.users.map((user: User) => {
-						return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
+						// return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
+						return <></>
 					})
 				}
 			</div>
