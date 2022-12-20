@@ -1,0 +1,29 @@
+.additionalinfo #bm {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	z-index: -1;
+	top:0px;
+	right:0px;
+	bottom:0px;
+	left:0px;
+	/* background-color: red; */
+}
+
+.additionalinfo .header {
+	font-family: 'FlappyBirdy';
+	font-size: 150px;
+	text-align: center;
+	margin-top: 20px;
+	color: black;
+
+}
+
+@font-face {
+	font-family: 'FlappyBirdy';
+	src: url('./transfonter.org-20221215-182728/FlappyBirdy.woff2') format('woff2'),
+		url('./transfonter.org-20221215-182728/FlappyBirdy.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
