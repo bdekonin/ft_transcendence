@@ -1,9 +1,12 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { url } from "inspector";
-import { ChangeEvent, FC, useEffect, useState } from "react"
+import React, { ChangeEvent, FC, LegacyRef, MutableRefObject, RefObject, useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
+import { blob } from "stream/consumers";
+import { fileURLToPath } from "url";
 import './style.css'
+import Papa from 'papaparse'
 
 const AdditionalInfo: FC = () => {
 	const [selected, setSelected] = useState(1);
@@ -38,12 +41,13 @@ const AdditionalInfo: FC = () => {
 	function getAllAvatars() {
 		const image = [];
 
-		if (previewImage) {
-			image.push(<img src={previewImage} className='previewimage' onClick={() => {document.getElementById('avatarupload')?.click()}} />);
-			image.push(<img src={require('./images/remove-icon-png-7123.png')} id="remove" onClick={resetPreviewImage}/>);
+		if (previewImage)
+		{
+			image.push(<img key={16} src={previewImage} className='previewimage' onClick={() => {document.getElementById('avatarupload')?.click()}} />);
+			image.push(<img key={17} src={require('./images/remove-icon-png-7123.png')} id="remove" onClick={resetPreviewImage}/>);
 		}
 		else
-			image.push(<img src={require('./images/kisspng-computer-icons-symbol-plus-and-minus-signs-5ae5a8ce966e56.3419481815250003986162.png')} onClick={() => {document.getElementById('avatarupload')?.click()}} /> )
+			image.push(<img key={16} src={require('./images/kisspng-computer-icons-symbol-plus-and-minus-signs-5ae5a8ce966e56.3419481815250003986162.png')} onClick={() => {document.getElementById('avatarupload')?.click()}} /> )
 
 		for (var i = 1; i < 16; i++) 
 		{
@@ -53,7 +57,7 @@ const AdditionalInfo: FC = () => {
 					<img src={require("./images/avatars/icons8-avatar-64-"+i+".png")} 
 					className='selected'
 					key={i}
-					onClick={() => {setSelected(numb)}}/>);
+					onClick={() => {setSelected(numb);}}/>);
 			else
 				image.push(<img src={require("./images/avatars/icons8-avatar-64-"+i+".png")}
 				key={i}
@@ -71,24 +75,25 @@ const AdditionalInfo: FC = () => {
 		.catch(err => {
 			console.log(err);
 		})
-		if (!previewImage)
-		{
-			setImage(require('./images/avatars/icons8-avatar-64-'+ selected +'.png'));
-		}
 
-		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
-		.then(res => {
-			console.log(res);
-			navigate('/');
-		})
-		.catch(err => {
-			console.log(err);
-		})
+		// if (!previewImage)
+		// {
+			
+		// }
+		// axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
+		// .then(res => {
+		// 	console.log(res);
+		// 	navigate('/');
+		// })
+		// .catch(err => {
+		// 	console.log(err);
+		// })
 	}
 
 	function resetPreviewImage() {
 		setImage(undefined);
 		setPreviewImage('');
+		setImage(require('./images/avatars/icons8-avatar-64-'+ selected +'.png'));
 	}
 
 	function changePreviewImage(event: ChangeEvent<HTMLInputElement>) {
