@@ -9,6 +9,7 @@ import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
 import { JoinChatDto } from './join.dto';
+import { Ban } from 'src/entities/Ban.entity';
 
 
 @Injectable()
@@ -204,9 +205,6 @@ export class ChatService {
 			throw new BadRequestException("Chat is private");
 		}
 
-		console.log('chat.type: ' + chat.type);
-		console.log('dto: ', dto);
-
 		if (chat.type === ChatType.GROUP_PROTECTED) {
 			if (chat.password !== dto.password) {
 				throw new BadRequestException("Password is invalid.");
@@ -216,7 +214,74 @@ export class ChatService {
 		if (chat.users.some(user => user.id === userID)) {
 			throw new BadRequestException("User is already part of this chat");
 		}
+
+		/* Check if user is banned */
+		if (await this.isUserBanned(chat, userID)) {
+			throw new BadRequestException("User is banned from this chat");
+		}
+
 		chat.users.push(await this.userService.findUserById(userID));
+		return await this.chatRepo.save(chat);
+	}
+
+	async isUserBanned(chat: Chat, userID: number): Promise<boolean> {
+		const bannedUsers = chat.banned;
+		const date_as_string = Math.round(new Date().valueOf() / 1000).toString();
+
+		if (!chat.banned) {
+			console.log('no banned users');
+			return false;
+		}
+		for (let i = 0; i < bannedUsers.length; i++) {
+			if (bannedUsers[i].id === userID) {
+				console.log('date_as_string: ' + date_as_string);
+				console.log('bannedUsers[i].unbannedTime: ' + bannedUsers[i].unbannedTime);
+				if (Number(bannedUsers[i].unbannedTime) > Number(date_as_string)) {
+					console.log('user is banned');
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	async banUser(userID: number, chatID: number, bannedID: number, time: string) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === bannedID)) {
+			throw new BadRequestException("bannedID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === bannedID)) {
+			throw new BadRequestException("bannedID cannot be an admin");
+		}
+
+		if (chat.users.some(user => user.id === bannedID)) {
+			// await this.leaveChat(bannedID, chatID);
+			chat.users = chat.users.filter(user => user.id !== bannedID);
+		}
+
+		const banPayload: Ban = {
+			id: bannedID, 
+			unbannedTime: String(Math.round(new Date().valueOf() / 1000) + Number(time)),
+		}
+		console.log('banPayload: ', banPayload);
+		if (chat.banned) {
+			chat.banned.push(banPayload);
+		} else {
+			chat.banned = [banPayload];
+		}
 		return await this.chatRepo.save(chat);
 	}
 
@@ -245,7 +310,7 @@ export class ChatService {
 		if (chat.adminIDs.some(adminID => adminID === userID)) {
 			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
 		}
-
+		console.log('LEAVING CHAT WITH ID: ', chatID);
 		return await this.chatRepo.save(chat);
 	}
 
@@ -275,6 +340,7 @@ export class ChatService {
 			adminIDs: [
 				userID
 			],
+			banned: [],
 		});
 		return await this.chatRepo.save(newChat);
 	}

@@ -139,17 +139,30 @@ export class ChatController {
 		return await this.chatService.getChats(userID, filter);
 	}
 
-	@Post('ban/:chatID/:userID')
+	@Post('ban/:chatID/')
 	async banUser(
 		@Param('userID', ParseIntPipe) userID: number, // Admin
 		@Param('chatID', ParseIntPipe) chatID: number, // Chat
 		@Body('bannedID') bannedID: number, // User to ban
 		@Body('time') time: string, // Time to ban for
 	) {
+		const output = await this.chatService.banUser(userID, chatID, bannedID, time);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		// this.socketGateway.server.emit('chat/refresh-users-leave');
 
+		const payloadToBeSent = {
+			id: chatID,
+			user: {
+				id: bannedID,
+			},
+		}
+
+		/* Update all users in chat */
+		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		return output;
 	}
 
-	@Post('unban/:chatID/:userID')
+	@Post('unban/:chatID/')
 	async unbanUser(
 		@Param('userID', ParseIntPipe) userID: number, // Admin
 		@Param('chatID', ParseIntPipe) chatID: number, // Chat

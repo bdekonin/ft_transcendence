@@ -22,6 +22,7 @@ type ChannelPayload = {
 type Friendship = {
 	user: User;
 	status: string;
+	sender: User;
 }
 
 const Players: React.FC<{
@@ -35,8 +36,6 @@ const Players: React.FC<{
 	const [users, setUsers] = useState<User[]>([]);
 
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
-
-	const [admin, setAdmin] = useState<boolean>(false);
 
 	const [admins, setAdmins] = useState<number[]>([]);
 
@@ -57,10 +56,6 @@ const Players: React.FC<{
 				}
 			});
 
-			/*
-			** @todo Fix automatic friendship refresh
-			** @body Follow will automatically change to unfollow when the user is followed after the refresh
-			*/
 			socket.on('chat/refresh-friendships', () => {
 				axios.get('http://localhost:3000/social', { withCredentials: true })
 				.then(res => {
@@ -70,6 +65,7 @@ const Players: React.FC<{
 						return {
 							status: friendship.status,
 							user: otherUser,
+							sender: friendship.sender,
 						}
 					});
 					setFriendships(parsedData);
@@ -81,7 +77,6 @@ const Players: React.FC<{
 				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 				.then(res => {
 					setAdmins(res.data);
-					setAdmin(isAdmin(currentUser as User));
 				})
 			});
 		}
@@ -108,6 +103,7 @@ const Players: React.FC<{
 				return {
 					status: friendship.status,
 					user: otherUser,
+					sender: friendship.sender,
 				}
 			});
 			setFriendships(parsedData);
@@ -116,7 +112,6 @@ const Players: React.FC<{
 		axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 		.then(res => {
 			setAdmins(res.data);
-			setAdmin(isAdmin(currentUser as User));
 		})
 		
 		
@@ -139,8 +134,136 @@ const Players: React.FC<{
 	function isAdmin(user: User): boolean {
 		return admins.includes(user.id) as boolean;
 	}
+	function isSender(user: User): boolean {
+		const friendship = friendships.find(friendship => friendship.user.id == user.id);
+		if (friendship)
+			return friendship.sender.id == currentUser?.id;
+		return false;
+	}
 
+	function render_add(user: User) {
+		const isFriend = isAlready('accepted', user);
+		const isPending = isAlready('pending', user);
+		const isUserSender = isSender(user);
 
+		if (isUserSender && isPending) {
+			return (
+				<Button variant='contained' className='action-button add'
+					onClick={() => { handleUnfollow(user) }}>
+						Cancel
+				</Button>
+			);
+		}
+		else if (isPending) {
+			return (
+				<>
+					<Button variant='contained' className='action-button add'
+						onClick={() => { handleUnfollow(user) }}>
+							Decline
+					</Button>
+					<Button variant='contained' className='action-button add'
+						onClick={() => { handleFollow(user) }}>
+							Accept
+					</Button>
+				</>
+			);
+		}
+
+		console.log('isFriend', isFriend, 'isPending', isPending, 'isBlocked', isAlready('blocked', user), 'isRequested', isAlready('requested', user), 'isSelf', user.id == currentUser?.id);
+
+		if (isFriend) {
+			return (
+				<Button variant='contained' className='action-button add'
+					onClick={() => { handleUnfollow(user) }}>
+						Unfollow
+				</Button>
+			);
+		}
+
+		return (
+			<Button variant='contained' className='action-button add'
+				onClick={() => { handleFollow(user) }}>
+					Follow
+			</Button>
+		)
+	}
+
+	function render_add_block(user: User) {
+		const isBlocked = isAlready('blocked', user);
+		return (
+			<div className='add-block'>
+				{
+					render_add(user)
+				}
+				{
+					!isBlocked ?
+					<Button variant='contained' className='action-button block'
+						onClick={() => { handleBlock(user) }}>
+							Block
+					</Button>
+					:
+					<Button variant='contained' className='action-button block'
+						onClick={() => { handleUnblock(user) }}>
+							Unblock
+					</Button>
+				}
+			</div>
+		)
+	}
+
+	function render_mute_kick(user: User) {
+		const admin = isAdmin(currentUser as User);
+
+		return (
+			<div className='mute-kick'>
+				{
+					admin &&
+					<Button variant='contained' className='action-button mute'>
+						Mute
+					</Button>
+				}
+				{
+					admin &&
+					<Button variant='contained' className='action-button kick'>
+						Kick
+					</Button>
+				}
+			</div>
+		)
+	}
+
+	function render_ban_promote(user: User) {
+		const admin = isAdmin(currentUser as User);
+
+		if (!currentChat)
+			return ;
+
+		return (
+			<div className='buttons'>
+					{
+						admin &&
+						<Button variant='contained' className='action-button ban' 
+							onClick={() => { handleBan(currentUser as User, user, currentChat) }}>
+							Ban
+						</Button>
+					}
+					{
+						admin && !isAdmin(user) &&
+						<Button variant='contained' className='action-button set-admin'
+							onClick={() => { handlePromote(currentUser as User, user, currentChat) }}>
+							Set Admin
+						</Button>
+					}
+					{
+						admin && isAdmin(user) &&
+						<Button variant='contained' className='action-button set-admin'
+							onClick={() => { handleDemote(currentUser as User, user, currentChat) }}>
+							Unset Admin
+						</Button>
+					}
+			</div>
+		)
+	}
 
 
 
@@ -153,12 +276,7 @@ const Players: React.FC<{
 		if (!currentChat)
 			return;
 
-		// if (!admins)
-		// 	return;
-
-		const admin2 = isAdmin(currentUser as User);
-
-		console.log('friendships', friendships);
+		const admin = isAdmin(currentUser as User);
 
 		const isFriend = isAlready('accepted', user);
 		const isBlocked = isAlready('blocked', user);
@@ -178,67 +296,9 @@ const Players: React.FC<{
 						onClick={() => { navigate('/profile?user=' + user.username) }}>
 							Profile
 					</Button>
-
-					<div className='add-block'>
-						{
-							!isFriend ?
-							<Button variant='contained' className='action-button add'
-								onClick={() => { handleFollow(user) }}>
-									Follow
-							</Button>
-							:
-							<Button variant='contained' className='action-button add'
-								onClick={() => { handleUnfollow(user) }}>
-									Unfollow
-							</Button>
-						}
-						{
-							!isBlocked ?
-							<Button variant='contained' className='action-button block'
-								onClick={() => { handleBlock(user) }}>
-									Block
-							</Button>
-							:
-							<Button variant='contained' className='action-button block'
-								onClick={() => { handleUnblock(user) }}>
-									Unblock
-							</Button>
-						}
-					</div>
-					<div className='mute-kick'>
-						{
-							admin2 &&
-							<Button variant='contained' className='action-button mute'>
-								Mute
-							</Button>
-						}
-						{
-							admin2 &&
-							<Button variant='contained' className='action-button kick'>
-								Kick
-							</Button>
-						}
-					</div>
-					{
-						admin2 &&
-						<Button variant='contained' className='action-button ban'>
-							Ban
-						</Button>
-					}
-					{
-						admin2 && !isAdmin(user) &&
-						<Button variant='contained' className='action-button set-admin'
-							onClick={() => { handlePromote(currentUser as User, user, currentChat) }}>
-							Set Admin
-						</Button>
-					}
-					{
-						admin2 && isAdmin(user) &&
-						<Button variant='contained' className='action-button set-admin'
-							onClick={() => { handleDemote(currentUser as User, user, currentChat) }}>
-							Unset Admin
-						</Button>
-					}
+					{render_add_block(user)}
+					{render_mute_kick(user)}
+					{render_ban_promote(user)}
 				</div>
 			);
 		}

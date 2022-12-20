@@ -80,7 +80,7 @@ const Channels: React.FC<{
 	useEffect(() => {
 		if (!user)
 			return;
-		
+
 		if (!currentChat && joinedChats.length > 0) {
 			/* set current chat to first chat */
 			setCurrentChat(joinedChats[0]);
@@ -179,15 +179,16 @@ const Channels: React.FC<{
 			return;
 
 
-			const currentChatId = currentChat.id;
-			const joinedChatIds = joinedChats.map(chat => chat.id);
-			const hasCurrentChatId = joinedChatIds.some(id => id === currentChatId);
+		const currentChatId = currentChat.id;
+		const joinedChatIds = joinedChats.map(chat => chat.id);
+		const hasCurrentChatId = joinedChatIds.some(id => id === currentChatId);
+
+		console.log('joinedChats', joinedChats);
 
 
 		if (hasCurrentChatId) {
 			return ;
 		}
-
 
 		/* Check if currentChat.id is in joinedChats */
 		if (joinedChats.length > 0) {

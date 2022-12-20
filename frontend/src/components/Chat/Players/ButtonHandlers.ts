@@ -60,8 +60,27 @@ export function handleKick() {
 
 }
 
-export function handleBan() {
+// @Param('userID', ParseIntPipe) userID: number, // Admin
+// @Param('chatID', ParseIntPipe) chatID: number, // Chat
+// @Body('bannedID') bannedID: number, // User to ban
+// @Body('time') time: string, // Time to ban for
+export function handleBan(currentUser: User, user: User, currentChat: Chat) {
+	if (currentUser.id === user.id)
+		return ;
+	if (!currentUser || !user || !currentChat)
+		return ;
 
+	const data = {
+		bannedID: user.id,
+		time: "30"  /* Time in seconds */
+	}
+	axios.post("http://localhost:3000/chat/" + user.id + "/ban/" + currentChat.id, data, {withCredentials: true})
+	.catch((err) => {
+		if (err.response.data.statusCode === 401)
+			return ;
+		else
+			alert(err.response.data.message)
+	});
 }
 
 export function handlePromote(currentUser: User, user: User, currentChat: Chat) {
@@ -73,6 +92,7 @@ export function handlePromote(currentUser: User, user: User, currentChat: Chat) 
 
 	const data = { promoteUserID: user.id };
 
+	// ban/:chatID/:userID
 	axios.post("http://localhost:3000/chat/" + currentUser.id + "/promote/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
