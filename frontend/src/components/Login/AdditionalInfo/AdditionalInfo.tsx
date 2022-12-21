@@ -1,12 +1,8 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
-import { url } from "inspector";
-import React, { ChangeEvent, FC, LegacyRef, MutableRefObject, RefObject, useEffect, useRef, useState } from "react"
+import { ChangeEvent, FC, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
-import { blob } from "stream/consumers";
-import { fileURLToPath } from "url";
 import './style.css'
-import Papa from 'papaparse'
 
 const AdditionalInfo: FC = () => {
 	const [selected, setSelected] = useState(1);
