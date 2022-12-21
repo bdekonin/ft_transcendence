@@ -9,7 +9,7 @@ import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
 import { JoinChatDto } from './join.dto';
-import { Ban } from 'src/entities/Ban.entity';
+import { UserAccess } from 'src/entities/Ban.entity';
 
 
 @Injectable()
@@ -89,6 +89,38 @@ export class ChatService {
 			},
 		});
 		return chat.adminIDs;
+	}
+
+
+
+	async muteUser(userID: number, chatID: number, muteID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === muteID)) {
+			throw new BadRequestException("muteID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === muteID)) {
+			throw new BadRequestException("muteID cannot be an admin");
+		}
+
+		if (chat.muted) {
+			chat.muted.push(muteID);
+		} else {
+			chat.muted = [muteID];
+		}
+		return await this.chatRepo.save(chat);
 	}
 
 
@@ -272,7 +304,7 @@ export class ChatService {
 			chat.users = chat.users.filter(user => user.id !== bannedID);
 		}
 
-		const banPayload: Ban = {
+		const banPayload: UserAccess = {
 			id: bannedID, 
 			unbannedTime: String(Math.round(new Date().valueOf() / 1000) + Number(time)),
 		}

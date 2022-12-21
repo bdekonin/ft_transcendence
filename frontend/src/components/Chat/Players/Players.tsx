@@ -133,6 +133,8 @@ const Players: React.FC<{
 		return false;
 	}
 	function isAdmin(user: User): boolean {
+		if (currentChat?.type == 'PRIVATE')
+			return false;
 		return admins.includes(user.id) as boolean;
 	}
 	function isSender(user: User): boolean {
@@ -215,18 +217,23 @@ const Players: React.FC<{
 	function render_mute_kick(user: User) {
 		const admin = isAdmin(currentUser as User);
 
+		if (!currentChat)
+			return ;
+
 		return (
 			<div className='mute-kick'>
 				{
 					admin &&
-					<Button variant='contained' className='action-button mute'>
+					<Button variant='contained' className='action-button mute'
+						onClick={() => { handleMute(currentUser as User, user, currentChat)}}>
 						Mute
 					</Button>
 				}
 				{
 					admin &&
-					<Button variant='contained' className='action-button kick'>
-						Kick
+					<Button variant='contained' className='action-button kick'
+						onClick={() => { handleKick(currentUser as User, user, currentChat) }}>
+							Kick
 					</Button>
 				}
 			</div>
@@ -277,18 +284,6 @@ const Players: React.FC<{
 	function renderButtons(user: User) {
 		if (!currentChat)
 			return;
-
-		const admin = isAdmin(currentUser as User);
-
-		const isFriend = isAlready('accepted', user);
-		const isBlocked = isAlready('blocked', user);
-		const isPending = isAlready('pending', user);
-		const isSent = isAlready('sent', user);
-
-		console.log('isSent', isSent);
-		console.log('isPending', isPending);
-		console.log('isBlocked', isBlocked);
-		console.log('isFriend', isFriend);
 
 		if (currentChat.type != 'PRIVATE') {
 			return (

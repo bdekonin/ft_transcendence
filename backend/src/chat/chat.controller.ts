@@ -200,6 +200,35 @@ export class ChatController {
 		return output;
 	}
 
+	@Post('kick/:chatID')
+	async kickUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('kickUserID') kickUserID: number, // User to ban
+	) {
+		const output = await this.chatService.leaveChat(kickUserID, chatID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		const payloadToBeSent = {
+			id: chatID,
+			user: {
+				id: kickUserID,
+			},
+		}
+		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		return output;
+	}
+
+	@Post('mute/:chatID')
+	async muteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('muteUserID') muteUserID: number, // User to ban
+	) {
+		const output = await this.chatService.muteUser(userID, chatID, muteUserID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		return output;
+	}
+
 
 
 	/* Temporary */
