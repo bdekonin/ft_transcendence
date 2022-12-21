@@ -12,10 +12,14 @@ const AdditionalInfo: FC = () => {
 	const navigate = useNavigate();
 	const [image, setImage] = useState<File>();
 	const [previewImage, setPreviewImage] = useState('');
-
+	
 	useEffect(() => {
 		checkUserNameInput();
 	}, [userName]);
+	
+	useEffect(() => {
+		setImage(dataURLtoFile(require('./images/avatars/icons8-avatar-64-'+selected+'.png'), 'avatar'+selected+'.png'));
+	}, [selected])
 
 	function checkUserNameInput() {
 		const length = userName.length;
@@ -44,56 +48,63 @@ const AdditionalInfo: FC = () => {
 		}
 		else
 			image.push(<img key={16} src={require('./images/kisspng-computer-icons-symbol-plus-and-minus-signs-5ae5a8ce966e56.3419481815250003986162.png')} onClick={() => {document.getElementById('avatarupload')?.click()}} /> )
-
+		
 		for (var i = 1; i < 16; i++) 
 		{
 			const numb = i;
-			if (i === selected && !previewImage)
-				image.push(
+			if (i === selected && !previewImage) {
+				image.push(	
 					<img src={require("./images/avatars/icons8-avatar-64-"+i+".png")} 
 					className='selected'
 					key={i}
 					onClick={() => {setSelected(numb);}}/>);
-			else
-				image.push(<img src={require("./images/avatars/icons8-avatar-64-"+i+".png")}
-				key={i}
-				onClick={() => {setSelected(numb); resetPreviewImage();}}/>);
+				}
+				else {
+					image.push(<img src={require("./images/avatars/icons8-avatar-64-"+i+".png")}
+					key={i}
+					onClick={() => {setSelected(numb); resetPreviewImage();}}/>);
+				}
+			}
+			return image;
 		}
-		return image;
+		
+		function dataURLtoFile(dataurl: any, filename: any) {
+			
+			var arr = dataurl.split(','),
+			mime = arr[0].match(/:(.*?);/)[1],
+			bstr = atob(arr[1]), 
+			n = bstr.length, 
+			u8arr = new Uint8Array(n);
+			
+		while(n--){
+			u8arr[n] = bstr.charCodeAt(n);
+		}
+
+		return new File([u8arr], filename, {type:mime});
 	}
 
 	function sumbit() {
 		axios.patch('http://localhost:3000/user', { username: userName }, { withCredentials: true })
 		.then(res => {
-			console.log(res);
+			navigate('/');	
+		})
+		.catch(err => {
+			console.log(err);
+		})
+		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
+		.then(res => {
 			navigate('/');
 		})
 		.catch(err => {
 			console.log(err);
 		})
-
-		// if (!previewImage)
-		// {
-			
-		// }
-		// axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
-		// .then(res => {
-		// 	console.log(res);
-		// 	navigate('/');
-		// })
-		// .catch(err => {
-		// 	console.log(err);
-		// })
 	}
 
 	function resetPreviewImage() {
-		setImage(undefined);
 		setPreviewImage('');
-		setImage(require('./images/avatars/icons8-avatar-64-'+ selected +'.png'));
 	}
 
 	function changePreviewImage(event: ChangeEvent<HTMLInputElement>) {
-		console.log('Changing preview image!');
 		setImage(event.target.files![0]);
 		setPreviewImage(URL.createObjectURL(event.target.files![0]));
 	}
@@ -127,13 +138,6 @@ const AdditionalInfo: FC = () => {
 				onClick={sumbit}>
 				Done
 			</button> : ''}
-
-			{/* <br />
-			<h3 className="text">Upload avatar:</h3>
-			<form>
-				<input type="file" name="img" accept="image/*" onChange={onImgChange}/>
-			</form>
-			{previewImage ? <img src={previewImage} className='previewimage' /> : ''} */}
 			<input id="avatarupload" type="file" onChange={changePreviewImage} hidden/>
 		</div>
 	)
