@@ -74,6 +74,7 @@ const Chat: React.FC = () => {
 		socket.on('chat/refresh-message', (payload: Message) => {
 			if (payload.parent.id === currentChat?.id){
 				setMessages((messages) => [payload, ...messages]);
+				console.log('New message!', payload);
 			}
 			else {
 				/* Enable notification for that channel */
@@ -86,11 +87,11 @@ const Chat: React.FC = () => {
 
 	function renderMessages(divName: string) {
 		if (currentChat == null)
-		return (
-			<div className={divName}>
-					<h1>Choose a chat</h1>
-				</div>
-			)
+			return (
+				<div className={divName}>
+						<h1>Choose a chat</h1>
+					</div>
+				)
 		return (
 			<div className={divName}>
 				<h2 className='chatName'>{currentChat.name}</h2>
@@ -109,6 +110,42 @@ const Chat: React.FC = () => {
 			</div>
 		)
 	}
+	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
+	function renderChatBox() {
+		if (!currentChat) {
+			return <p>Loading</p>
+		}
+		return (
+			<div className="chat-box">
+				<input
+					type="text"
+					placeholder="Type message.."
+					onChange={event => setChatBoxMsg(event.currentTarget.value)}
+					name={chatBoxMsg}
+					maxLength={256}>
+				</input>
+				<button
+					type="submit"
+					onClick={(event) => postMessage(event)}>
+						Send
+				</button>
+			</div>
+		)
+	}
+
+	function postMessage(event:any) {
+		const payload = {
+			"senderID": user?.id,
+			"chatID": currentChat?.id,
+			"message": chatBoxMsg
+		}
+		console.log('Emitting message', payload);
+		socket.emit('chat/new-chat', payload);
+	}
+
+
+
+
 
 	return (
 		<div className="main-container">
@@ -121,7 +158,8 @@ const Chat: React.FC = () => {
 			<Players
 				currentUser={user}
 				currentChat={currentChat}
-			/>
+				/>
+			{renderChatBox()}
 		</div>
 	);
 }
