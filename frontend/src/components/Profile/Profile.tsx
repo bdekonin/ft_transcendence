@@ -1,6 +1,5 @@
 import axios from "axios";
 import moment from "moment";
-import { stringify } from "querystring";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import './style.css'
@@ -40,11 +39,11 @@ const Profile:React.FC = () =>
 	const [user, setUser] = useState<User>();
 	const [avatar, setAvatar] = useState<Avatar>();
 	let [searchParams, setSearchParams] = useSearchParams();
-	const query = searchParams.get('user');
-	// const [avatar, setAvatar] = useState<string>();
 	const [games, setGames] = useState<Game[]>();
 	const [friendAmount, setFriendAmount] = useState<number>(0);
-
+	// const [avatar, setAvatar] = useState<string>();
+	
+	const query = searchParams.get('user');
 
 	/* For user object */
 	useEffect(() => {
@@ -144,15 +143,24 @@ const Profile:React.FC = () =>
 
 	return (
 		<div className="profile">
-			<button onClick={() => {navigate('/')}}>Home</button>
+			<div className="background"/>
+
+
+			<h1>{user?.username}</h1>
+			<div className="profileblock">
+				<img
+					className="avatar"
+					src={avatar?.avatar} alt="" />
+			</div>
+			{/* <button onClick={() => {navigate('/')}}>Home</button>
 			<h1>Profile</h1>
-			<div className='profile'>
+			<div className='profileblock'>
 
 				<img className="profile-pic" src={avatar?.avatar} alt="profile"></img>
 				 <p>{user?.username}</p>
 			</div>
 			<div className='edit-profile'>
-				{/* <button onClick={() => {navigate('/edit-profile')}}>Edit Profile</button> */}
+				<button onClick={() => {navigate('/edit-profile')}}>Edit Profile</button>//commented
 			</div>
 			<div className='last-online'>
 				{renderLastOnline()}
@@ -169,10 +177,9 @@ const Profile:React.FC = () =>
 				<p>Wins: {user?.wins}</p>
 				<p>Loses: {user?.loses}</p>
 			</div>
-
 			<div className='games'>
 				<table>
-					<h4>all games</h4>
+					<h1>Game History</h1>
 					<tr>
 						<th>#</th>
 						<th>Mode</th>
@@ -184,7 +191,7 @@ const Profile:React.FC = () =>
 					</tr>
 					{ games?.map(game => gameRow(game)) }
 				</table>
-			</div>
+			</div> */}
 		</div>
 	);
 }

@@ -1,3 +1,30 @@
+.profile {
+
+}
+
+.profile .profileblock {
+	width: 250px;
+	height: 250px;
+	border-radius: 50%;
+	border: 3px solid black;
+	background-color: lightgray;
+
+	overflow: hidden;
+}
+
+
+.profile .profileblock .avatar {
+	width: 100%;
+	height: 100%;
+}
+
+
+
+
+
+
+
+
 .profile .games th {
 	background-color: #616161;
 	color: white;
@@ -33,5 +60,20 @@
 	height: 200px;
 	border-radius: 50%;
 	outline: 3px solid black;
+	background-color: gray;
+}
 
+.profile .background {
+	background-image: url('./images/background.jpg');
+	background-size: cover;
+	background-position: bottom;
+	background-repeat: no-repeat;
+	position: absolute;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	bottom: 0px;
+	top: 0px;
+	left: 0px;
+	right: 0px;
 }
