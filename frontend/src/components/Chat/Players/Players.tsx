@@ -185,8 +185,6 @@ const Players: React.FC<{
 			);
 		}
 
-		console.log('isFriend', isFriend, 'isPending', isPending, 'isBlocked', isAlready('blocked', user), 'isRequested', isAlready('requested', user), 'isSelf', user.id == currentUser?.id);
-
 		if (isFriend) {
 			return (
 				<Button variant='contained' className='action-button add'
@@ -236,7 +234,7 @@ const Players: React.FC<{
 		return (
 			<div className='mute-kick'>
 				{
-					admin && !mutes.includes(user.id) &&
+					admin && !mutes?.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
 						onClick={() => { handleMute(currentUser as User, user, currentChat)}}>
 						Mute
@@ -344,7 +342,7 @@ const Players: React.FC<{
 				currentChat == null || currentUser == null ? <p>No players</p> :
 					users.map((user) => {
 						return (
-							<div>
+							<div key={user.id}>
 								{
 									currentUser.id == user.id &&
 									<div className='Collapsible'>

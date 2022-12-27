@@ -370,18 +370,20 @@ export class ChatService {
 			throw new BadRequestException("User is not part of this chat");
 		}
 		if (chat.users.length === 2 && chat.type === ChatType.PRIVATE) {
-
 			return await this.chatRepo.delete(chatID);
 		}
 		if (chat.users.length === 1) {
 			return await this.chatRepo.delete(chatID);
 		}
 		chat.users = chat.users.filter(user => user.id !== userID);
-
 		if (chat.adminIDs.some(adminID => adminID === userID)) {
 			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
 		}
 		console.log('LEAVING CHAT WITH ID: ', chatID);
+		if (chat.adminIDs.length === 0) {
+			chat.adminIDs = [chat.users[0].id];
+		}
+
 		return await this.chatRepo.save(chat);
 	}
 

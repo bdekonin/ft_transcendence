@@ -1,15 +1,15 @@
 
 
 const rightMessage: React.FC<{
-	key: number;
+	myKey: number;
 	sender: string;
 	content: string;
 	sendTime: string;
-}> = ({ key, sender, content, sendTime }) => {
+}> = ({ myKey, sender, content, sendTime }) => {
 
 	
 	return (
-		<div className="box right" key={key}>
+		<div className="box right" key={myKey}>
 			<span className="username-right">You</span>
 			<p>{content}</p>
 			<span className="time-right">{sendTime}</span>

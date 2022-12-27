@@ -123,6 +123,7 @@ export class ChatController {
 		@Param('chatID', ParseIntPipe) chatID: number,
 	) {
 		const output = await this.chatService.leaveChat(userID, chatID);
+		this.socketGateway.server.emit('chat/refresh-admins');
 		return output;
 	}
 

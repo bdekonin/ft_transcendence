@@ -15,6 +15,11 @@ interface Message {
 	parent: Chat;
 	createdAt: string;
 }
+type Friendship = {
+	user: User;
+	status: string;
+	sender: User;
+}
 
 const Messages: React.FC<{
 	currentUser: User | null;
@@ -26,8 +31,7 @@ const Messages: React.FC<{
 	const [messages, setMessages] = useState<Message[]>([]);
 
 	const [mutes, setMutes] = useState<number[]>([]);
-
-
+	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	useEffect(() => {
 		if (!currentChat)
@@ -45,13 +49,23 @@ const Messages: React.FC<{
 			alert(err.response.data.message)
 		});
 
+		axios.get('http://localhost:3000/social', { withCredentials: true })
+		.then(res => {
+			// parse data
+			const parsedData: Friendship[] = res.data.map((friendship: any) => {
+				const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
+				return {
+					status: friendship.status,
+					user: otherUser,
+					sender: friendship.sender,
+				}
+			});
+			setFriendships(parsedData);
+		})
+
 		setMutes(currentChat.muted);
-	}, [currentChat]);
 
-
-	useEffect(() => {
-		if (!currentChat)
-			return;
+		/* Socket stuff */
 		socket.on('chat/refresh-message', (payload: Message) => {
 			if (payload.parent.id === currentChat?.id){
 				setMessages((messages) => [...messages, payload]);
@@ -74,12 +88,48 @@ const Messages: React.FC<{
 			});
 		});
 
-
 		return () => {
 			socket.off('chat/refresh-message');
 			socket.off('chat/refresh-mutes');
 		}
 	}, [currentChat]);
+
+
+		/**
+	 * Function to check if a user has a certain friendship status
+	 * 
+	 * @param {string} isWhat - The desired friendship status to check for
+	 * @param {User} user - The user to check the friendship status of
+	 * 
+	 * @return {boolean} - Returns true if the user has the desired friendship status, false otherwise
+	*/
+	function isAlready(isWhat: string, user: User): boolean {
+		const friendship = friendships.find(friendship => friendship.user.id == user.id);
+		if (friendship)
+			return friendship.status == isWhat;
+		return false;
+	}
+	
+	useEffect(() => {
+		if (socket) {
+			axios.get('http://localhost:3000/social', { withCredentials: true })
+			.then(res => {
+				// parse data
+				const parsedData: Friendship[] = res.data.map((friendship: any) => {
+					const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
+					return {
+						status: friendship.status,
+						user: otherUser,
+						sender: friendship.sender,
+					}
+				});
+				setFriendships(parsedData);
+			})
+		}
+		return () => {
+			socket.off('chat/refresh-friendships');
+		}
+	});
 
 	function renderMessage(message: Message) {
 
@@ -91,11 +141,16 @@ const Messages: React.FC<{
 		if (mutes && mutes.includes(message.sender.id)) {
 			return null;
 		}
+		const isBlocked = isAlready('blocked', message.sender);
+		if (isBlocked) {
+			return null;
+		}
 
 		if (sender) {
 			return (
 				<RightMessage
 					key={message.id}
+					myKey={message.id}
 					sender={message.sender.username}
 					content={message.message}
 					sendTime={message.createdAt}
@@ -106,6 +161,7 @@ const Messages: React.FC<{
 			return (
 				<LeftMessage
 					key={message.id}
+					myKey={message.id}
 					sender={message.sender.username}
 					content={message.message}
 					sendTime={message.createdAt}

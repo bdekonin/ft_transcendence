@@ -1,15 +1,15 @@
 
 
 const leftMessage: React.FC<{
-	key: number;
+	myKey: number;
 	sender: string;
 	content: string;
 	sendTime: string;
-}> = ({ key, sender, content, sendTime }) => {
+}> = ({ myKey, sender, content, sendTime }) => {
 
 	
 	return (
-		<div className="box" key={key}>
+		<div className="box" key={myKey}>
 			<span className="username-left">{sender}</span>
 			<p>{content}</p>
 			<span className="time-left">{sendTime}</span>
