@@ -39,6 +39,7 @@ const Players: React.FC<{
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	const [admins, setAdmins] = useState<number[]>([]);
+	const [mutes, setMutes] = useState<number[]>([]);
 
 
 	useEffect(() => {
@@ -114,8 +115,20 @@ const Players: React.FC<{
 		.then(res => {
 			setAdmins(res.data);
 		})
+
+		socket.on('chat/refresh-mutes', () => {
+			axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
+			.then(res => {
+				console.log('Incoming mutes: ', res.data, ' for chat: ', currentChat?.id, '');
+				setMutes(res.data);
+			})
+			.catch(err => {
+				console.log('err', err);
+				alert(err.response.data.message)
+			});
+		});
 		
-		
+		setMutes(currentChat.muted);
 	}, [currentChat]);
 
 	/**
@@ -223,14 +236,14 @@ const Players: React.FC<{
 		return (
 			<div className='mute-kick'>
 				{
-					admin && !currentChat.muted.includes(user.id) &&
+					admin && !mutes.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
 						onClick={() => { handleMute(currentUser as User, user, currentChat)}}>
 						Mute
 					</Button>
 				}
 				{
-					admin && currentChat.muted.includes(user.id) &&
+					admin && mutes && mutes.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
 						onClick={() => { handleUnmute(currentUser as User, user, currentChat)}}>
 						Unmute

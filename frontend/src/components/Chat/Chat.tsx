@@ -53,7 +53,6 @@ const Chat: React.FC = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User | null>(null);
 	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
-	const [messages, setMessages] = useState<Message[]>([]);
 
 	document.body.style.background = '#323232';
 
@@ -69,22 +68,6 @@ const Chat: React.FC = () => {
 			alert(err.response.data.message)
 		});
 	}, []); /* Renders only once */
-
-	/* Means there is a new message so update messages when the chatID == currentChatID*/
-	useEffect(() => {
-		socket.on('chat/refresh-message', (payload: Message) => {
-			if (payload.parent.id === currentChat?.id){
-				setMessages((messages) => [payload, ...messages]);
-				console.log('New message!', payload);
-			}
-			else {
-				/* Enable notification for that channel */
-			}
-		})
-		return () => {
-			socket.off('chat/refresh-message');
-		}
-	}, [socket]);
 
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
 	function renderChatBox() {
@@ -130,7 +113,6 @@ const Chat: React.FC = () => {
 				currentChat={currentChat}
 				setCurrentChat={setCurrentChat}
 				/>
-			{/* {renderMessages('block messages')} */}
 			<Messages
 				currentUser={user}
 				currentChat={currentChat}
