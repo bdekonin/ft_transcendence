@@ -123,6 +123,45 @@ export class ChatService {
 		return await this.chatRepo.save(chat);
 	}
 
+	async unmuteUser(userID: number, chatID: number, unmuteID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === unmuteID)) {
+			throw new BadRequestException("unmuteID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === unmuteID)) {
+			throw new BadRequestException("unmuteID cannot be an admin");
+		}
+
+		if (!chat.muted) {
+			throw new BadRequestException("unmuteID is not muted");
+		}
+		chat.muted = chat.muted.filter(muteID => muteID !== unmuteID);
+		return await this.chatRepo.save(chat);
+	}
+
+	async getMutes(chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		return chat.muted;
+	}
+
 
 
 	// async get() {
@@ -173,7 +212,7 @@ export class ChatService {
 		const chat = await this.chatRepo.findOne({
 			order: {
 				messages: {
-					id: 'DESC'
+					id: 'ASC'
 				}
 			},
 			relations: ['messages'],

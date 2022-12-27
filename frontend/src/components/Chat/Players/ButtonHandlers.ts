@@ -68,6 +68,22 @@ export function handleMute(currentUser: User, user: User, currentChat: Chat) {
 			alert(err.response.data.message)
 	});
 }
+export function handleUnmute(currentUser: User, user: User, currentChat: Chat) {
+	if (currentUser.id === user.id)
+		return ;
+	if (!currentUser || !user || !currentChat)
+		return ;
+
+	const data = { unmuteUserID: user.id };
+
+	axios.post("http://localhost:3000/chat/" + currentUser.id + "/unmute/" + currentChat.id, data, {withCredentials: true})
+	.catch((err) => {
+		if (err.response.data.statusCode === 401)
+			return ;
+		else
+			alert(err.response.data.message)
+	});
+}
 
 export function handleKick(currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)

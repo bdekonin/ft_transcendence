@@ -7,7 +7,7 @@ import Collapsible from 'react-collapsible';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote } from './ButtonHandlers';
+import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote, handleUnmute } from './ButtonHandlers';
 import BanDialog from './BanDialog';
 
 type User = {
@@ -223,10 +223,17 @@ const Players: React.FC<{
 		return (
 			<div className='mute-kick'>
 				{
-					admin &&
+					admin && !currentChat.muted.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
 						onClick={() => { handleMute(currentUser as User, user, currentChat)}}>
 						Mute
+					</Button>
+				}
+				{
+					admin && currentChat.muted.includes(user.id) &&
+					<Button variant='contained' className='action-button mute'
+						onClick={() => { handleUnmute(currentUser as User, user, currentChat)}}>
+						Unmute
 					</Button>
 				}
 				{

@@ -18,6 +18,7 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import Channels from './Channel/Channels';
 import Players from './Players/Players';
+import Messages from './Messages/Messages';
 
 interface User {
 	id: number;
@@ -32,7 +33,7 @@ interface Chat {
 
 	adminIDs: number[];
 	bannedIDs: number[];
-	mutedIDs: number[];
+	muted: number[];
 }
 interface Message {
 	id: number;
@@ -85,31 +86,6 @@ const Chat: React.FC = () => {
 		}
 	}, [socket]);
 
-	function renderMessages(divName: string) {
-		if (currentChat == null)
-			return (
-				<div className={divName}>
-						<h1>Choose a chat</h1>
-					</div>
-				)
-		return (
-			<div className={divName}>
-				<h2 className='chatName'>{currentChat.name}</h2>
-				{
-					messages.map((message, index)=> {
-						return (
-							<div className={!(index % 2) ? 'container' : 'container darker'} key={index}>
-								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
-								<p>{message.message}</p>
-								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
-								<p className={(index % 2) ? '' : 'right'}>{(index % 2) ? message.sender.username : ''}</p>
-							</div>
-						);
-					})
-				}
-			</div>
-		)
-	}
 	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
 	function renderChatBox() {
 		if (!currentChat) {
@@ -154,7 +130,11 @@ const Chat: React.FC = () => {
 				currentChat={currentChat}
 				setCurrentChat={setCurrentChat}
 				/>
-			{renderMessages('block messages')}
+			{/* {renderMessages('block messages')} */}
+			<Messages
+				currentUser={user}
+				currentChat={currentChat}
+				/>
 			<Players
 				currentUser={user}
 				currentChat={currentChat}

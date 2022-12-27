@@ -226,7 +226,28 @@ export class ChatController {
 	) {
 		const output = await this.chatService.muteUser(userID, chatID, muteUserID);
 		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-mutes');
 		return output;
+	}
+
+	@Post('unmute/:chatID')
+	async unmuteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('unmuteUserID') unmuteUserID: number, // User to ban
+	) {
+		const output = await this.chatService.unmuteUser(userID, chatID, unmuteUserID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-mutes');
+		return output;
+	}
+
+	@Get('mutes/:chatID')
+	async getMutes(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+	) {
+		return await this.chatService.getMutes(chatID);
 	}
 
 
