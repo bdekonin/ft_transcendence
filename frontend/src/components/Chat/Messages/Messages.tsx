@@ -34,10 +34,14 @@ const Messages: React.FC<{
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	useEffect(() => {
-		if (!currentChat)
+		if (!currentChat) {
+			console.log('No current chat!');
 			return;
-		if (!currentUser)
+		}
+		if (!currentUser) {
+			console.log('No current user!');
 			return;
+		}
 
 		axios.get('http://localhost:3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
 		.then(res => {
@@ -64,6 +68,17 @@ const Messages: React.FC<{
 		})
 
 		setMutes(currentChat.muted);
+	}, [currentChat]);
+
+	useEffect(() => {
+		if (!currentChat) {
+			console.log('No current chat!');
+			return;
+		}
+		if (!currentUser) {
+			console.log('No current user!');
+			return;
+		}
 
 		/* Socket stuff */
 		socket.on('chat/refresh-message', (payload: Message) => {
@@ -92,7 +107,8 @@ const Messages: React.FC<{
 			socket.off('chat/refresh-message');
 			socket.off('chat/refresh-mutes');
 		}
-	}, [currentChat]);
+	});
+
 
 
 		/**
@@ -127,7 +143,7 @@ const Messages: React.FC<{
 			})
 		}
 		return () => {
-			socket.off('chat/refresh-friendships');
+			// socket.off('chat/refresh-friendships');
 		}
 	});
 

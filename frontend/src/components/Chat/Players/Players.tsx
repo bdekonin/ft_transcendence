@@ -111,11 +111,16 @@ const Players: React.FC<{
 			setFriendships(parsedData);
 		})
 
+		console.log('currentChat?.id', currentChat?.id, '');
 		axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 		.then(res => {
 			setAdmins(res.data);
 		})
+		
+		setMutes(currentChat.muted);
+	}, [currentChat]);
 
+	useEffect(() => {
 		socket.on('chat/refresh-mutes', () => {
 			axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
 			.then(res => {
@@ -127,9 +132,11 @@ const Players: React.FC<{
 				alert(err.response.data.message)
 			});
 		});
-		
-		setMutes(currentChat.muted);
-	}, [currentChat]);
+
+		return () => {
+			socket.off('chat/refresh-mutes');
+		}
+	});
 
 	/**
 	 * Function to check if a user has a certain friendship status

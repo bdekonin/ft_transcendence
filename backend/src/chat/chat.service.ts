@@ -88,6 +88,8 @@ export class ChatService {
 				id: chatID
 			},
 		});
+		if (!chat.adminIDs)
+			return [];
 		return chat.adminIDs;
 	}
 
@@ -380,9 +382,9 @@ export class ChatService {
 			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
 		}
 		console.log('LEAVING CHAT WITH ID: ', chatID);
-		if (chat.adminIDs.length === 0) {
-			chat.adminIDs = [chat.users[0].id];
-		}
+		// if (chat.adminIDs.length === 0) {
+		// 	chat.adminIDs = [chat.users[0].id];
+		// }
 
 		return await this.chatRepo.save(chat);
 	}
