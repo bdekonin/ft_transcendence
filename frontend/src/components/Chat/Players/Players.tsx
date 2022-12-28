@@ -29,18 +29,14 @@ type Friendship = {
 const Players: React.FC<{
 	currentUser: User | null;
 	currentChat: Chat | null;
-}> = ({ currentUser, currentChat }) => {
+	mutes : number[];
+	friendships : Friendship[];
+	admins : number[];
+}> = ({ currentUser, currentChat, mutes, friendships, admins }) => {
 
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
-
 	const [users, setUsers] = useState<User[]>([]);
-
-	const [friendships, setFriendships] = useState<Friendship[]>([]);
-
-	const [admins, setAdmins] = useState<number[]>([]);
-	const [mutes, setMutes] = useState<number[]>([]);
-
 
 	useEffect(() => {
 		if (socket) {
@@ -55,56 +51,11 @@ const Players: React.FC<{
 					setUsers((users) => users.filter((user) => user.id !== payload.user.id));
 				}
 			});
-
-			socket.on('chat/refresh-friendships', () => {
-				axios.get('http://localhost:3000/social', { withCredentials: true })
-				.then(res => {
-					// parse data
-					const parsedData: Friendship[] = res.data.map((friendship: any) => {
-						const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
-						return {
-							status: friendship.status,
-							user: otherUser,
-							sender: friendship.sender,
-						}
-					});
-					setFriendships(parsedData);
-				})
-				console.log('chat/refresh-friendships');
-			});
-
-			socket.on('chat/refresh-admins', () => {
-				if (!currentChat) {
-					return;
-				}
-				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
-				.then(res => {
-					setAdmins(res.data);
-				})
-			});
-
-			socket.on('chat/refresh-mutes', () => {
-				if (!currentChat) {
-					return;
-				}
-				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
-				.then(res => {
-					console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat?.id, '');
-					setMutes(res.data);
-				})
-				.catch(err => {
-					console.log('err', err);
-					alert(err.response.data.message)
-				});
-			});
 		}
 
 		return () => {
 			socket.off('chat/refresh-users-join');
 			socket.off('chat/refresh-users-leave');
-			socket.off('chat/refresh-friendships');
-			socket.off('chat/refresh-admins');
-			socket.off('chat/refresh-mutes');
 		}
 	});
 
@@ -117,30 +68,6 @@ const Players: React.FC<{
 		}
 			
 		setUsers(currentChat.users);
-
-		axios.get('http://localhost:3000/social', { withCredentials: true })
-		.then(res => {
-			// parse data
-			const parsedData: Friendship[] = res.data.map((friendship: any) => {
-				const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
-				return {
-					status: friendship.status,
-					user: otherUser,
-					sender: friendship.sender,
-				}
-			});
-			setFriendships(parsedData);
-		})
-
-		axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
-		.then(res => {
-			setAdmins(res.data);
-		})
-		.catch(err => {
-			// console.log('err', err);
-		});
-		
-		setMutes(currentChat.muted);
 	}, [currentChat, currentUser]);
 
 
@@ -319,7 +246,10 @@ const Players: React.FC<{
 		if (currentChat.type != 'PRIVATE') {
 			return (
 				<div className='buttons'>
-					{/* <Button variant='contained' className='action-button invite'>Invite To Game</Button> */}
+					<Button variant='contained' className='action-button invite'
+						onClick={() => { navigate('/profile?user=' + user.username) }}>
+							Invite to game
+					</Button>
 					<Button variant='contained' className='action-button profile'
 						onClick={() => { navigate('/profile?user=' + user.username) }}>
 							Profile
@@ -329,6 +259,20 @@ const Players: React.FC<{
 					{render_ban_promote(user)}
 				</div>
 			);
+		}
+		else {
+			return (
+				<div className='buttons'>
+					<Button variant='contained' className='action-button invite'
+						onClick={() => { navigate('/profile?user=' + user.username) }}>
+							Invite to game
+					</Button>
+					<Button variant='contained' className='action-button profile'
+						onClick={() => { navigate('/profile?user=' + user.username) }}>
+							Profile
+					</Button>
+				</div>
+			)
 		}
 	}
 

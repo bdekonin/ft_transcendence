@@ -24,14 +24,13 @@ type Friendship = {
 const Messages: React.FC<{
 	currentUser: User | null;
 	currentChat: Chat | null;
-}> = ({ currentUser, currentChat }) => {
+	mutes : number[];
+	friendships : Friendship[];
+	admins : number[];
+}> = ({ currentUser, currentChat, mutes, friendships, admins }) => {
 
 	const socket = useContext(SocketContext);
-
 	const [messages, setMessages] = useState<Message[]>([]);
-
-	const [mutes, setMutes] = useState<number[]>([]);
-	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	useEffect(() => {
 		if (!currentChat) {
@@ -46,24 +45,9 @@ const Messages: React.FC<{
 			setMessages(res.data);
 		})
 		.catch(err => {
-			// console.log('err', err);
-			// alert(err.response.data.message)
+			console.log('err', err);
+			alert(err.response.data.message)
 		}); 
-
-		axios.get('http://localhost:3000/social', { withCredentials: true })
-		.then(res => {
-			// parse data
-			const parsedData: Friendship[] = res.data.map((friendship: any) => {
-				const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
-				return {
-					status: friendship.status,
-					user: otherUser,
-					sender: friendship.sender,
-				}
-			});
-			setFriendships(parsedData);
-		})
-		setMutes(currentChat.muted);
 	}, [currentChat, currentUser]);
 
 	useEffect(() => {
@@ -71,62 +55,21 @@ const Messages: React.FC<{
 			socket.on('chat/refresh-message', (payload: Message) => {
 				if (!currentChat)
 					return; 
-				console.log('chat/refresh-message');
 				if (payload.parent.id === currentChat?.id){
 					setMessages((messages) => [...messages, payload]);
-					console.log('New message!', payload);
 				}
 				else {
 					/* Enable notification for that channel */
+					alert('New message in ' + payload.parent.name);
 				}
-			})
-			
-			socket.on('chat/refresh-mutes', () => {
-				console.log('akjdhajksdhkjahd');
-				if (!currentChat) {
-					return;
-				}
-				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
-				.then(res => {
-					console.log('Incoming mutes Messages: ', res.data, ' for chat: ', currentChat?.id, '');
-					setMutes(res.data);
-				})
-				.catch(err => {
-					console.log('err', err);
-					alert(err.response.data.message)
-				});
-			});
-
-			socket.on('chat/refresh-friendships', () => {
-				axios.get('http://localhost:3000/social', { withCredentials: true })
-				.then(res => {
-					// parse data
-					const parsedData: Friendship[] = res.data.map((friendship: any) => {
-						const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
-						return {
-							status: friendship.status,
-							user: otherUser,
-							sender: friendship.sender,
-						}
-					});
-					setFriendships(parsedData);
-				})
 			})
 		}
 		return () => {
 			socket.off('chat/refresh-message');
-			socket.off('chat/refresh-mutes');
-			socket.off('chat/refresh-friendships');
 		}
-	});
+	}, [socket, currentChat]);
 
-	useEffect(() => {
-		console.log('Mutes: ', mutes, '');
-	}, [mutes]);
-
-
-
-		/**
+	/**
 	 * Function to check if a user has a certain friendship status
 	 * 
 	 * @param {string} isWhat - The desired friendship status to check for
@@ -142,7 +85,6 @@ const Messages: React.FC<{
 	}
 
 	function renderMessage(message: Message) {
-
 		if (!currentUser)
 			return null;
 
@@ -156,12 +98,18 @@ const Messages: React.FC<{
 			return null;
 		}
 
+		var username = message.sender.username;
+
+		if (admins.includes(message.sender.id)) {
+			username = username + " [admin]";
+		}
+
 		if (sender) {
 			return (
 				<RightMessage
 					key={message.id}
 					myKey={message.id}
-					sender={message.sender.username}
+					sender={username}
 					content={message.message}
 					sendTime={message.createdAt}
 				/>
@@ -172,7 +120,7 @@ const Messages: React.FC<{
 				<LeftMessage
 					key={message.id}
 					myKey={message.id}
-					sender={message.sender.username}
+					sender={username}
 					content={message.message}
 					sendTime={message.createdAt}
 				/>

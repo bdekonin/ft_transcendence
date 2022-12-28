@@ -165,6 +165,9 @@ export class ChatService {
 				id: chatID
 			},
 		});
+		if (!chat) {
+			return [];
+		}
 		return chat.muted;
 	}
 

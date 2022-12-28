@@ -19,6 +19,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Channels from './Channel/Channels';
 import Players from './Players/Players';
 import Messages from './Messages/Messages';
+import { CircularProgress } from '@mui/material';
 
 interface User {
 	id: number;
@@ -35,16 +36,10 @@ interface Chat {
 	bannedIDs: number[];
 	muted: number[];
 }
-interface Message {
-	id: number;
-	message: string;
+type Friendship = {
+	user: User;
+	status: string;
 	sender: User;
-	parent: Chat;
-	createdAt: string;
-}
-interface Avatar {
-	id: number,
-	avatar: string
 }
 
 const Chat: React.FC = () => {
@@ -102,6 +97,97 @@ const Chat: React.FC = () => {
 		socket.emit('chat/new-chat', payload);
 	}
 
+	const [friendships, setFriendships] = useState<Friendship[]>([]);
+	const [mutes, setMutes] = useState<number[]>([]);
+	const [admins, setAdmins] = useState<number[]>([]);
+
+	useEffect(() => {
+		if (!user || !currentChat) {
+			return;
+		}
+
+		axios.get('http://localhost:3000/social', { withCredentials: true })
+		.then(res => {
+			// parse data
+			const parsedData: Friendship[] = res.data.map((friendship: any) => {
+				const otherUser = friendship.sender.id == user.id ? friendship.reciever : friendship.sender;
+				return {
+					status: friendship.status,
+					user: otherUser,
+					sender: friendship.sender,
+				}
+			});
+			setFriendships(parsedData);
+		})
+		axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+		.then(res => {
+			console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat.id, '');
+			setMutes(res.data);
+		})
+		.catch(err => {
+			console.log('err', err);
+			alert(err.response.data.message)
+		});
+		axios.get('http://localhost:3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+		.then(res => {
+			setAdmins(res.data);
+		})
+		.catch(err => {
+			// console.log('err', err);
+		});
+		
+		if (!socket)
+			return;
+
+		socket.on('chat/refresh-friendships', () => {
+			axios.get('http://localhost:3000/social', { withCredentials: true })
+			.then(res => {
+				// parse data
+				const parsedData: Friendship[] = res.data.map((friendship: any) => {
+					const otherUser = friendship.sender.id == user.id ? friendship.reciever : friendship.sender;
+					return {
+						status: friendship.status,
+						user: otherUser,
+						sender: friendship.sender,
+					}
+				});
+				setFriendships(parsedData);
+			})
+			console.log('chat/refresh-friendships');
+		});
+		socket.on('chat/refresh-mutes', () => {
+			if (!currentChat) {
+				return;
+			}
+			axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+			.then(res => {
+				console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat.id, '');
+				setMutes(res.data);
+			})
+			.catch(err => {
+				console.log('err', err);
+				alert(err.response.data.message)
+			});
+		});
+		socket.on('chat/refresh-admins', () => {
+			if (!currentChat) {
+				return;
+			}
+			axios.get('http://localhost:3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+			.then(res => {
+				setAdmins(res.data);
+			})
+		});
+		return () => {
+			socket.off('chat/refresh-friendships');
+			socket.off('chat/refresh-mutes');
+			socket.off('chat/refresh-admins');
+		}
+	}, [currentChat, socket]);
+
+	if (!user) {
+		<CircularProgress />
+	}
 
 	return (
 		<div className="main-container">
@@ -113,12 +199,22 @@ const Chat: React.FC = () => {
 			<Messages
 				currentUser={user}
 				currentChat={currentChat}
+				mutes={mutes}
+				friendships={friendships}
+				admins={admins}
 				/>
 			<Players
 				currentUser={user}
 				currentChat={currentChat}
+				mutes={mutes}
+				friendships={friendships}
+				admins={admins}
 				/>
-			{renderChatBox()}
+
+			{
+				user && mutes.includes(user?.id) ? null :
+				renderChatBox()
+			}
 		</div>
 	);
 }
