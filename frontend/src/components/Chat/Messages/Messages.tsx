@@ -35,23 +35,20 @@ const Messages: React.FC<{
 
 	useEffect(() => {
 		if (!currentChat) {
-			console.log('No current chat!');
 			return;
 		}
 		if (!currentUser) {
-			console.log('No current user!');
 			return;
 		}
 
 		axios.get('http://localhost:3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
 		.then(res => {
-			console.log('Incoming messages: ', res.data, ' for chat: ', currentChat.id, ' and user: ', currentUser.id, '');
 			setMessages(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
-			alert(err.response.data.message)
-		});
+			// console.log('err', err);
+			// alert(err.response.data.message)
+		}); 
 
 		axios.get('http://localhost:3000/social', { withCredentials: true })
 		.then(res => {
@@ -66,48 +63,66 @@ const Messages: React.FC<{
 			});
 			setFriendships(parsedData);
 		})
-
 		setMutes(currentChat.muted);
-	}, [currentChat]);
+	}, [currentChat, currentUser]);
 
 	useEffect(() => {
-		if (!currentChat) {
-			console.log('No current chat!');
-			return;
-		}
-		if (!currentUser) {
-			console.log('No current user!');
-			return;
-		}
-
-		/* Socket stuff */
-		socket.on('chat/refresh-message', (payload: Message) => {
-			if (payload.parent.id === currentChat?.id){
-				setMessages((messages) => [...messages, payload]);
-				console.log('New message!', payload);
-			}
-			else {
-				/* Enable notification for that channel */
-			}
-		})
-
-		socket.on('chat/refresh-mutes', () => {
-			axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat.id, { withCredentials: true })
-			.then(res => {
-				console.log('Incoming mutes: ', res.data, ' for chat: ', currentChat.id, '');
-				setMutes(res.data);
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				if (!currentChat)
+					return; 
+				console.log('chat/refresh-message');
+				if (payload.parent.id === currentChat?.id){
+					setMessages((messages) => [...messages, payload]);
+					console.log('New message!', payload);
+				}
+				else {
+					/* Enable notification for that channel */
+				}
 			})
-			.catch(err => {
-				console.log('err', err);
-				alert(err.response.data.message)
+			
+			socket.on('chat/refresh-mutes', () => {
+				console.log('akjdhajksdhkjahd');
+				if (!currentChat) {
+					return;
+				}
+				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
+				.then(res => {
+					console.log('Incoming mutes Messages: ', res.data, ' for chat: ', currentChat?.id, '');
+					setMutes(res.data);
+				})
+				.catch(err => {
+					console.log('err', err);
+					alert(err.response.data.message)
+				});
 			});
-		});
 
+			socket.on('chat/refresh-friendships', () => {
+				axios.get('http://localhost:3000/social', { withCredentials: true })
+				.then(res => {
+					// parse data
+					const parsedData: Friendship[] = res.data.map((friendship: any) => {
+						const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
+						return {
+							status: friendship.status,
+							user: otherUser,
+							sender: friendship.sender,
+						}
+					});
+					setFriendships(parsedData);
+				})
+			})
+		}
 		return () => {
 			socket.off('chat/refresh-message');
 			socket.off('chat/refresh-mutes');
+			socket.off('chat/refresh-friendships');
 		}
 	});
+
+	useEffect(() => {
+		console.log('Mutes: ', mutes, '');
+	}, [mutes]);
 
 
 
@@ -125,27 +140,6 @@ const Messages: React.FC<{
 			return friendship.status == isWhat;
 		return false;
 	}
-	
-	useEffect(() => {
-		if (socket) {
-			axios.get('http://localhost:3000/social', { withCredentials: true })
-			.then(res => {
-				// parse data
-				const parsedData: Friendship[] = res.data.map((friendship: any) => {
-					const otherUser = friendship.sender.id == currentUser?.id ? friendship.reciever : friendship.sender;
-					return {
-						status: friendship.status,
-						user: otherUser,
-						sender: friendship.sender,
-					}
-				});
-				setFriendships(parsedData);
-			})
-		}
-		return () => {
-			// socket.off('chat/refresh-friendships');
-		}
-	});
 
 	function renderMessage(message: Message) {
 
@@ -186,7 +180,6 @@ const Messages: React.FC<{
 		}
 	}
 
-
 	if (!currentChat)
 		return (
 			<div className="block messages">
@@ -203,7 +196,5 @@ const Messages: React.FC<{
 			)}
 		</div>
 	)
-
-	return null;
 }
 export default Messages;

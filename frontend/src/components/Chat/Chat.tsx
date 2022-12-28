@@ -103,9 +103,6 @@ const Chat: React.FC = () => {
 	}
 
 
-
-
-
 	return (
 		<div className="main-container">
 			<Channels

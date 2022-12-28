@@ -33,7 +33,6 @@ export function handleUnfollow(user: User) {
 export function handleBlock(user: User) {
 	axios.put("http://localhost:3000/social/" + user.id + "/block", {}, {withCredentials: true})
 	.then((payload) => {
-		console.log('block!', payload);
 	})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)

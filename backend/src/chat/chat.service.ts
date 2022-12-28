@@ -88,6 +88,10 @@ export class ChatService {
 				id: chatID
 			},
 		});
+		if (!chat) {
+			return [];
+			// throw new BadRequestException("Chat does not exist2");
+		}
 		if (!chat.adminIDs)
 			return [];
 		return chat.adminIDs;

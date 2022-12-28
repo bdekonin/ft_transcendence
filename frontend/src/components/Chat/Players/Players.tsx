@@ -45,14 +45,12 @@ const Players: React.FC<{
 	useEffect(() => {
 		if (socket) {
 			socket.on('chat/refresh-users-join', (payload: ChannelPayload) => {
-				console.log('chat/refresh-users-join', payload);
 				if (payload.id === currentChat?.id) {
 					setUsers((users) => [...users, payload.user]);
 				}
 			});
 
 			socket.on('chat/refresh-users-leave', (payload: ChannelPayload) => {
-				console.log('chat/refresh-users-leave', payload);
 				if (payload.id === currentChat?.id) {
 					setUsers((users) => users.filter((user) => user.id !== payload.user.id));
 				}
@@ -76,10 +74,28 @@ const Players: React.FC<{
 			});
 
 			socket.on('chat/refresh-admins', () => {
+				if (!currentChat) {
+					return;
+				}
 				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 				.then(res => {
 					setAdmins(res.data);
 				})
+			});
+
+			socket.on('chat/refresh-mutes', () => {
+				if (!currentChat) {
+					return;
+				}
+				axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
+				.then(res => {
+					console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat?.id, '');
+					setMutes(res.data);
+				})
+				.catch(err => {
+					console.log('err', err);
+					alert(err.response.data.message)
+				});
 			});
 		}
 
@@ -88,12 +104,17 @@ const Players: React.FC<{
 			socket.off('chat/refresh-users-leave');
 			socket.off('chat/refresh-friendships');
 			socket.off('chat/refresh-admins');
+			socket.off('chat/refresh-mutes');
 		}
 	});
 
 	useEffect(() => {
-		if (!currentChat)
-			return ;
+		if (!currentChat) {
+			return;
+		}
+		if (!currentUser) {
+			return;
+		}
 			
 		setUsers(currentChat.users);
 
@@ -111,32 +132,17 @@ const Players: React.FC<{
 			setFriendships(parsedData);
 		})
 
-		console.log('currentChat?.id', currentChat?.id, '');
 		axios.get('http://localhost:3000/chat/' + currentUser?.id + '/admins/' + currentChat?.id, { withCredentials: true })
 		.then(res => {
 			setAdmins(res.data);
 		})
+		.catch(err => {
+			// console.log('err', err);
+		});
 		
 		setMutes(currentChat.muted);
-	}, [currentChat]);
+	}, [currentChat, currentUser]);
 
-	useEffect(() => {
-		socket.on('chat/refresh-mutes', () => {
-			axios.get('http://localhost:3000/chat/' + currentUser?.id + '/mutes/' + currentChat?.id, { withCredentials: true })
-			.then(res => {
-				console.log('Incoming mutes: ', res.data, ' for chat: ', currentChat?.id, '');
-				setMutes(res.data);
-			})
-			.catch(err => {
-				console.log('err', err);
-				alert(err.response.data.message)
-			});
-		});
-
-		return () => {
-			socket.off('chat/refresh-mutes');
-		}
-	});
 
 	/**
 	 * Function to check if a user has a certain friendship status

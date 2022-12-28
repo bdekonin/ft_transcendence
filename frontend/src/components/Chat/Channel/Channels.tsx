@@ -47,13 +47,11 @@ const Channels: React.FC<{
 	/* Gets all chats for the current user and sets them in the application state */
 
 	useEffect(() => {
-		console.log('getAndSetChatsForUser', user);
 		/* Get all chats */
 		if (!user)
 			return;
 		axios.get('http://localhost:3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
 		.then(res => {
-			console.log('res', res.data);
 			setJoinedChats(res.data.joined);
 			setPublicChats(res.data.public);
 			setProtectedChats(res.data.protected);
@@ -69,7 +67,6 @@ const Channels: React.FC<{
 	useEffect(() => {
 		/* Listen to new and deleted created chats */
 		socket.on('chat/refresh-chats', (chat: Chat) => {
-			console.log('refresh-chats is called');
 			setRefreshChats(new Date().toISOString());
 		});
 		return () => {
@@ -83,7 +80,9 @@ const Channels: React.FC<{
 
 		if (!currentChat && joinedChats.length > 0) {
 			/* set current chat to first chat */
-			setCurrentChat(joinedChats[0]);
+			if (joinedChats.length != 1)
+				setCurrentChat(joinedChats[0]);
+			return ;
 		}
 
 		if (currentChat) {
@@ -96,8 +95,10 @@ const Channels: React.FC<{
 				else
 					return 0;
 			});
+			return ;
 		}
 
+		setCurrentChat(null);
 	}, [currentChat]);
 
 
@@ -164,8 +165,12 @@ const Channels: React.FC<{
 		.then(res => {
 			socket.emit('chat/leave', { chatID: chatID });
 			setRefreshChats(new Date().toISOString());
-			if (currentChat?.id === chatID)
+			if (currentChat?.id === chatID) {
 				setCurrentChat(null);
+			}
+			if (joinedChats.length === 1) {
+				setCurrentChat(null);
+			}
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
@@ -182,9 +187,6 @@ const Channels: React.FC<{
 		const currentChatId = currentChat.id;
 		const joinedChatIds = joinedChats.map(chat => chat.id);
 		const hasCurrentChatId = joinedChatIds.some(id => id === currentChatId);
-
-		console.log('joinedChats', joinedChats);
-
 
 		if (hasCurrentChatId) {
 			return ;
