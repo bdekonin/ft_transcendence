@@ -1,131 +1,261 @@
-body {
-  margin: 0 auto;
-  max-width: 1300px;
-  padding: 0 20px;
+
+.block {
+	/* width: 300px; */
+	/* height: 600px; */
+	height: 1000px;
+	display: inline-block;
+	vertical-align: middle;
+	text-align: center;
+	margin: 5px;
 }
 
-h1, h2, h3, h4, h5 {
-  color: #f1c40f;
-  font-family: Verdana;
-}
-
-.room-name-clickable {
-	color: #9b59b6;
-	text-decoration: underline;
-	cursor: pointer;
-}
-
-.rooms {
-  float: left;
-  width: 20%;
+.channels, .players {
+	width: calc(20% - 20px);
 }
 .messages {
-  float: left;
-  width: 80%;
-
-  /* Scrollable */
-  overflow-y: scroll;
-  height: 500px;
-  margin-bottom: 10px;
+	width: calc(60% - 20px);
 }
 
-.messages h2 {
-  /* dont move */
-  position: sticky;
+.main-container {
+	font-family: monospace;
 }
 
 
-.rooms {
-  padding: 0;
-  text-align: left;
+
+.channels {
+	/* background-color: red; */
+	background-color: #1e1e1e;
 }
 
-.container {
-  border: 2px solid #dedede;
-  background-color: #f1f1f1;
-  border-radius: 5px;
-  padding: 10px;
-  margin: 10px 0;
-}
-.container p {
-  color: rgb(0, 0, 0);
+.messages {
+	background-color: rgb(255, 0, 0);
 }
 
-.darker {
-  border-color: #ccc;
-  background-color: #ddd;
+.players {
+	background-color: green;
 }
 
-.container::after {
-  content: "";
-  clear: both;
-  display: table;
+/* Channels styling */
+.block.channels .content .general .chat {
+	background-color: #1e1e1e;
+	text-align: left;
+	/* width: 100%; */
+	height: 5%;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-bottom: grey 1px solid;
+}
+.block.channels .content .general .chat.selected {
+	background-color: #323232;
+}
+.block.channels .content .general .chat:hover {
+	background-color: #545454;
+	cursor: pointer;
+}
+.block.channels .content .general .chat p {
+	margin: 0;
+	margin-left: 5px;
+	/* color: white */
+}
+.block.channels .content .add {
+	height: 30px;
+	background-color: #27ae60;
+	border: 0;
+	margin-bottom: 5px;
+	margin: 5px;
+	width: 46%;
+	color: white;
+	/* font-family: ; */
+	cursor: pointer;
+	text-transform: uppercase;
+}
+.block.channels .content .general .options {
+	left: 90%;
+	height: 30px;
+	width: 30px;
+}
+.block.channels .content .general .chat .title {
+	color: white;
+}
+.block.channels .content .general .chat.error {
+	color: white;
+	height: 60px;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+}
+.block.channels .content .general .chat .type {
+	color: grey;
 }
 
-.container img {
-  float: left;
-  max-width: 60px;
-  width: 100%;
-  margin-right: 20px;
-  border-radius: 50%;
+.block.channels .general .chat.crossection {
+	background-color: #7a7a7a;
+	text-align: center;
 }
 
-.container img.right, .container p.right {
-  float: right;
-  margin-left: 20px;
-  margin-right:0;
+.block.channels > .title h1 {
+	color: white;
+}
+
+.block.channels > .title {
+	background-color: #8e44ad;
+	height: 10%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
 }
 
 
-.time-right {
-  float: right;
-  color: #aaa;
+
+
+
+
+
+/* Players styling */
+.block.players > .title h1 {
+	color: white;
+}
+.block.players > .title {
+	background-color: #8e44ad;
+	height: 10%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+}
+.block.players .content .Collapsible {
+	position: relative; /* This property is added to make the player-box a containing block for absolutely positioned elements */
+	background-color: #1e1e1e;
+	text-align: left;
+	color: white;
+	/* width: auto; */
+	/* height: 5%; */
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-bottom: grey 1px solid;
+	padding-left: 5%;
+}
+.block.players .content .Collapsible__trigger {
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+.block.players .content .Collapsible .options {
+	position: absolute; /* This element will be positioned absolutely relative to the player-box element */
+	left: 90%; /* This will position the left edge of the options element 90% of the way across the player-box element */
+	top: 0; /* This will position the top edge of the options element at the top of the player-box element */
+	background-color: transparent;
+	border: none;
+}
+.block.players .content .Collapsible .menu {
+	color: #8e44ad;
+	max-width: 100px;
+}
+.block.players .content .Collapsible__contentOuter {
+	background-color: #1e1e1e;
+}
+.block.players .content .Collapsible__contentInner .buttons {
+	max-height: 300px;
+	/* Center childs in middle of player-box */
+	display: flex;
+	flex-direction: column;
+}
+.block.players .content .Collapsible__contentInner .action-button {
+	/* background-color: #8e44ad; */
+	width: 70%;
+	height: 20px;
+	/* Center in middle of player-box */
+	margin: 0 auto;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border: none;
+	color: white;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+.block.players .content .Collapsible__contentInner .buttons .add-block {
+	display: flex;
+	/* flex-direction: row; */
+	/* align-items: center; */
+	/* justify-content: space-between; */
+}
+.block.players .content .Collapsible__contentInner .action-button.add,
+.block.players .content .Collapsible__contentInner .action-button.block {
+	width: 20%;
+}
+.block.players .content .Collapsible__contentInner .buttons .mute-kick {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+.block.players .content .Collapsible__contentInner .action-button.mute,
+.block.players .content .Collapsible__contentInner .action-button.kick {
+	width: 20%;
 }
 
-.time-left {
-  float: left;
-  color: #999;
+/* Chat Boxes */
+
+.block.messages .box {
+	background-color: #ddd;
+	border-radius: 20px;
+	/* margin: 10px; */
+	padding: 10px;
+	/* margin: 10px 0; */
+	text-align: left;
+	font-size: 15px;
+	/* width: 50%; */
+  }
+.block.messages .box {
+	border: 2px solid #dedede;
+	background-color: #f1f1f1;
+	border-radius: 10px;
+	padding: 10px;
+	margin: 20px;
 }
 
-.chat-box {
+/* Darker chat container */
+.block.messages .box.right {
+	border-color: #ccc;
+	background-color: #ddd;
+	/* float: right; */
+	text-align: right;
+}
+  
+/* Clear floats */
+.block.messages .box::after {
+	content: "";
+	clear: both;
+	display: table;
+}
+  
+/* Style images */
+.block.messages .box img {
+	float: left;
+	max-width: 60px;
 	width: 100%;
+	margin-right: 20px;
+	border-radius: 50%;
 }
-
-.chat-box input
-{
-  width: 77%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: vertical;
+  
+/* Style the right image */
+.block.messages .box img.right {
+	float: right;
+	margin-left: 20px;
+	margin-right:0;
 }
-
-.chat-box button
-{
-  width: 20%;
-  background-color: rgb(76, 175, 80);
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  float: right;
+  
+/* Style time text */
+.time-right {
+	float: right;
+	color: #aaa;
 }
-
-.rooms .user-icons {
-  /* width: 100px; */
-  /* margin-right: 17px; */
-  /* height: 300px; */
-  /* background-color: blue; */
-}
-
-.rooms .user-icons img {
-  background-color: white;
-  margin: 3px;
-  border-radius: 50%;
-}
-
-.rooms .user-icons img:hover {
-  background-color: #f1c40f;
-  cursor: pointer;
+  
+/* Style time text */
+.time-left {
+	float: left;
+	color: #999;
 }

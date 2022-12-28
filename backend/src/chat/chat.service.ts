@@ -9,6 +9,7 @@ import { createChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
 import { JoinChatDto } from './join.dto';
+import { UserAccess } from 'src/entities/Ban.entity';
 
 
 @Injectable()
@@ -24,18 +25,165 @@ export class ChatService {
 
 
 
+	/* Promote */
+	async promoteUser(chatID: number, userID: number, promoteUserID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
 
-	async get() {
-		const value = await this.cacheManager.get('key');
-		if (value)
-			return { value: value };
-		else
-			return { value: 'no value' };
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === promoteUserID)) {
+			throw new BadRequestException("promoteUserID is not part of this chat");
+		}
+
+		if (!chat.adminIDs.some(adminID => adminID === userID)) {
+			throw new BadRequestException("userID is not an admin of this chat");
+		}
+		if (chat.adminIDs.some(adminID => adminID === promoteUserID)) {
+			throw new BadRequestException("promoteUserID is already an admin of this chat");
+		}
+		chat.adminIDs.push(promoteUserID);
+		return await this.chatRepo.save(chat);
 	}
-	async set() {
-		const seconds = 10; // TODO - change to 600
-		return await this.cacheManager.set('key', 'value', seconds);
+	async demoteUser(chatID: number, userID: number, demoteUserID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === demoteUserID)) {
+			throw new BadRequestException("demoteUserID is not part of this chat");
+		}
+
+		if (!chat.adminIDs.some(adminID => adminID === userID)) {
+			throw new BadRequestException("userID is not an admin of this chat");
+		}
+		if (!chat.adminIDs.some(adminID => adminID === demoteUserID)) {
+			throw new BadRequestException("demoteUserID is not an admin of this chat");
+		}
+		chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== demoteUserID);
+		return await this.chatRepo.save(chat);
 	}
+
+	async getAdmins(chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			return [];
+			// throw new BadRequestException("Chat does not exist2");
+		}
+		if (!chat.adminIDs)
+			return [];
+		return chat.adminIDs;
+	}
+
+
+
+	async muteUser(userID: number, chatID: number, muteID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === muteID)) {
+			throw new BadRequestException("muteID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === muteID)) {
+			throw new BadRequestException("muteID cannot be an admin");
+		}
+
+		if (chat.muted) {
+			chat.muted.push(muteID);
+		} else {
+			chat.muted = [muteID];
+		}
+		return await this.chatRepo.save(chat);
+	}
+
+	async unmuteUser(userID: number, chatID: number, unmuteID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === unmuteID)) {
+			throw new BadRequestException("unmuteID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === unmuteID)) {
+			throw new BadRequestException("unmuteID cannot be an admin");
+		}
+
+		if (!chat.muted) {
+			throw new BadRequestException("unmuteID is not muted");
+		}
+		chat.muted = chat.muted.filter(muteID => muteID !== unmuteID);
+		return await this.chatRepo.save(chat);
+	}
+
+	async getMutes(chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			return [];
+		}
+		return chat.muted;
+	}
+
+
+
+	// async get() {
+	// 	const value = await this.cacheManager.get('key');
+	// 	if (value)
+	// 		return { value: value };
+	// 	else
+	// 		return { value: 'no value' };
+	// }
+	// async set() {
+	// 	const seconds = 10; // TODO - change to 600
+	// 	return await this.cacheManager.set('key', 'value', seconds);
+	// }
 
 	/* Message */
 	async sendMessage(chatID: number, userID: number, message: string): Promise<Message> {
@@ -73,7 +221,7 @@ export class ChatService {
 		const chat = await this.chatRepo.findOne({
 			order: {
 				messages: {
-					id: 'DESC'
+					id: 'ASC'
 				}
 			},
 			relations: ['messages'],
@@ -102,7 +250,7 @@ export class ChatService {
 		if (filter === 'public')
 			chats = await this.getChatTypePublic(userID);
 		else if (filter === 'protected')
-			chats = await this.getChatTypePrivate(userID);
+			chats = await this.getChatTypeProtected(userID);
 		else if (filter === 'all')
 			 return await this.getChatTypeAll(userID);
 		else /* Joined */
@@ -146,7 +294,74 @@ export class ChatService {
 		if (chat.users.some(user => user.id === userID)) {
 			throw new BadRequestException("User is already part of this chat");
 		}
+
+		/* Check if user is banned */
+		if (await this.isUserBanned(chat, userID)) {
+			throw new BadRequestException("User is banned from this chat");
+		}
+
 		chat.users.push(await this.userService.findUserById(userID));
+		return await this.chatRepo.save(chat);
+	}
+
+	async isUserBanned(chat: Chat, userID: number): Promise<boolean> {
+		const bannedUsers = chat.banned;
+		const date_as_string = Math.round(new Date().valueOf() / 1000).toString();
+
+		if (!chat.banned) {
+			console.log('no banned users');
+			return false;
+		}
+		for (let i = 0; i < bannedUsers.length; i++) {
+			if (bannedUsers[i].id === userID) {
+				console.log('date_as_string: ' + date_as_string);
+				console.log('bannedUsers[i].unbannedTime: ' + bannedUsers[i].unbannedTime);
+				if (Number(bannedUsers[i].unbannedTime) > Number(date_as_string)) {
+					console.log('user is banned');
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	async banUser(userID: number, chatID: number, bannedID: number, time: string) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === bannedID)) {
+			throw new BadRequestException("bannedID is not part of this chat");
+		}
+
+		if (chat.adminIDs.some(adminID => adminID === bannedID)) {
+			throw new BadRequestException("bannedID cannot be an admin");
+		}
+
+		if (chat.users.some(user => user.id === bannedID)) {
+			// await this.leaveChat(bannedID, chatID);
+			chat.users = chat.users.filter(user => user.id !== bannedID);
+		}
+
+		const banPayload: UserAccess = {
+			id: bannedID, 
+			unbannedTime: String(Math.round(new Date().valueOf() / 1000) + Number(time)),
+		}
+		console.log('banPayload: ', banPayload);
+		if (chat.banned) {
+			chat.banned.push(banPayload);
+		} else {
+			chat.banned = [banPayload];
+		}
 		return await this.chatRepo.save(chat);
 	}
 
@@ -170,6 +385,14 @@ export class ChatService {
 			return await this.chatRepo.delete(chatID);
 		}
 		chat.users = chat.users.filter(user => user.id !== userID);
+		if (chat.adminIDs.some(adminID => adminID === userID)) {
+			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
+		}
+		console.log('LEAVING CHAT WITH ID: ', chatID);
+		// if (chat.adminIDs.length === 0) {
+		// 	chat.adminIDs = [chat.users[0].id];
+		// }
+
 		return await this.chatRepo.save(chat);
 	}
 
@@ -196,6 +419,10 @@ export class ChatService {
 			name: chat.name,
 			users: chat.users,
 			password: chat.password,
+			adminIDs: [
+				userID
+			],
+			banned: [],
 		});
 		return await this.chatRepo.save(newChat);
 	}
@@ -340,7 +567,7 @@ export class ChatService {
 		});
 		return filteredChats;
 	}
-	private async getChatTypePrivate(id: number): Promise<Chat[]> {
+	private async getChatTypeProtected(id: number): Promise<Chat[]> {
 		const chats =  await this.chatRepo.find({
 			relations: ['users'],
 			where: {
@@ -353,6 +580,28 @@ export class ChatService {
 		});
 		return filteredChats;
 	}
+	private async getChatTypePrivates(id: number): Promise<Chat[]> {
+		const chats =  await this.chatRepo.find({
+			relations: ['users'],
+			where: {
+				type: ChatType.PRIVATE,
+			},
+		});
+
+		const filteredChats = chats.filter(chat => {
+			return chat.users.some(user => user.id === id);
+		});
+		return filteredChats;
+	}
+
+	async getPrivateChat(idOne: number, idTwo: number): Promise<Chat> {
+		const chats = await this.getChatTypePrivates(idOne);
+		const filteredChats = chats.filter(chat => {
+			return chat.users.some(user => user.id === idTwo);
+		});
+
+		return filteredChats[0];
+	}
 
 	private async getChatTypeAll(id: number) {
 		const payload = {
@@ -362,4 +611,23 @@ export class ChatService {
 		}
 		return payload;
 	}
+
+	async getUsers(chatID: number): Promise<User[]> {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID,
+			}
+		});
+		if (!chat)
+			return null;
+		return chat.users;
+	}
+
+	
+
+
+
+
+
 }

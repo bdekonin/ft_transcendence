@@ -5,6 +5,7 @@ import { Friend } from 'src/entities/Friend.entity';
 import { UserRequest } from 'src/user/user.decorator';
 import { User } from 'src/entities/User.entity';
 import { JwtAuthGuard } from 'src/auth/utils/jwt-auth.guard';
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @ApiTags('social')
 @Controller('social')
@@ -12,6 +13,7 @@ import { JwtAuthGuard } from 'src/auth/utils/jwt-auth.guard';
 export class SocialController {
 	constructor(
 		private socialService: SocialService,
+		private readonly socketGateway: socketGateway,
 	) {}
 
 	// Socials
@@ -26,7 +28,10 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.follow(user.id, otherID);
+		const output = await this.socialService.follow(user.id, otherID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
+		return output;
 	}
 
 	@Delete(':otherID/unfollow')
@@ -40,7 +45,10 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.unfollow(user.id, otherID);
+		const output = await this.socialService.unfollow(user.id, otherID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
+		return output;
 	}
 
 	@Put(':otherID/block')
@@ -54,7 +62,10 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.block(user.id, otherID);
+		const output = await this.socialService.block(user.id, otherID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
+		return output;
 	}
 
 	@Delete(':otherID/unblock')
@@ -68,7 +79,10 @@ export class SocialController {
 		@Param('otherID', ParseIntPipe) otherID: number
 	)
 	{
-		return await this.socialService.unblock(user.id, otherID);
+		const output = await this.socialService.unblock(user.id, otherID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-friendships');
+		return output;
 	}
 
 	@Get(':userID')
@@ -101,9 +115,9 @@ export class SocialController {
 			// sort friends by status
 			const pending = allFriends.filter(friend => friend.status == 'pending');
 			const friends = allFriends.filter(friend => friend.status == 'accepted');
-			// const sent = allFriends.filter(friend => friend.status == 'sent');
-			// const blocked = allFriends.filter(friend => friend.status == 'blocked');
-			return [...pending, ...friends];
+			const sent = allFriends.filter(friend => friend.status == 'sent');
+			const blocked = allFriends.filter(friend => friend.status == 'blocked');
+			return [...pending, ...friends, ...blocked, ...sent];
 			// return { pending, friends };
 		}
 	}
