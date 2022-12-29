@@ -2,6 +2,7 @@ import { Column, BeforeInsert, Entity, JoinColumn, JoinTable, ManyToMany, OneToM
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from "./User.entity";
 import { Message } from "./Message.entity";
+import { UserAccess } from "./Ban.entity";
 
 export enum ChatType {
 	PRIVATE = "PRIVATE", // Private chat between two users
@@ -23,9 +24,20 @@ export class Chat {
 	@Column({ nullable: true })
 	name: string; /* groupchat name or the other users username */
 
-	// @ManyToOne(() => User)
-	// @JoinColumn()
-	// admins: User[];
+
+	
+	
+	@Column("int", { array: true })
+	adminIDs: number[];
+
+	// @Column(type => Ban)
+	@Column('jsonb', {nullable: true})
+	banned: UserAccess[];
+
+	@Column("int", { array: true, nullable: true })
+	muted: number[];
+
+
 
 	@ManyToMany(() => User, (user) => user.chats, {
 		onDelete: 'CASCADE',

@@ -75,8 +75,9 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() createDto: createChatDto,
 	) {
+		const output = await this.chatService.createChat(userID, createDto);
 		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.createChat(userID, createDto);
+		return output;
 	}
 
 	/* Message */
@@ -110,8 +111,8 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Body() dto: JoinChatDto,
 	) {
-		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.joinChat(userID, dto);
+		const output = await this.chatService.joinChat(userID, dto);
+		return output;
 	}
 
 	@Delete('leave/:chatID')
@@ -121,8 +122,9 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number,
 		@Param('chatID', ParseIntPipe) chatID: number,
 	) {
-		this.socketGateway.server.emit('chat/refresh-chats');
-		return await this.chatService.leaveChat(userID, chatID);
+		const output = await this.chatService.leaveChat(userID, chatID);
+		this.socketGateway.server.emit('chat/refresh-admins');
+		return output;
 	}
 
 	@Get('chats')
@@ -138,17 +140,128 @@ export class ChatController {
 		return await this.chatService.getChats(userID, filter);
 	}
 
+	@Post('ban/:chatID/')
+	async banUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('bannedID') bannedID: number, // User to ban
+		@Body('time') time: string, // Time to ban for
+	) {
+		const output = await this.chatService.banUser(userID, chatID, bannedID, time);
+		this.socketGateway.server.emit('chat/refresh-chats');
+
+		const payloadToBeSent = {
+			id: chatID,
+			user: {
+				id: bannedID,
+			},
+		}
+		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		return output;
+	}
+
+	@Post('unban/:chatID/')
+	async unbanUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('bannedID') bannedID: number, // User to ban
+	) {
+
+	}
+
+	@Get('admins/:chatID')
+	async getAdmins(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+	) {
+		console.log('getAdmins', chatID, userID);
+		return await this.chatService.getAdmins(chatID);
+	}
+
+	@Post('promote/:chatID/')
+	async promoteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('promoteUserID') promoteUserID: number, // User to ban
+	) {
+
+		const output = await this.chatService.promoteUser(chatID, userID, promoteUserID);
+		this.socketGateway.server.emit('chat/refresh-admins');
+		return output;
+	}
+
+	@Post('demote/:chatID')
+	async demoteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('demoteUserID') demoteUserID: number, // User to ban
+	) {
+
+		const output = await this.chatService.demoteUser(chatID, userID, demoteUserID);
+		this.socketGateway.server.emit('chat/refresh-admins');
+		return output;
+	}
+
+	@Post('kick/:chatID')
+	async kickUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('kickUserID') kickUserID: number, // User to ban
+	) {
+		const output = await this.chatService.leaveChat(kickUserID, chatID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		const payloadToBeSent = {
+			id: chatID,
+			user: {
+				id: kickUserID,
+			},
+		}
+		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		return output;
+	}
+
+	@Post('mute/:chatID')
+	async muteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('muteUserID') muteUserID: number, // User to ban
+	) {
+		const output = await this.chatService.muteUser(userID, chatID, muteUserID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-mutes');
+		return output;
+	}
+
+	@Post('unmute/:chatID')
+	async unmuteUser(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('unmuteUserID') unmuteUserID: number, // User to ban
+	) {
+		const output = await this.chatService.unmuteUser(userID, chatID, unmuteUserID);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		this.socketGateway.server.emit('chat/refresh-mutes');
+		return output;
+	}
+
+	@Get('mutes/:chatID')
+	async getMutes(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+	) {
+		return await this.chatService.getMutes(chatID);
+	}
 
 
 
 	/* Temporary */
-	@Get('get')
-	get() {
-		return this.chatService.get();
-	}
+	// @Get('get')
+	// get() {
+	// 	return this.chatService.get();
+	// }
 
-	@Get('set')
-	set() {
-		return this.chatService.set();
-	}
+	// @Get('set')
+	// set() {
+	// 	return this.chatService.set();
+	// }
  }
