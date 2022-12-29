@@ -15,10 +15,9 @@ import { Message } from './entities/Message.entity';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { socketModule } from './gateway/socket.Module';
-import { TwoFAModule } from './auth/2fa/TwoFA.module';
 
 @Module({
-  imports: [TwoFAModule, AuthModule, UserModule, GameModule, ChatModule, socketModule,
+  imports: [AuthModule, UserModule, GameModule, ChatModule, socketModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

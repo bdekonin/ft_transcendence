@@ -14,6 +14,7 @@ import { SocialController } from "src/social/social.controller";
 import { SocialService } from "src/social/social.service";
 import { AuthService } from "src/auth/auth.service";
 import { JwtService } from '@nestjs/jwt';
+import { TwoFAController } from "src/auth/2fa/TwoFA.controller";
 
 @Module({
 	imports: [
@@ -25,7 +26,8 @@ import { JwtService } from '@nestjs/jwt';
 	controllers: [
 		UserController,
 		MembershipController,
-		SocialController
+		SocialController,
+		TwoFAController
 	],
 	providers: [
 		{
