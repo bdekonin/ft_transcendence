@@ -21,7 +21,7 @@ import { PassportModule } from "@nestjs/passport";
 		UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory, Friend]),
 		JwtModule.register({
 			secret: jwtConstants.secret,
-			signOptions: { expiresIn: 60 * 30 }, /* 60 minutes */
+			signOptions: { expiresIn: '2h' }, /* 60 minutes */
 		}),
 	],
 	controllers: [AuthController],
