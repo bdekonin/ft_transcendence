@@ -14,6 +14,7 @@ import { SocialController } from "src/social/social.controller";
 import { SocialService } from "src/social/social.service";
 import { AuthService } from "src/auth/auth.service";
 import { JwtService } from '@nestjs/jwt';
+import { TwoFAController } from "src/auth/2fa/TwoFA.controller";
 import { ChatService } from "src/chat/chat.service";
 import { ChatModule } from "src/chat/chat.module";
 import { ChatController } from "src/chat/chat.controller";
@@ -32,6 +33,7 @@ import { Chat } from "src/entities/Chat.entity";
 		UserController,
 		MembershipController,
 		SocialController,
+		TwoFAController
 		ChatController,
 	],
 	providers: [

@@ -4,6 +4,7 @@ import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
 import { ApiProperty } from '@nestjs/swagger';
 import { Chat } from "./Chat.entity";
+import { authenticator } from '@otplib/preset-default';
 
 
 // https://www.tutorialspoint.com/typeorm/typeorm_entity.htm
@@ -40,9 +41,13 @@ export class User {
 	@Column({ default: 0})
 	loses: number;
 
-	@ApiProperty({ description: 'if twofa is enabled for the user', example: false })
-	@Column({ default: false})
+	@ApiProperty({description: 'Wether 2fa is enabled', example: 'false'})
+	@Column({default: false})
 	twofa: boolean;
+
+	@ApiProperty({description: '2fa secret key'})
+	@Column({unique: true, nullable: false})
+	twofa_secret: string;
 
 	@ApiProperty({ description: 'List of games that the user has won', type: () => GameHistory })
 	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.winner)
@@ -81,5 +86,10 @@ export class User {
 		const date = new Date().valueOf() + 3600;
 		this.createdAt = date.toString();
 		this.lastOnline = date.toString();
+	}
+
+	@BeforeInsert()
+	createSecret() {
+		this.twofa_secret = authenticator.generateSecret();
 	}
 }

@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AdditionalInfo from './AdditionalInfo';
-import '../../styles/login.css'
+import '../../../styles/login.css'
+import AdditionalInfo from '../AdditionalInfo/AdditionalInfo';
 
 const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
@@ -20,7 +20,7 @@ const Login: FC = () => {
 				console.log(err.response.data.error);
 		});
 	}, []);
-	document.body.style.backgroundColor = 'black';
+	// document.body.style.backgroundColor = 'white';
 	if (additionalInfo)
 		return (<AdditionalInfo/>); //Display additional info Page!
 	return (
@@ -30,7 +30,7 @@ const Login: FC = () => {
 			 muted
 			 autoPlay
 			 loop >
-				<source src={require("../../videos/pongvideo.mp4")}
+				<source src={require("../../../videos/pongvideo.mp4")}
 				type="video/mp4"/>
 			</video>
 			<div className='block1'>
