@@ -5,7 +5,8 @@ import { Repository } from "typeorm";
 import * as fs from 'fs'
 import { updateUserDto } from "./user.dto";
 import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
-import { createChatDto } from "src/chat/chat.controller";
+import * as qrcode from 'qrcode'
+import { authenticator } from '@otplib/preset-default';
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -61,13 +62,72 @@ export class UserService {
 	}
 
 	/* twofa */
-	async getTwoFA(userID: number): Promise<boolean> {
+	async getTwoFA(userID: number) {
+		var qrCode: any;
+
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		const otpauth = authenticator.keyuri(user.username, 'ft_transendence', user.twofa_secret);
+		await qrcode.toDataURL(otpauth, {width: 350})
+		.then(res => {
+			qrCode = res;
+		})
+		return await qrCode;
+	}
+
+	async getTwoFAStatus(userID: number) {
 		const user = await this.findUserById(userID);
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
 		return user.twofa;
 	}
+
+	async verifyTwoFA(userID: number, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user)
+			throw new NotFoundException('User not found');
+		if (authenticator.verify({token: token, secret: user.twofa_secret}))
+			return 'OK';
+		else
+			return 'KO';
+	}
+
+	async enableTwoFA(userID: number, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		if (user.twofa)
+			return null; //already enabled error!
+		if (authenticator.verify({token: token, secret: user.twofa_secret})) {
+			user.twofa = !user.twofa;
+			this.userRepository.save(user);
+			return 'OK';
+		}
+		else
+			return 'KO';
+	}
+
+	async disableTwoFa(userID: number, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (!user.twofa)
+			return null; //already enabled error!
+		if (authenticator.verify({token: token, secret: user.twofa_secret})) {
+			user.twofa = !user.twofa;
+			this.userRepository.save(user);
+			return 'OK';
+		}
+		else
+			return 'KO';
+	}
+
 
 	/* user */
 	async getUser(id: number): Promise<User> {
