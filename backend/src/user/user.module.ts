@@ -33,7 +33,7 @@ import { Chat } from "src/entities/Chat.entity";
 		UserController,
 		MembershipController,
 		SocialController,
-		TwoFAController
+		TwoFAController,
 		ChatController,
 	],
 	providers: [
