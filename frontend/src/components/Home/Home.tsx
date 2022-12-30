@@ -24,7 +24,7 @@ const Home: FC = () => {
 				src={require('./logo.png')}/>
 				<ul className='navigate'>
 					<li><a
-							onClick={() => {navigate('/game')}}>Game</a></li>
+							onClick={() => {navigate('/gamescreen')}}>Game</a></li>
 					<li><a
 							onClick={() => {navigate('/chat')}}>Chat</a></li>
 					<li><a
