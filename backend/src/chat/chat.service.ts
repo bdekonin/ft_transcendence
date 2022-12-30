@@ -10,7 +10,8 @@ import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
 import { JoinChatDto } from './join.dto';
 import { UserAccess } from 'src/entities/Ban.entity';
-
+import { runInThisContext } from 'vm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -286,7 +287,8 @@ export class ChatService {
 		}
 
 		if (chat.type === ChatType.GROUP_PROTECTED) {
-			if (chat.password !== dto.password) {
+			const isMatch = await bcrypt.compare(dto.password, chat.password);
+			if (!isMatch) {
 				throw new BadRequestException("Password is invalid.");
 			}
 		}
@@ -418,7 +420,7 @@ export class ChatService {
 			type: chat.type,
 			name: chat.name,
 			users: chat.users,
-			password: chat.password,
+			password: await bcrypt.hash(chat.password, 10),
 			adminIDs: [
 				userID
 			],
