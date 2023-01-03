@@ -161,3 +161,16 @@ export function handleDemote(currentUser: User, user: User, currentChat: Chat) {
 			alert(err.response.data.message)
 	});
 }
+
+export function handleInviteToGame(currentUser: User, currentChat: Chat) {
+	if (!currentUser  || !currentChat)
+		return ;
+
+	axios.post("http://localhost:3000/chat/" + currentUser.id + "/game-invite/" + currentChat.id, { }, {withCredentials: true})
+	.catch((err) => {
+		if (err.response.data.statusCode === 401)
+			return ;
+		else
+			alert(err.response.data.message)
+	});
+}

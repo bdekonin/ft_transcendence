@@ -107,6 +107,7 @@ const Game: React.FC = () => {
 
 	useEffect(() => {
 		if (location.hash) {
+			/* User wants to spectate a game */
 			socket.emit("game/request-spectate", {id: location.hash.substring(1)});
 			socket.on('game/spectate', (data: Game) => {
 				setGameState(data);
@@ -115,14 +116,34 @@ const Game: React.FC = () => {
 			});
 		}
 
+		if (location.search) {
+			/* User has invited a game or joined? */
+			const values = location.search.split('=');
+
+			if (values[0] != '?invite')
+				return ;
+			
+			console.warn(values);
+			socket.emit("game/invite-waiting", {id: values[1] });
+			// socket.on('game/invite-start', (data: Game) => {
+
+			// 	setGameState(data);
+			// 	setBall(data.ball)
+			// 	setState(STATE.INTRO);
+			// });
+		}
+
 		return () => {
 			socket.off("game/spectate");
+			socket.off("game/invite-start");
 		}
 	}, [socket]);
 
 	useEffect(() => {
 		if (state == STATE.WAITING) {
-			socket.emit("game/waiting");
+			if (!location.search) {
+				socket.emit("game/waiting");
+			}
 		}
 		socket.on("game/start", (data: Game) => {
 			setGameState(data);

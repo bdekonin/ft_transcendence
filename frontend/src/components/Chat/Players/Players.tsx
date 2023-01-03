@@ -7,7 +7,7 @@ import Collapsible from 'react-collapsible';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote, handleUnmute } from './ButtonHandlers';
+import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote, handleUnmute, handleInviteToGame } from './ButtonHandlers';
 import BanDialog from './BanDialog';
 
 type User = {
@@ -246,10 +246,6 @@ const Players: React.FC<{
 		if (currentChat.type != 'PRIVATE') {
 			return (
 				<div className='buttons'>
-					<Button variant='contained' className='action-button invite'
-						onClick={() => { navigate('/profile?user=' + user.username) }}>
-							Invite to game
-					</Button>
 					<Button variant='contained' className='action-button profile'
 						onClick={() => { navigate('/profile?user=' + user.username) }}>
 							Profile
@@ -264,7 +260,7 @@ const Players: React.FC<{
 			return (
 				<div className='buttons'>
 					<Button variant='contained' className='action-button invite'
-						onClick={() => { navigate('/profile?user=' + user.username) }}>
+						onClick={() => { handleInviteToGame(currentUser as User, currentChat) }}>
 							Invite to game
 					</Button>
 					<Button variant='contained' className='action-button profile'

@@ -204,7 +204,62 @@ export class socketGateway {
 	// Map that stores the number of players that left for each game ID
 	didBothUsersLeave: Map<string, number> = new Map();
 
+	invitedPlayers: Map<string, Socket> = new Map(); /* inviteID, socket */
 
+
+
+	isUserInInviteList (client: Socket): string | null {
+		this.invitedPlayers.forEach((socket, inviteID) => {
+			if (socket.id == client.id)
+				return inviteID;
+		});
+		return null;
+	}
+
+	@SubscribeMessage('game/invite-waiting')
+	async handleInviteWaiting (client: Socket, payload: any) {
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+
+		const inviteID = payload.id;
+		console.log('KJLASHDKJAH');
+		console.log('1111');
+
+		const otherUser = this.invitedPlayers.get(inviteID);
+		if (otherUser) {
+			console.warn('START');
+			/* Other user is waiting */
+
+			console.log('client, otherUser', client, otherUser);
+
+			let tempMap = new Map();
+			tempMap.set(client.id, client);
+			tempMap.set(otherUser.id, otherUser);
+			const players = Array.from(tempMap);
+
+			const game = await this.createGame(players);
+
+			if (game.left.username == game.right.username) {
+				this.invitedPlayers.delete(inviteID);
+				this.currentGames.delete(game.id);
+				return ;
+			}
+
+			client.join('game:' + game.id);
+			otherUser.join('game:' + game.id);
+
+			this.currentGames.delete(game.id);
+			this.server.in('game:' + game.id).emit('game/start', game);
+			this.currentGames.set(game.id, game);
+		}
+		else {
+			/* User is waiting on other user */
+			this.invitedPlayers.set(inviteID, client);
+			console.warn('User is waiting on other user');
+		}
+
+	}
 
 
 	async statusOfUser(userID: number, username: string) {
@@ -273,7 +328,8 @@ export class socketGateway {
 		this.waitingPlayers.set(client.id, client);
 		if (this.waitingPlayers.size >= 2) {
 			/* Check if both players arent the same user */
-			const game = await this.createGame();
+			const players = Array.from(this.waitingPlayers);
+			const game = await this.createGame(players);
 
 			if (game.left.username == game.right.username) {
 				this.waitingPlayers.clear();
@@ -309,6 +365,13 @@ export class socketGateway {
 		if (!user)
 			return;
 		this.waitingPlayers.delete(client.id);
+
+		/* Check if user is in a invite */
+		const inviteID = this.isUserInInviteList(client);
+		if (inviteID) {
+			this.invitedPlayers.delete(inviteID);
+		}
+
 		const usersCurrentGame = this.isUserInGame(client.id);
 		if (usersCurrentGame) {
 			/* User is still in a game */
@@ -459,8 +522,10 @@ export class socketGateway {
 		await this.gameService.create(postGame);
 	}
 
-	private async createGame (): Promise<Game> {
-		const players = Array.from(this.waitingPlayers);
+	private async createGame (players: any[]): Promise<Game> {
+		// const players = Array.from(this.waitingPlayers);
+
+		console.table(players);
 		
 		const random = Math.round(Math.random());
 		
