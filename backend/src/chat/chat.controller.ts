@@ -252,6 +252,16 @@ export class ChatController {
 		return await this.chatService.getMutes(chatID);
 	}
 
+	@Post('game-invite/:chatID')
+	async gameInvite(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+	) {
+		const messagePayload = await this.chatService.gameInvite(userID, chatID);
+		this.socketGateway.server.in('chat:' + chatID).emit('chat/refresh-message', messagePayload);
+		return messagePayload;
+	}
+
 
 
 	/* Temporary */

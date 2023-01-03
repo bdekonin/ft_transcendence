@@ -12,6 +12,7 @@ import { JoinChatDto } from './join.dto';
 import { UserAccess } from 'src/entities/Ban.entity';
 import { runInThisContext } from 'vm';
 import * as bcrypt from 'bcrypt';
+import {v5 as uuidv5} from 'uuid';
 
 @Injectable()
 export class ChatService {
@@ -420,7 +421,7 @@ export class ChatService {
 			type: chat.type,
 			name: chat.name,
 			users: chat.users,
-			password: await bcrypt.hash(chat.password, 10),
+			password: chat.password ? await bcrypt.hash(chat.password, 10) : null,
 			adminIDs: [
 				userID
 			],
@@ -428,6 +429,44 @@ export class ChatService {
 		});
 		return await this.chatRepo.save(newChat);
 	}
+
+	async gameInvite(userID: number, chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.type != 'PRIVATE') {
+			throw new BadRequestException("Chat is not private");
+		}
+		if (chat.users.length != 2) {
+			throw new BadRequestException("Chat must have exactly 2 users");
+		}
+
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new BadRequestException("User does not exist");
+		}
+		const uuid = uuidv5(String(chat.id), 'bb5d0ffa-9a4c-4d7c-8fc2-0a7d2220ba45');
+
+		/* Add to game invites  in socketGateway */
+		console.log(uuid);
+
+		const link = 'http://localhost:3006/pong?invite=' + uuid;
+
+		const message = 'Game invite: ' + link;
+
+		return await this.sendMessage(chatID, userID, message);
+	}
+
+
 
 	/* Chat - Helper Functions */
 	private async createPrivateChat(userID: number, dto: createChatDto) {
