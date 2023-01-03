@@ -55,6 +55,9 @@
 	text-shadow: 5px 5px black;
 }
 
+.data .username {
+	cursor: pointer;
+}
 
 .socials .stats {
 	margin: 0px;

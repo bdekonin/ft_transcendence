@@ -147,19 +147,6 @@ export class socketGateway {
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
 	}
 
-
-	
-
-	@SubscribeMessage('ping')
-	async handlePing (client: Socket, payload: Date) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		this.userService.updateUser(user.id, { lastOnline: new Date().valueOf().toString() });
-	}
-
-
-
 	private async fetchRooms (client: Socket): Promise<Chat[]> {
 		const user = await this.findUser(client)
 		if (!user)
@@ -216,6 +203,30 @@ export class socketGateway {
 	currentGames: Map<string, Game> = new Map();
 	// Map that stores the number of players that left for each game ID
 	didBothUsersLeave: Map<string, number> = new Map();
+
+
+
+
+	async statusOfUser(userID: number, username: string) {
+		console.log('Checking status of user');
+		console.log('userID', userID);
+		console.log('username', username);
+		if (this.connections.find((connection) => connection.userID == userID)) {
+			console.log('User is connected');
+			if (this.waitingPlayers.get(userID.toString()))
+				return 'online';
+			/* Loop through every game and check if user is in game */
+			const games = Array.from(this.currentGames.values());
+			for (let i = 0; i < games.length; i++) {
+				if (games[i].left.username == username || games[i].right.username == username)
+					return 'in-game';
+			}
+			return 'online';
+		}
+		return 'offline';
+	}
+
+
 
 	/* Game */
 
