@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ChangeEvent, ChangeEventHandler, LegacyRef, RefObject, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -179,19 +179,14 @@ const Settings:React.FC = () => {
 			else 
 			{
 				axios.patch('http://localhost:3000/twofa/disable', {token: ret}, {withCredentials: true})
-				.then(res => {
-					if (res.data === 'KO') {
-						setInputCode(['', '', '', '', '', '']);
-						document.getElementById('Dotc-1')?.focus()
-					}
-					else if (res.data === 'OK')
-					{
+				.then(() => {
 						getTwoFAStatus();
 						setDialogOpenD(false);
 						setInputCode(['', '', '', '', '', '']);
-					}
 				})
 				.catch(err => {
+					setInputCode(['', '', '', '', '', '']);
+					document.getElementById('Dotc-1')?.focus()
 					console.log(err);
 				})
 			}
@@ -228,19 +223,12 @@ const Settings:React.FC = () => {
 			else 
 			{
 				axios.patch('http://localhost:3000/twofa/enable', {token: ret}, {withCredentials: true})
-				.then(res => {
-					if (res.data === 'KO') {
-						setInputCode(['', '', '', '', '', '']);
-						document.getElementById('Eotc-1')?.focus()
-					}
-					else if (res.data === 'OK')
-					{
-						getTwoFAStatus();
-						setDialogOpenE(false);
-						setInputCode(['', '', '', '', '', '']);
-					}
+				.then(() => {
+					navigate('/login');
 				})
 				.catch(err => {
+					setInputCode(['', '', '', '', '', '']);
+					document.getElementById('Eotc-1')?.focus()
 					console.log(err);
 				})
 			}
@@ -271,21 +259,16 @@ const Settings:React.FC = () => {
 					onClose={() => {setDialogOpenE(false); setInputCode(['', '', '', '', '', '']);}}
 					>
 					<DialogTitle padding={0}>Setup 2FA Authenticator</DialogTitle>
-				{/* <p className="dialogheader">2fa Authenticator</p> */}
 				<img src={qrCodeE}/>
 				<pre>Scan the qr code with Authenticator app and <br />
 				enter the code below to activate!</pre>
-				{/* <input type="text" /> */}
 				<form className="otc" name="one-time-code" action="#">
 					<fieldset>
-						{/* <!-- https://developer.apple.com/documentation/security/password_autofill/enabling_password_autofill_on_an_html_input_element --> */}
 						<div>
 							<input	type="number" pattern="[0-9]*" 
 									maxLength={1} value={inputCode[0]} 
 									autoComplete="one-time-code" id="Eotc-1" 
 									onChange={(e) => onEnableChange(e, 0)} required/>
-
-							{/* <!-- Autocomplete not to put on other input --> */}
 							<input 	type="number" pattern="[0-9]*" 
 									min='0' max='9' value={inputCode[1]} 
 									id="Eotc-2" 
@@ -314,20 +297,17 @@ const Settings:React.FC = () => {
 					onClose={() => {setDialogOpenD(false); setInputCode(['', '', '', '', '', '']);}}
 					>
 					<DialogTitle padding={0}>Disable 2FA Authenticator</DialogTitle>
-				{/* <p className="dialogheader">2fa Authenticator</p> */}
 				<pre>Enter qr code to disable Authenticator. <br />
 				If you lost your code contact administrator.</pre>
 				{/* <input type="text" /> */}
 				<form className="otc" name="one-time-code" action="#">
 					<fieldset>
-						{/* <!-- https://developer.apple.com/documentation/security/password_autofill/enabling_password_autofill_on_an_html_input_element --> */}
 						<div>
 							<input	type="number" pattern="[0-9]*" 
 									maxLength={1} value={inputCode[0]} 
 									autoComplete="one-time-code" id="Dotc-1" 
 									onChange={(e) => onDisableChange(e, 0)} required/>
 
-							{/* <!-- Autocomplete not to put on other input --> */}
 							<input 	type="number" pattern="[0-9]*" 
 									min='0' max='9' value={inputCode[1]} 
 									id="Dotc-2" 

@@ -78,7 +78,7 @@ export class AuthController {
 		if (!user) {
 			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
 		}
-		const token = this.authService.createToken(user);
+		const token = this.authService.createToken(user, false);
 		res.cookie('jwt', token, { httpOnly: true });
 		res.header('Authorization', 'JWT ' + token);
 		

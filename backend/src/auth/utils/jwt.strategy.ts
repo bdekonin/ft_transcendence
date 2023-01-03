@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ConsoleLogger, ImATeapotException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from './constants';
 import { AuthService } from '../auth.service';
+import { env } from 'process';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,12 +13,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	super({
 	  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 	  ignoreExpiration: false,
-	  secretOrKey: jwtConstants.secret,
+	  secretOrKey: process.env.JWT_SECRET,
 	});
   }
 
   async validate({ iat, exp, sub, oauthID }: JwtPayload, done) {
 
+	// console.log('in validate func');
 	const user = await this.authService.validateUser({
 		oauthID: oauthID,
 	});

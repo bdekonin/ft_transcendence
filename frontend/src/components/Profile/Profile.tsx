@@ -134,8 +134,6 @@ const Profile:React.FC = () =>
 	return (
 		<div className="profile">
 			<div className="background"/>
-
-
 			<h1>{user?.username}</h1>
 			<div className="profileblock">
 				<img

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { FC, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TwoFA from '../Login/TwoFA/TwoFA';
 import './style.css'
 
 const Home: FC = () => {
@@ -9,9 +10,13 @@ const Home: FC = () => {
   
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
-		.catch(() => {
-			navigate('/login');
-		})
+		// .catch((err) => {
+		// 	console.log(err);
+		// 	if (err.data.message === 'username')
+		// 		navigate('/login');
+		// 	else if (err.data.message === 'twofa')
+		// 		return (<TwoFA/>);
+		// })
 	}, []);
 
 	return (

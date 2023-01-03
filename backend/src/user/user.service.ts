@@ -1,4 +1,4 @@
-import { ArgumentMetadata, BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, PipeTransform } from "@nestjs/common";
+import { ArgumentMetadata, BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException, PipeTransform, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
@@ -7,6 +7,8 @@ import { updateUserDto } from "./user.dto";
 import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
 import * as qrcode from 'qrcode'
 import { authenticator } from '@otplib/preset-default';
+import { AuthService } from "src/auth/auth.service";
+import { JwtService } from "@nestjs/jwt";
 import { socketGateway } from 'src/gateway/socket.gateway';
 
 @Injectable()
@@ -20,9 +22,12 @@ export class FileSizeValidationPipe implements PipeTransform {
 @Injectable()
 export class UserService {
 	constructor(
+		private jwtService: JwtService,
 		@InjectRepository(User) public userRepository:
 			Repository<User>,
-	) { }
+	) { 
+	}
+	// let secretOrKey: string;
 	/* Endpoints */
 
 	/* Avatar */
@@ -86,14 +91,44 @@ export class UserService {
 		return user.twofa;
 	}
 
-	async verifyTwoFA(userID: number, token: string) {
+	async verifyTwoFA(userID: number, res: any, token: string) {
 		const user = await this.findUserById(userID);
-		if (!user)
+		if (!user) {
 			throw new NotFoundException('User not found');
-		if (authenticator.verify({token: token, secret: user.twofa_secret}))
-			return 'OK';
-		else
-			return 'KO';
+		}
+
+		if (authenticator.verify({token: token, secret: user.twofa_secret}) === false)
+			throw new UnauthorizedException('Invalid 2fa code.');
+
+		res.clearCookie('jwt')
+		const newToken = this.jwtService.sign({ sub: user.id, oauthID: user.oauthID, twofa_verified: true }, { secret: process.env.JWT_SECRET });
+		console.log(newToken);
+		res.cookie('jwt', newToken);
+		// res.send(200);
+		res.status(200).send();
+
+
+		
+		// this.jwtService.sign({})
+
+
+		//Modify token / create new  and send to user
+
+
+
+		// this.jwtService.sign()
+		// console.log(newToken);
+		// // this.jwtService.sign({})
+		// res.send('done');
+		// const user = await this.findUserById(userID);
+		// if (!user) {
+		// 	throw new NotFoundException('User not found');
+		// }
+		// const newToken = this.authService.createToken(user, true);
+		// res.cookie('jwt', newToken, { httpOnly: true });
+		// res.header('Authorization', 'JWT ' + newToken);
+		// return ({newToken});
+		// res.status(200).json('User Logged out')
 	}
 
 	async enableTwoFA(userID: number, token: string) {
@@ -108,8 +143,7 @@ export class UserService {
 			this.userRepository.save(user);
 			return 'OK';
 		}
-		else
-			return 'KO';
+		throw new UnauthorizedException('Invalid 2fa code.');
 	}
 
 	async disableTwoFa(userID: number, token: string) {
@@ -125,8 +159,7 @@ export class UserService {
 			this.userRepository.save(user);
 			return 'OK';
 		}
-		else
-			return 'KO';
+		throw new UnauthorizedException('Invalid 2fa code.');
 	}
 
 

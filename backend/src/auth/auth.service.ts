@@ -54,18 +54,16 @@ export class AuthService {
 
 	/* Jwt */
 
-	createToken(user: User) {		
+	createToken(user: User, twofa_verified: boolean) {		
 		return (
 			// expiresIn: 3600,
-			this.jwtService.sign({ sub: user.id, oauthID: user.oauthID })
+			this.jwtService.sign({ sub: user.id, oauthID: user.oauthID, twofa_verified: twofa_verified })
 			// user,
 		)
-
-
 	}
 
 	async verifyJWT(token: string): Promise<any> {
-		const options = { secret: jwtConstants.secret };
+		const options = { secret: process.env.JWT_SECRET };
 		try {
 			return await this.jwtService.verify(token, options);
 		} catch (error) {
@@ -73,4 +71,3 @@ export class AuthService {
 		}
 	}
 }
-

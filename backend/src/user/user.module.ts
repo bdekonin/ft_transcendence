@@ -20,6 +20,7 @@ import { ChatModule } from "src/chat/chat.module";
 import { ChatController } from "src/chat/chat.controller";
 import { Message } from "src/entities/Message.entity";
 import { Chat } from "src/entities/Chat.entity";
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
 	imports: [
@@ -41,8 +42,8 @@ import { Chat } from "src/entities/Chat.entity";
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,
 		},
-		JwtService,
 		UserService,
+		JwtService,
 		MembershipService,
 		SocialService,
 		ChatService,
