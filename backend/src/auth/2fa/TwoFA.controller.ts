@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post, Req, Res, Response, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { User } from "src/entities/User.entity";
 import { UserRequest } from "src/user/user.decorator";
 import { UserService } from "src/user/user.service";
-import { JwtAuthGuard } from "../utils/jwt-auth.guard";
+import { DefaultNamingStrategy } from "typeorm";
+import { JwtAuthGuard, JwtAuthGuardTwoFa } from "../utils/jwt-auth.guard";
 
 @Controller('twofa')
 export class TwoFAController {
@@ -37,8 +38,8 @@ export class TwoFAController {
 	}
 
 	@Post('verify')
-	@UseGuards(JwtAuthGuard)
-	isVerified(@UserRequest() user: User, @Body() body: any) {
-		return this.userService.verifyTwoFA(user.id, body.token);
+	@UseGuards(JwtAuthGuardTwoFa)
+	isVerified(@UserRequest() user: User, @Res() res: any, @Body() body: any) {
+		return this.userService.verifyTwoFA(user.id, res, body.token);
 	}
 }
