@@ -1,6 +1,8 @@
 import axios from 'axios'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdditionalInfo from './components/Login/AdditionalInfo/AdditionalInfo';
+import TwoFA from './components/Login/TwoFA/TwoFA';
 
 const Protected = ({children}: any) => {
 
@@ -11,10 +13,8 @@ const Protected = ({children}: any) => {
 		.catch(e => {
 			navigate('/login');
 		})
-		.then(e => {
-			console.log(e);
-		})
-	}, []);
+	});
+
 	return children;
 }
 
