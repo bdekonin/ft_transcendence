@@ -78,7 +78,9 @@ const Social: FC = () => {
 							alt="avatar picture" />
 					</div>
 					<div className="data">
-						<h1 className="username">{user.username}</h1>
+						<h1 className="username" onClick={() => {
+							navigate('/profile?user=' + user.username)
+						}}>{user.username}</h1>
 						<h2 className="stats">{user.wins} Wins</h2>
 						<h2 className="stats">{user.loses} Loses</h2>
 

@@ -7,6 +7,7 @@ import { updateUserDto } from "./user.dto";
 import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
 import * as qrcode from 'qrcode'
 import { authenticator } from '@otplib/preset-default';
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -162,11 +163,6 @@ export class UserService {
 			user.twofa = dto.twofa;
 			this.userRepository.save(user);
 		}
-		if (dto.lastOnline) {
-			user.lastOnline = dto.lastOnline;
-			this.userRepository.save(user);
-		}
-
 		return { msg: "OK" };
 	}
 
