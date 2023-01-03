@@ -420,7 +420,7 @@ export class ChatService {
 			type: chat.type,
 			name: chat.name,
 			users: chat.users,
-			password: await bcrypt.hash(chat.password, 10),
+			password: chat.password ? await bcrypt.hash(chat.password, 10) : null,
 			adminIDs: [
 				userID
 			],
