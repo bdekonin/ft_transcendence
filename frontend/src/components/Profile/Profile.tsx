@@ -24,7 +24,6 @@ interface User {
 	loses: string;
 // chats*	{...}
 	createdAt: string;
-	lastOnline: string;
 }
 
 interface Avatar {
@@ -41,7 +40,7 @@ const Profile:React.FC = () =>
 	let [searchParams, setSearchParams] = useSearchParams();
 	const [games, setGames] = useState<Game[]>();
 	const [friendAmount, setFriendAmount] = useState<number>(0);
-	// const [avatar, setAvatar] = useState<string>();
+	const [status, setStatus] = useState<string>('');
 	
 	const query = searchParams.get('user');
 
@@ -67,10 +66,6 @@ const Profile:React.FC = () =>
 		.catch(err => {
 			console.log(err);
 		});
-	}, [user]);
-
-	/* For games */
-	useEffect(() => {
 		if (user) {
 			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
 			.then(res => {
@@ -84,16 +79,20 @@ const Profile:React.FC = () =>
 				console.log(err);
 				navigate('/login');
 			});
-		}
-	}, [user]);
 
-	/* For friends */
-	useEffect(() => {
-		if (user) {
-			axios.get('http://localhost:3000/social/' + user?.id, { withCredentials: true })
+			axios.get('http://localhost:3000/social/' + user.id, { withCredentials: true })
 			.then(res => {
 				console.log(res);
 				setFriendAmount(res.data.length);
+			})
+			.catch(err => {
+				console.log(err);
+				navigate('/login');
+			});
+
+			axios.get('http://localhost:3000/user/' + user.id + '/status', { withCredentials: true })
+			.then(res => {
+				setStatus(res.data);
 			})
 			.catch(err => {
 				console.log(err);
@@ -124,17 +123,8 @@ const Profile:React.FC = () =>
 	}
 
 	function renderLastOnline() {
-		if (user?.lastOnline) {
-			const minute = 60 * 1000; /* 1 Minute * 1 second */
-			const current_time = new Date().getTime();
-			const last_online = new Date(Number(user.lastOnline)).getTime();
-			if (current_time - last_online < minute * 5) {
-				return <span className="online">Online</span>;
-			}
-			else {
-				/* Last seen */
-				return <span className="offline">Last seen {moment(last_online).format('DD dddd HH:mm:ss')}</span>;
-			}
+		if (status) {
+			return <span className="online">{status}</span>;
 		}
 		else
 			return <p>Loading...</p>
@@ -144,13 +134,13 @@ const Profile:React.FC = () =>
 	return (
 		<div className="profile">
 			<div className="background"/>
-			<button onClick={() => {navigate('/')}}>Home</button>
-			<h1>Profile</h1>
-			<div className='profileblock'>
-
-				<img className="profile-pic" src={avatar?.avatar} alt="profile"></img>
-				 <p>{user?.username}</p>
+			<h1>{user?.username}</h1>
+			<div className="profileblock">
+				<img
+					className="avatar"
+					src={avatar?.avatar} alt="" />
 			</div>
+			<button onClick={() => {navigate('/')}}>Home</button>
 			<div className='last-online'>
 				{renderLastOnline()}
 			</div>

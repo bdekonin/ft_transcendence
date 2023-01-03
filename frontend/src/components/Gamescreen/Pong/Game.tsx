@@ -1,7 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Radio, Select, SelectChangeEvent, Switch } from '@mui/material';
 import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SocketContext } from '../../context/socket';
+import { SocketContext } from '../../../context/socket';
 import { Draw } from './draw';
 import './style.css'
 

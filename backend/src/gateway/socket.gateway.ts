@@ -147,19 +147,6 @@ export class socketGateway {
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);
 	}
 
-
-	
-
-	@SubscribeMessage('ping')
-	async handlePing (client: Socket, payload: Date) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		this.userService.updateUser(user.id, { lastOnline: new Date().valueOf().toString() });
-	}
-
-
-
 	private async fetchRooms (client: Socket): Promise<Chat[]> {
 		const user = await this.findUser(client)
 		if (!user)
@@ -217,7 +204,54 @@ export class socketGateway {
 	// Map that stores the number of players that left for each game ID
 	didBothUsersLeave: Map<string, number> = new Map();
 
+
+
+
+	async statusOfUser(userID: number, username: string) {
+		console.log('Checking status of user');
+		console.log('userID', userID);
+		console.log('username', username);
+		if (this.connections.find((connection) => connection.userID == userID)) {
+			console.log('User is connected');
+			if (this.waitingPlayers.get(userID.toString()))
+				return 'online';
+			/* Loop through every game and check if user is in game */
+			const games = Array.from(this.currentGames.values());
+			for (let i = 0; i < games.length; i++) {
+				if (games[i].left.username == username || games[i].right.username == username)
+					return 'in-game';
+			}
+			return 'online';
+		}
+		return 'offline';
+	}
+
+
+
 	/* Game */
+
+	private parseCurrentGames() {
+		const games = Array.from(this.currentGames.values());
+		const parsedGames = {};
+		games.forEach((game, index) => {
+			parsedGames[index] = {
+				id: game.id,
+				left: game.left.username,
+				right: game.right.username,
+			};
+		});
+		console.log('parsedGames', parsedGames);
+		return parsedGames;
+	}
+
+	@SubscribeMessage('game/spectate-list')
+	async handleSpectateList (client: Socket, payload: any) {
+		console.log('game/spectate-list');
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
+	}
 
 	@SubscribeMessage('game/waiting')
 	async handleJoinGame (client: Socket, payload: any) {
@@ -255,7 +289,7 @@ export class socketGateway {
 			this.server.in('game:' + game.id).emit('game/start', game);
 			this.currentGames.set(game.id, game);
 		}
-
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
 
 
@@ -299,6 +333,7 @@ export class socketGateway {
 
 					this.currentGames.delete(usersCurrentGame.id);
 					this.didBothUsersLeave.delete(usersCurrentGame.id);
+					this.server.emit('game/spectate-list', this.parseCurrentGames());
 				}
 			} else {
 				/* One user left */
@@ -308,6 +343,7 @@ export class socketGateway {
 		}
 		/* Leave game room */
 		client.leave('game:' + payload?.id);
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
 
 	moveAmount = 8;
@@ -362,6 +398,7 @@ export class socketGateway {
 		}
 		else if (game.rightScore >= 10) {
 			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			this.server.emit('game/spectate-list', this.parseCurrentGames());
 			return;
 		}
 

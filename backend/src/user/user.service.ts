@@ -9,6 +9,7 @@ import * as qrcode from 'qrcode'
 import { authenticator } from '@otplib/preset-default';
 import { AuthService } from "src/auth/auth.service";
 import { JwtService } from "@nestjs/jwt";
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -195,11 +196,6 @@ export class UserService {
 			user.twofa = dto.twofa;
 			this.userRepository.save(user);
 		}
-		if (dto.lastOnline) {
-			user.lastOnline = dto.lastOnline;
-			this.userRepository.save(user);
-		}
-
 		return { msg: "OK" };
 	}
 
