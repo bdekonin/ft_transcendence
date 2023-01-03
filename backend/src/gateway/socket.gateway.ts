@@ -219,6 +219,29 @@ export class socketGateway {
 
 	/* Game */
 
+	private parseCurrentGames() {
+		const games = Array.from(this.currentGames.values());
+		const parsedGames = {};
+		games.forEach((game, index) => {
+			parsedGames[index] = {
+				id: game.id,
+				left: game.left.username,
+				right: game.right.username,
+			};
+		});
+		console.log('parsedGames', parsedGames);
+		return parsedGames;
+	}
+
+	@SubscribeMessage('game/spectate-list')
+	async handleSpectateList (client: Socket, payload: any) {
+		console.log('game/spectate-list');
+		const user = await this.findUser(client)
+		if (!user)
+			return;
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
+	}
+
 	@SubscribeMessage('game/waiting')
 	async handleJoinGame (client: Socket, payload: any) {
 		console.log('game/waiting');
@@ -255,7 +278,7 @@ export class socketGateway {
 			this.server.in('game:' + game.id).emit('game/start', game);
 			this.currentGames.set(game.id, game);
 		}
-
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
 
 
@@ -299,6 +322,7 @@ export class socketGateway {
 
 					this.currentGames.delete(usersCurrentGame.id);
 					this.didBothUsersLeave.delete(usersCurrentGame.id);
+					this.server.emit('game/spectate-list', this.parseCurrentGames());
 				}
 			} else {
 				/* One user left */
@@ -308,6 +332,7 @@ export class socketGateway {
 		}
 		/* Leave game room */
 		client.leave('game:' + payload?.id);
+		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
 
 	moveAmount = 8;
@@ -362,6 +387,7 @@ export class socketGateway {
 		}
 		else if (game.rightScore >= 10) {
 			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			this.server.emit('game/spectate-list', this.parseCurrentGames());
 			return;
 		}
 

@@ -14,6 +14,7 @@ import { SocketContext } from "./context/socket";
 import Game from "./components/Game/Game";
 import Protected from "./Auth";
 import Login from "./components/Login/Login/Login";
+import Gamescreen from "./components/Gamescreen/Gamescreen";
 
 const App:React.FC = () =>
 {
@@ -41,7 +42,8 @@ const App:React.FC = () =>
 				<Route path='/friends' element={<Protected><Friends /></Protected>}/>
 				<Route path='/social' element={<Protected><Social /></Protected>}/>
 				<Route path='/settings' element={<Protected><Settings /></Protected>}/>
-				<Route path='/game' element={<Protected><Game /></Protected>}/>
+				<Route path='/pong' element={<Protected><Game /></Protected>}/>
+				<Route path='/gamescreen' element={<Protected><Gamescreen /></Protected>}/>
 				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>
