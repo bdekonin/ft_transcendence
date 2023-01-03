@@ -144,23 +144,12 @@ const Profile:React.FC = () =>
 	return (
 		<div className="profile">
 			<div className="background"/>
-
-
-			<h1>{user?.username}</h1>
-			<div className="profileblock">
-				<img
-					className="avatar"
-					src={avatar?.avatar} alt="" />
-			</div>
-			{/* <button onClick={() => {navigate('/')}}>Home</button>
+			<button onClick={() => {navigate('/')}}>Home</button>
 			<h1>Profile</h1>
 			<div className='profileblock'>
 
 				<img className="profile-pic" src={avatar?.avatar} alt="profile"></img>
 				 <p>{user?.username}</p>
-			</div>
-			<div className='edit-profile'>
-				<button onClick={() => {navigate('/edit-profile')}}>Edit Profile</button>//commented
 			</div>
 			<div className='last-online'>
 				{renderLastOnline()}
@@ -191,7 +180,7 @@ const Profile:React.FC = () =>
 					</tr>
 					{ games?.map(game => gameRow(game)) }
 				</table>
-			</div> */}
+			</div>
 		</div>
 	);
 }
