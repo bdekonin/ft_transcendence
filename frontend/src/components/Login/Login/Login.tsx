@@ -3,9 +3,11 @@ import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../styles/login.css'
 import AdditionalInfo from '../AdditionalInfo/AdditionalInfo';
+import TwoFA from '../TwoFA/TwoFA';
 
 const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
+	const [twoFA, setTwoFA] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -14,15 +16,19 @@ const Login: FC = () => {
 			navigate('/');
 		})
 		.catch((err) => {
-			if (err.response.data.statusCode === 418)
+			// console.log(err.response.data);
+			if (err.response.data.message === 'username')
 				setAdditionalInfo(true);
+			else if (err.response.data.message === 'twofa')
+				setTwoFA(true);
 			else
 				console.log(err.response.data.error);
 		});
 	}, []);
-	// document.body.style.backgroundColor = 'white';
 	if (additionalInfo)
-		return (<AdditionalInfo/>); //Display additional info Page!
+		return (<AdditionalInfo/>);
+	else if (twoFA)
+		return <TwoFA/>;
 	return (
 		<div className='login'>
 			<video
