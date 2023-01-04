@@ -259,3 +259,17 @@
 	float: left;
 	color: #999;
 }
+
+.block.messages {
+	flex-direction: column;
+	overflow: scroll
+}
+
+.block.messages .box {
+	/* display: flex; */
+	overflow-y: auto;
+}
+
+.block.messages .chat-box {
+	color: pink;
+}

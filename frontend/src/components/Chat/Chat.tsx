@@ -64,38 +64,9 @@ const Chat: React.FC = () => {
 		});
 	}, []); /* Renders only once */
 
-	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
-	function renderChatBox() {
-		if (!currentChat) {
-			return <p>Loading</p>
-		}
-		return (
-			<div className="chat-box">
-				<input
-					type="text"
-					placeholder="Type message.."
-					onChange={event => setChatBoxMsg(event.currentTarget.value)}
-					name={chatBoxMsg}
-					maxLength={256}>
-				</input>
-				<button
-					type="submit"
-					onClick={(event) => postMessage(event)}>
-						Send
-				</button>
-			</div>
-		)
-	}
 
-	function postMessage(event:any) {
-		const payload = {
-			"senderID": user?.id,
-			"chatID": currentChat?.id,
-			"message": chatBoxMsg
-		}
-		console.log('Emitting message', payload);
-		socket.emit('chat/new-chat', payload);
-	}
+
+
 
 	const [friendships, setFriendships] = useState<Friendship[]>([]);
 	const [mutes, setMutes] = useState<number[]>([]);
@@ -210,11 +181,6 @@ const Chat: React.FC = () => {
 				friendships={friendships}
 				admins={admins}
 				/>
-
-			{
-				user && mutes.includes(user?.id) ? null :
-				renderChatBox()
-			}
 		</div>
 	);
 }
