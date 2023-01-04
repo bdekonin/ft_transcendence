@@ -57,6 +57,18 @@ export class createChatDto {
 	password?: string;
 }
 
+export class updateChatDto {
+	@IsOptional()
+	@IsString()
+	@ApiProperty({ required: false })
+	name?: string;
+
+	@IsOptional()
+	@IsString()
+	@ApiProperty({ required: false })
+	password?: string;
+}
+
 @Controller('/chat/:userID/')
 @ApiTags('chat')
 export class ChatController {
@@ -76,6 +88,20 @@ export class ChatController {
 		@Body() createDto: createChatDto,
 	) {
 		const output = await this.chatService.createChat(userID, createDto);
+		this.socketGateway.server.emit('chat/refresh-chats');
+		return output;
+	}
+
+	@Patch('update/:chatID')
+		@ApiOkResponse({ description: 'Returns model of the chat', type: Chat })
+		@ApiBadRequestResponse({ description: 'Invalid errors. check code for more information' })
+	async update(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Param('chatID', ParseIntPipe) chatID: number,
+		@Body() dto: updateChatDto,
+	) {
+		const output = await this.chatService.update(userID, chatID, dto);
+		this.socketGateway.server.emit('chat/refresh-chats-joined');
 		this.socketGateway.server.emit('chat/refresh-chats');
 		return output;
 	}
@@ -138,6 +164,14 @@ export class ChatController {
 		if (filter != 'joined' && filter != 'public' && filter != 'protected' && filter != 'all')
 			throw new BadRequestException('Invalid filter, must be "joined", "public" or "protected"');
 		return await this.chatService.getChats(userID, filter);
+	}
+
+	@Get('chat/:chatID')
+	async getChat(
+		@Param('userID', ParseIntPipe) userID: number,
+		@Param('chatID', ParseIntPipe) chatID: number,
+	) {
+		return await this.chatService.getChat(userID, chatID);
 	}
 
 	@Post('ban/:chatID/')
@@ -261,17 +295,4 @@ export class ChatController {
 		this.socketGateway.server.in('chat:' + chatID).emit('chat/refresh-message', messagePayload);
 		return messagePayload;
 	}
-
-
-
-	/* Temporary */
-	// @Get('get')
-	// get() {
-	// 	return this.chatService.get();
-	// }
-
-	// @Get('set')
-	// set() {
-	// 	return this.chatService.set();
-	// }
  }

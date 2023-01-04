@@ -5,7 +5,7 @@ import { User } from 'src/entities/User.entity';
 import { UserService } from 'src/user/user.service';
 import { UserNotFoundException } from 'src/utils/exceptions';
 import { In, Not, Repository } from 'typeorm';
-import { createChatDto } from './chat.controller';
+import { createChatDto, updateChatDto } from './chat.controller';
 import { Cache } from 'cache-manager';
 import { Message } from 'src/entities/Message.entity';
 import { JoinChatDto } from './join.dto';
@@ -273,6 +273,20 @@ export class ChatService {
 		return chats;
 	}
 
+	async getChat(userID: number, chatID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		delete chat.password;
+		return chat;
+	}
+
 	async joinChat(userID: number, dto: JoinChatDto) {
 		const chat = await this.chatRepo.findOne({
 			relations: ['users'],
@@ -428,6 +442,49 @@ export class ChatService {
 			banned: [],
 		});
 		return await this.chatRepo.save(newChat);
+	}
+
+	async update(userID: number, chatID: number, dto: updateChatDto): Promise<Chat> {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.type == 'PRIVATE') {
+			throw new BadRequestException("Cannot update a private chat");
+		}
+		if (dto.name) {
+			if (dto.name.length < 3) {
+				throw new BadRequestException("Group chat name must be at least 3 characters long");
+			}
+			if (dto.name.length > 20) {
+				throw new BadRequestException("Group chat name cannot be longer then 20 characters");
+			}
+			chat.name = dto.name;
+		}
+		
+		if (dto.password) {
+			if (dto.password.length < 3) {
+				throw new BadRequestException("Protected group chat password must be at least 3 characters long");
+			}
+			if (dto.password.length > 20) {
+				throw new BadRequestException("Protected group chat password cannot be longer then 20 characters");
+			}
+			if (dto.password.includes(' ')) {
+				throw new BadRequestException("Password must not contain spaces.");
+			}
+			if (chat.type != 'GROUP') {
+				chat.password = await bcrypt.hash(dto.password, 10);
+			}
+		}
+		return await this.chatRepo.save(chat);
 	}
 
 	async gameInvite(userID: number, chatID: number) {
@@ -664,8 +721,6 @@ export class ChatService {
 			return null;
 		return chat.users;
 	}
-
-	
 
 
 

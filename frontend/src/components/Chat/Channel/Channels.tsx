@@ -19,7 +19,8 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import PublicGroup from './PublicGroup';
 import ProtectedGroup from './ProtectedGroup';
-
+import SettingsIcon from '@mui/icons-material/Settings';
+import PasswordDialog from './PasswordDialog';
 
 export type User = {
 	id: number;
@@ -30,7 +31,8 @@ const Channels: React.FC<{
 	user: User | null;
 	currentChat: Chat | null;
 	setCurrentChat: (chat: Chat | null) => void;
-}> = ({ user, currentChat, setCurrentChat }) => {
+	admins : number[];
+}> = ({ user, currentChat, setCurrentChat, admins }) => {
 
 	/* Utilities */
 	const socket = useContext(SocketContext);
@@ -63,6 +65,40 @@ const Channels: React.FC<{
 			alert(err.response.data.message)
 		});
 	}, [user, refreshChats]);
+
+	useEffect(() => {
+		if (socket && currentChat && user) {
+			socket.on('chat/refresh-chats-joined', () => {
+				axios.get('http://localhost:3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
+				.then(res => {
+
+					/* loop through chats */
+					res.data.joined.map((chat: Chat) => {
+						/* if the chat is the current chat */
+						if (chat.id === currentChat.id) {
+							/* set the current chat to the new chat */
+							setCurrentChat(chat);
+						}
+					});
+					setJoinedChats(res.data.joined);
+
+					
+				})
+				.catch(err => {
+					console.log('err', err);
+					if (err.response.data.statusCode === 401)
+					navigate('/login');
+					alert(err.response.data.message)
+				});
+			})
+		}
+
+		return () => {
+			socket.off('chat/refresh-chats-joined');
+		}
+	});
+
+	// 
 
 	useEffect(() => {
 		/* Listen to new and deleted created chats */
@@ -202,6 +238,9 @@ const Channels: React.FC<{
 	}, [joinedChats]);
 
 
+	function isAdmin(currentUserID: number): Boolean {
+		return admins?.includes(currentUserID);
+	}
 
 
 
@@ -231,23 +270,40 @@ const Channels: React.FC<{
 			)
 		}
 		else {
+			if (!user)
+				return ;
 			return (
 				<div className={selected ? 'chat selected' : 'chat' } key={chat.id} onClick={(event) => handleChatClick(chat, joined)}>
 					<p className='title' >{ chat.name }</p>
 					{
-						joined == true ?
-						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
-							<ClearIcon />
-						</IconButton>
-						:
-						<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
-							<AddIcon />
-						</IconButton>
+						renderActionsButton(chat, joined, user.id)
 					}
 					<p className='type' >{ chat.type == 'GROUP_PROTECTED' ? 'protected' : 'public' }</p>
 				</div>
 			)
 		}
+	}
+
+	function renderActionsButton(chat: any, joined: boolean, userID: number) {
+		if (joined && isAdmin(userID) && currentChat?.type != 'PRIVATE' && chat.id == currentChat?.id) {
+			return (
+				<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { handlePasswordDialogOpen() }}>
+					<SettingsIcon />
+				</IconButton>
+			)
+		}
+		if (joined) {
+			return (
+				<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { leaveChannel(chat.id) }}>
+					<ClearIcon />
+				</IconButton>
+			)
+		}
+		return (
+			<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }}>
+				<AddIcon />
+			</IconButton>
+		)
 	}
 
 	function renderJoinedChats() {
@@ -317,7 +373,7 @@ const Channels: React.FC<{
 
 	const [publicDialogOpen, setPublicDialogOpen] = useState(false);
 	const [protectedDialog, setprotectedDialog] = useState(false);
-	const [joinPasswordDialog, setJoinPasswordDialog] = useState(false);
+	const [passwordDialog, setPasswordDialog] = useState(false);
 
 	const handlePublicDialogClose = () => {
 		setPublicDialogOpen(false);
@@ -333,11 +389,11 @@ const Channels: React.FC<{
 		setprotectedDialog(true);
 	}
 
-	const handleJoinPasswordDialogClose = () => {
-		setJoinPasswordDialog(false);
+	const handlePasswordDialogClose = () => {
+		setPasswordDialog(false);
 	};
-	const handleJoinPasswordDialogOpen = () => {
-		setJoinPasswordDialog(true);
+	const handlePasswordDialogOpen = () => {
+		setPasswordDialog(true);
 	}
 
 	if (!user)
@@ -361,12 +417,20 @@ const Channels: React.FC<{
 				<PublicGroup
 					user={user}
 					open={publicDialogOpen}
-					setOpen={handlePublicDialogClose}
+					setClose={handlePublicDialogClose}
 				/>
 				<ProtectedGroup
 					user={user}
 					open={protectedDialog}
-					setOpen={handleProtectedDialogClose}
+					setClose={handleProtectedDialogClose}
+				/>
+				<PasswordDialog
+					currentUser={user}
+					currentChat={currentChat}
+					open={passwordDialog}
+					setClose={handlePasswordDialogClose}
+					setCurrentChat={setCurrentChat}
+					leaveChannel={leaveChannel}
 				/>
 			</div>
 		);
