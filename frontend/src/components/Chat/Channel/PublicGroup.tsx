@@ -1,7 +1,4 @@
 /* Materia UI */
-import AddIcon from '@mui/icons-material/Add';
-import ClearIcon from '@mui/icons-material/Clear';
-import MessageIcon from '@mui/icons-material/Message';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -9,7 +6,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import { useContext, useState } from 'react';
@@ -20,17 +16,13 @@ import { User } from './Channels';
 const PublicGroup: React.FC<{
 	user: User;
 	open: boolean;
-	setOpen: (open: boolean) => void;
-}> = ({ user, open, setOpen }) => {
+	setClose: () => void;
+}> = ({ user, open, setClose }) => {
 
 	const navigate = useNavigate();
 	const socket = useContext(SocketContext);
 
 	const [channelName, setChannelName] = useState<string>('');
-
-	const setClose = () => {
-		setOpen(false);
-	};
 
 	const create = () => {
 		/* Parsing chatDialogPassword and chatDialogName */
@@ -58,7 +50,7 @@ const PublicGroup: React.FC<{
 			if (socket)
 				socket.emit('chat/join', { chatID: res.data.id });
 			alert('Group created successfully.');
-			setOpen(false);
+			setClose();
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
