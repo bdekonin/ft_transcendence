@@ -5,8 +5,10 @@ import { SocketContext } from '../../context/socket';
 import './style.css';
 
 import { CircularProgress } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { showSnackbarNotification } from '../../App';
 import Channels from './Channel/Channels';
-import Messages from './Messages/Messages';
+import Messages, { Message } from './Messages/Messages';
 import Players from './Players/Players';
 
 interface User {
@@ -34,6 +36,8 @@ const Chat: React.FC = () => {
 	
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
+
 	const [user, setUser] = useState<User | null>(null);
 	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 
@@ -51,6 +55,21 @@ const Chat: React.FC = () => {
 			alert(err.response.data.message)
 		});
 	}, []); /* Renders only once */
+
+	useEffect(() => {
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 
 

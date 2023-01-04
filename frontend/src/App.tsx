@@ -15,11 +15,29 @@ import Game from "./components/Gamescreen/Pong/Game";
 import Protected from "./Auth";
 import Login from "./components/Login/Login/Login";
 import Gamescreen from "./components/Gamescreen/Gamescreen";
+import { Message } from "./components/Chat/Messages/Messages";
+import { useSnackbar } from "notistack";
+
+// const { enqueueSnackbar } = useSnackbar();
+// showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+
+// info = blue
+// success = green
+// warning = yellow
+// error = red
+export function showSnackbarNotification(enqueueSnackbar: any, message: string, variant: string) {
+	enqueueSnackbar(message, {
+		variant: variant,
+		autoHideDuration: 3000,
+		anchorOrigin: { vertical: "top", horizontal: "right" }
+	})
+}
 
 const App:React.FC = () =>
 {
 	const socket = useContext(SocketContext);
 	document.body.style.background = "#474E68";
+
 
 	return (
 		<SocketContext.Provider value={socket}>

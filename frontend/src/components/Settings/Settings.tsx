@@ -1,9 +1,12 @@
 import axios from "axios";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import './style.css'
+import { Alert, AlertTitle } from "@mui/material";
+import { useSnackbar } from "notistack";
+import { showSnackbarNotification } from "../../App";
 
 
 interface User {
@@ -33,6 +36,10 @@ const Settings:React.FC = () => {
 	//Dialog states on disable
 	const [dialogOpenD, setDialogOpenD] = useState(false);
 
+	//Alerts
+	// const enqueueSnackbar = useContext(SnackBarContext);
+	const { enqueueSnackbar } = useSnackbar();
+
 
 
 	useEffect(() => {
@@ -47,7 +54,9 @@ const Settings:React.FC = () => {
 			setQrCodeE(res.data);
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -60,8 +69,9 @@ const Settings:React.FC = () => {
 			setOriginUserName(elem.data.username);
 		})
 		.catch(err => {
-			console.log(err);
-			navigate('/login');
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -93,7 +103,9 @@ const Settings:React.FC = () => {
 			setDialogOpenD(false);
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -104,7 +116,9 @@ const Settings:React.FC = () => {
 			setOriginAvatar(URL.createObjectURL(elem.data));
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -130,10 +144,12 @@ const Settings:React.FC = () => {
 			//Update username here
 			axios.patch('http://localhost:3000/user', {username: userNameDef}, {withCredentials: true})
 			.then((res) => {
-				console.log('Succesfully changed name!');
+				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your username!', 'success');
 			})
 			.catch((err) => {
-				console.log(err);
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			})
 		}
 		if (inputRef.current && inputRef.current.value)
@@ -141,10 +157,12 @@ const Settings:React.FC = () => {
 			//update Avatar here
 			axios.post('http://localhost:3000/user/avatar', {file: inputRef.current.files![0]}, {withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }})
 			.then((res) => {
-				console.log('Avatar uploaded succesfully!');
+				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your avatar!', 'success');
 			})
 			.catch((err) => {
-				console.log(err);
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			})
 		}
 	}
@@ -187,7 +205,9 @@ const Settings:React.FC = () => {
 				.catch(err => {
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Dotc-1')?.focus()
-					console.log(err);
+					if (err.response.data.statusCode === 401)
+						navigate('/login');
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 				})
 			}
 		}
@@ -229,7 +249,9 @@ const Settings:React.FC = () => {
 				.catch(err => {
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Eotc-1')?.focus()
-					console.log(err);
+					if (err.response.data.statusCode === 401)
+						navigate('/login');
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 				})
 			}
 		}
@@ -243,7 +265,7 @@ const Settings:React.FC = () => {
 			<img className='header' src={require('./images/logo.png')}/>
 			<div className="block1">
 				<h2>Username: </h2>
-				<input type="text" value={userNameDef} maxLength={14} onChange={(e) => {setUserNameDef(e.target.value)}}/>
+				<input type="text" value={userNameDef} maxLength={14} onChange={(e) => {setUserNameDef(e.target.value)}} required/>
 				<h2>Avatar: </h2>
 				<img className='avatar' src={avatar}/>
 				<br />
@@ -337,3 +359,5 @@ const Settings:React.FC = () => {
 }
 
 export default Settings;
+
+

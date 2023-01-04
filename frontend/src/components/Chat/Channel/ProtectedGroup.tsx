@@ -1,3 +1,4 @@
+/* Materia UI */
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -7,8 +8,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
+import { useSnackbar } from 'notistack';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { showSnackbarNotification } from '../../../App';
 import { SocketContext } from '../../../context/socket';
 import { User } from './Channels';
 
@@ -20,6 +23,7 @@ const ProtectedGroup: React.FC<{
 
 	const navigate = useNavigate();
 	const socket = useContext(SocketContext);
+	const { enqueueSnackbar } = useSnackbar();
 
 	const [channelName, setChannelName] = useState<string>('');
 	const [channelPassword, setChannelPassword] = useState<string>('');
@@ -28,27 +32,27 @@ const ProtectedGroup: React.FC<{
 	const create = () => {
 		/* Parsing chatDialogPassword and chatDialogName */
 		if (channelName.length < 3) {
-			alert('Group name must be at least 3 characters long.');
+			showSnackbarNotification(enqueueSnackbar, 'Group name must be at least 3 characters long.', 'error');
 			return;
 		}
 		if (channelName.length > 20) {
-			alert('Group name must be at most 20 characters long.');
+			showSnackbarNotification(enqueueSnackbar, 'Group name must be at most 20 characters long.', 'error');
 			return;
 		}
 		if (channelName.includes(' ')) {
-			alert('Group name must not contain spaces.');
+			showSnackbarNotification(enqueueSnackbar, 'Group name must not contain spaces.', 'error');
 			return;
 		}
 		if (channelPassword.length < 3) {
-			alert('Password must be at least 3 characters long.');
+			showSnackbarNotification(enqueueSnackbar, 'Password must be at least 3 characters long.', 'error');
 			return;
 		}
 		if (channelPassword.length > 20) {
-			alert('Password must be at most 20 characters long.');
+			showSnackbarNotification(enqueueSnackbar, 'Password must be at most 20 characters long.', 'error');
 			return;
 		}
 		if (channelPassword.includes(' ')) {
-			alert('Password must not contain spaces.');
+			showSnackbarNotification(enqueueSnackbar, 'Password must not contain spaces.', 'error');
 			return;
 		}
 
@@ -63,13 +67,13 @@ const ProtectedGroup: React.FC<{
 		.then(res => {
 			if (socket)
 				socket.emit('chat/join', { chatID: res.data.id });
-			alert('Group created successfully.');
+			showSnackbarNotification(enqueueSnackbar, 'Group created successfully.', 'success');
 			setClose();
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 		setChannelName('');
 	}

@@ -1,6 +1,10 @@
 import axios from "axios";
+import { error } from "console";
+import { useSnackbar } from "notistack";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { showSnackbarNotification } from "../../App";
+import { socket } from "../../context/socket";
 import './style.css'
 
 interface User {
@@ -19,11 +23,11 @@ interface Avatars {
 
 const Social: FC = () => {
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
 	const [users, setUsers] = useState<User[]>([]);
 	const [avatars, setAvatars] = useState<Avatars[]>([]);
 
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
-
 	document.body.style.backgroundColor = "#474E68"; //very nice color
 
 	//Getting the users details
@@ -33,24 +37,33 @@ const Social: FC = () => {
 		.then(res => {
 			setCurrentUser(res.data);
 		})
-		.catch((error) => {
-			console.log(error);
-			navigate("/login");
+		.catch((err) => {
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
-
-
-
 
 		axios.get("http://localhost:3000/user/all", {withCredentials: true})
 		.then(res => {
 			console.log(res.data);
 			setUsers(res.data);
 		})
-		.catch((error) => {
-			console.log(error);
-			navigate("/login");
+		.catch((err) => {
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, []);
+
+	// useEffect(() => {
+	// 	socket.on('chat/refresh-friendships', () => {
+	// 	});
+	
+	// 	return () => {
+	// 	socket.off('chat/refresh-friendships')
+	// 	}
+	// })
+	
 
 	//Getting the avatars
 	useEffect(() => {
@@ -60,6 +73,11 @@ const Social: FC = () => {
 				const imageObjectURL = URL.createObjectURL(res.data);
 				setAvatars(prev => [...prev, {id: elem.id, avatar: imageObjectURL}]);
 			})
+			.catch((err) => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 		})
 	}, [users]);
 
@@ -85,19 +103,17 @@ const Social: FC = () => {
 						<h2 className="stats">{user.loses} Loses</h2>
 
 					</div>
-					
-					{/* <div className="stats"> */}
-						{/* </div> */}
-					{/* </div> */}
-					{/* <button onClick={() => {
-						axios.put("http://localhost:3000/social/"+user.id+"/follow", {}, {withCredentials: true})
-						.then(res => {
-							console.log(res.data);
+					<button className="follow" onClick={() => {
+						axios.put('http://localhost:3000/social/' + user.id + '/follow', {}, {withCredentials: true})
+						.then(e => {
+							showSnackbarNotification(enqueueSnackbar, 'Now following ' + user.id, 'success');
 						})
-						.catch((error) => {
-							console.log(error);
-						});
-					}}>Follow</button> */}
+						.catch(err => {
+							if (err.response.data.statusCode === 401)
+								navigate('/login');
+							showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+						})
+					}}>add friend</button>
 				</div>
 			);
 		});

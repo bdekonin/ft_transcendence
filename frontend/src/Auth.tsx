@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { SnackbarProvider } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdditionalInfo from './components/Login/AdditionalInfo/AdditionalInfo';
@@ -15,7 +16,11 @@ const Protected = ({children}: any) => {
 		})
 	});
 
-	return children;
+	return (
+		<SnackbarProvider maxSnack={5}>
+			{children}
+		</SnackbarProvider>
+		);
 }
 
 export default Protected;
