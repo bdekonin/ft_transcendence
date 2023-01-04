@@ -49,10 +49,9 @@ const Chat: React.FC = () => {
 			setUser(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, []); /* Renders only once */
 
@@ -102,15 +101,18 @@ const Chat: React.FC = () => {
 			setMutes(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
-			alert(err.response.data.message)
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 		axios.get('http://localhost:3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
 		.then(res => {
 			setAdmins(res.data);
 		})
 		.catch(err => {
-			// console.log('err', err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 		
 		if (!socket)
@@ -130,7 +132,11 @@ const Chat: React.FC = () => {
 				});
 				setFriendships(parsedData);
 			})
-			console.log('chat/refresh-friendships');
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 		});
 		socket.on('chat/refresh-mutes', () => {
 			if (!currentChat) {
@@ -142,8 +148,9 @@ const Chat: React.FC = () => {
 				setMutes(res.data);
 			})
 			.catch(err => {
-				console.log('err', err);
-				alert(err.response.data.message)
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 		});
 		socket.on('chat/refresh-admins', () => {
@@ -154,6 +161,11 @@ const Chat: React.FC = () => {
 			.then(res => {
 				setAdmins(res.data);
 			})
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 		});
 		return () => {
 			socket.off('chat/refresh-friendships');

@@ -11,7 +11,6 @@ const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
 	const [twoFA, setTwoFA] = useState(false);
 	const navigate = useNavigate();
-	const { enqueueSnackbar } = useSnackbar();
 
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
@@ -25,7 +24,7 @@ const Login: FC = () => {
 			else if (err.response.data.message === 'twofa')
 				setTwoFA(true);
 			else
-				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+				console.log('error', err.response.data.message);
 		});
 	}, []);
 	if (additionalInfo)

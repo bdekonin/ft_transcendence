@@ -36,6 +36,7 @@
 
 .socials .avatar {
 	width: 100%;
+	cursor: pointer;
 }
 
 .socials .data {
@@ -52,11 +53,9 @@
 	font-family: "Minecraft Ten";
 	font-size: 55px;
 	color: white;
+	width: auto;
 	text-shadow: 5px 5px black;
-}
-
-.data .username {
-	cursor: pointer;
+	/* cursor: pointer; */
 }
 
 .socials .stats {
@@ -72,21 +71,34 @@
 	position: absolute;
 	right: 10px;
 	top: 10px;
-
+	display: inline-block;
+  
 	border-radius:5px;
 	border-width:3px;
 	border-color:#000;
 	border-style:solid;
-	text-shadow:0px 0px 10px #000;
-
+  
 	font-family:'Minecraft Ten';
-	color:#FFF;
+	color:black;
 	font-size:24px;
 	font-weight:bold;
 	box-shadow:0px 0px 10px #000;
 	padding-top: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
+	/* width: 100px;
+	height: 50px; */
+}
+
+.userblock .follow.decline {
+	top: 10px;
+	right: 110px;
+}
+
+.userblock .follow.accept {
+	top: 10px;
+	right: 10px;
+	margin-left: 10px;
 }
 
 .userblock .follow:hover {
