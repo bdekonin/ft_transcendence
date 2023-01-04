@@ -18,8 +18,8 @@ import { User } from './Channels';
 const ProtectedGroup: React.FC<{
 	user: User;
 	open: boolean;
-	setOpen: (open: boolean) => void;
-}> = ({ user, open, setOpen }) => {
+	setClose: () => void;
+}> = ({ user, open, setClose }) => {
 
 	const navigate = useNavigate();
 	const socket = useContext(SocketContext);
@@ -28,10 +28,6 @@ const ProtectedGroup: React.FC<{
 	const [channelName, setChannelName] = useState<string>('');
 	const [channelPassword, setChannelPassword] = useState<string>('');
 
-
-	const setClose = () => {
-		setOpen(false);
-	};
 
 	const create = () => {
 		/* Parsing chatDialogPassword and chatDialogName */
@@ -72,7 +68,7 @@ const ProtectedGroup: React.FC<{
 			if (socket)
 				socket.emit('chat/join', { chatID: res.data.id });
 			showSnackbarNotification(enqueueSnackbar, 'Group created successfully.', 'success');
-			setOpen(false);
+			setClose();
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)

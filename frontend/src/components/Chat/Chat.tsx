@@ -1,15 +1,15 @@
-import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './style.css';
 import { SocketContext } from '../../context/socket';
+import './style.css';
 
-import Channels from './Channel/Channels';
-import Players from './Players/Players';
-import Messages, { Message } from './Messages/Messages';
 import { CircularProgress } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { showSnackbarNotification } from '../../App';
+import Channels from './Channel/Channels';
+import Messages, { Message } from './Messages/Messages';
+import Players from './Players/Players';
 
 interface User {
 	id: number;
@@ -99,7 +99,6 @@ const Chat: React.FC = () => {
 		})
 		axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
 		.then(res => {
-			console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat.id, '');
 			setMutes(res.data);
 		})
 		.catch(err => {
@@ -173,6 +172,7 @@ const Chat: React.FC = () => {
 				user={user}
 				currentChat={currentChat}
 				setCurrentChat={setCurrentChat}
+				admins={admins}
 				/>
 			<Messages
 				currentUser={user}
