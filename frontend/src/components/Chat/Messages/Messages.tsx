@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import { SocketContext } from "../../../context/socket";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
@@ -128,6 +128,43 @@ const Messages: React.FC<{
 		}
 	}
 
+	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
+
+	function postMessage(event:any) {
+		const payload = {
+			"senderID": currentUser?.id,
+			"chatID": currentChat?.id,
+			"message": chatBoxMsg
+		}
+		console.log('Emitting message', payload);
+		socket.emit('chat/new-chat', payload);
+	}
+
+	function renderChatBox() {
+		if (!currentChat) {
+			return <p>Loading</p>
+		}
+		return (
+			<div className="chat-box">
+				<input
+					type="text"
+					placeholder="Type message.."
+					onChange={event => setChatBoxMsg(event.currentTarget.value)}
+					name={chatBoxMsg}
+					maxLength={256}>
+				</input>
+				<button
+					type="submit"
+					onClick={(event) => {
+						postMessage(event)
+						setChatBoxMsg('');
+					}}>
+						Send
+				</button>
+			</div>
+		)
+	}
+
 	if (!currentChat)
 		return (
 			<div className="block messages">
@@ -142,6 +179,10 @@ const Messages: React.FC<{
 					renderMessage(message)
 				)
 			)}
+			{
+				currentUser && mutes.includes(currentUser?.id) ? null :
+				renderChatBox()
+			}
 		</div>
 	)
 }
