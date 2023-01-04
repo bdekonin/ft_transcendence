@@ -5,6 +5,7 @@ import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
 import { socket } from "../../context/socket";
+import { handleFollow, handleUnfollow } from "../Chat/Players/ButtonHandlers";
 import './style.css'
 
 interface User {
@@ -21,11 +22,18 @@ interface Avatars {
 	avatar: string;
 }
 
+type Friendship = {
+	user: User;
+	status: string;
+	sender: User;
+}
+
 const Social: FC = () => {
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 	const [users, setUsers] = useState<User[]>([]);
 	const [avatars, setAvatars] = useState<Avatars[]>([]);
+	const [friendships, setFriendships] = useState<Friendship[]>([]);
 
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	document.body.style.backgroundColor = "#474E68"; //very nice color
@@ -55,14 +63,55 @@ const Social: FC = () => {
 		});
 	}, []);
 
-	// useEffect(() => {
-	// 	socket.on('chat/refresh-friendships', () => {
-	// 	});
+	useEffect(() => {
+		if (!currentUser)
+			return ;
+
+		axios.get('http://localhost:3000/social', { withCredentials: true })
+		.then(res => {
+			// parse data
+			const parsedData: Friendship[] = res.data.map((friendship: any) => {
+				const otherUser = friendship.sender.id == currentUser.id ? friendship.reciever : friendship.sender;
+				return {
+					status: friendship.status,
+					user: otherUser,
+					sender: friendship.sender,
+				}
+			});
+			setFriendships(parsedData);
+		})
+		.catch((err) => {
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
+	}, [currentUser])
 	
-	// 	return () => {
-	// 	socket.off('chat/refresh-friendships')
-	// 	}
-	// })
+
+	useEffect(() => {
+		if (!currentUser)
+			return ;
+		socket.on('chat/refresh-friendships', () => {
+			axios.get('http://localhost:3000/social', { withCredentials: true })
+			.then(res => {
+				// parse data
+				const parsedData: Friendship[] = res.data.map((friendship: any) => {
+					const otherUser = friendship.sender.id == currentUser.id ? friendship.reciever : friendship.sender;
+					return {
+						status: friendship.status,
+						user: otherUser,
+						sender: friendship.sender,
+					}
+				});
+				setFriendships(parsedData);
+			})
+			console.log('chat/refresh-friendships');
+		});
+	
+		return () => {
+		socket.off('chat/refresh-friendships')
+		}
+	})
 	
 
 	//Getting the avatars
@@ -79,6 +128,13 @@ const Social: FC = () => {
 				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 		})
+
+		/* Sort users by wl ratio */
+		users.sort((a, b) => {
+			const a_wl = a.wins / (a.wins + a.loses);
+			const b_wl = b.wins / (b.wins + b.loses);
+			return b_wl > a_wl ? -1 : 1;
+		});
 	}, [users]);
 
 	function goHome(){ navigate("/"); }
@@ -93,43 +149,81 @@ const Social: FC = () => {
 						<img
 							className="avatar"
 							src={avatars.find(elem => elem.id == user.id)?.avatar} 
-							alt="avatar picture" />
+							alt="avatar picture"
+							onClick={() => {
+								navigate('/profile?user=' + user.username)
+							}}/>
 					</div>
 					<div className="data">
-						<h1 className="username" onClick={() => {
-							navigate('/profile?user=' + user.username)
-						}}>{user.username}</h1>
+						<h1 className="username">{user.username}</h1>
 						<h2 className="stats">{user.wins} Wins</h2>
 						<h2 className="stats">{user.loses} Loses</h2>
-
+						<h2 className="stats">{!user.wins && !user.loses ? '0' : user.wins / user.loses } W/L</h2>
 					</div>
-					<button className="follow" onClick={() => {
-						axios.put('http://localhost:3000/social/' + user.id + '/follow', {}, {withCredentials: true})
-						.then(e => {
-							showSnackbarNotification(enqueueSnackbar, 'Now following ' + user.id, 'success');
-						})
-						.catch(err => {
-							if (err.response.data.statusCode === 401)
-								navigate('/login');
-							showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
-						})
-					}}>add friend</button>
+					{render_follow_unfollow(user)}
 				</div>
 			);
 		});
 	}
 
+	/**
+	 * Function to check if a user has a certain friendship status
+	 * 
+	 * @param {string} isWhat - The desired friendship status to check for
+	 * @param {User} user - The user to check the friendship status of
+	 * 
+	 * @return {boolean} - Returns true if the user has the desired friendship status, false otherwise
+	*/
+	function isAlready(isWhat: string, user: User): boolean {
+		const friendship = friendships.find(friendship => friendship.user.id == user.id);
+		if (friendship)
+			return friendship.status == isWhat;
+		return false;
+	}
+	function isSender(user: User): boolean {
+		const friendship = friendships.find(friendship => friendship.user.id == user.id);
+		if (friendship)
+			return friendship.sender.id == currentUser?.id;
+		return false;
+	}
+
+	function render_follow_unfollow(user: User) {
+
+		const isFriend = isAlready('accepted', user);
+		const isPending = isAlready('pending', user);
+		const isUserSender = isSender(user);
+
+		if (isUserSender && isPending) {
+			return (
+				<button className="follow" onClick={() => { handleUnfollow(user) }}>Cancel</button>
+			);
+		}
+		else if (isPending) {
+			return (
+				<>
+					<button className="follow decline" onClick={() => { handleUnfollow(user) }}>Decline</button>
+					<button className="follow accept" onClick={() => { handleFollow(user) }}>Accept</button>
+				</>
+			);
+		}
+
+		if (isFriend) {
+			return (
+				<button className="follow" onClick={() => { handleUnfollow(user) }}>Unfollow</button>
+			);
+		}
+
+		return (
+			<button className="follow" onClick={() => { handleFollow(user) }}>Follow</button>
+		);
+	}
+
 	return (
 		<div className="socials">
 			<div className="background"/>
-			{/* <link rel="preload" href="./transfonter.org-20221214-233247/MinecraftTen.woff2" as="font" type="font/woff2"></link> */}
-			{/* <img
-				className="background"
-			src={require("./background.jpg")} alt="" /> */}
 			<img 
 			className="header"
 			src={require('./Logo.png')} alt="" />
-			{/* <h1 className="header">Socials</h1> */}
 			<button onClick={goHome}>Home</button>
 				{getUsers()}
 		</div>
