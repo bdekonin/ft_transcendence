@@ -1,9 +1,12 @@
-import { FormControl, InputLabel, MenuItem, Radio, Select, SelectChangeEvent, Switch } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { showSnackbarNotification } from '../../../App';
 import { SocketContext } from '../../../context/socket';
+import { Message } from '../../Chat/Messages/Messages';
 import { Draw } from './draw';
-import './style.css'
+import './style.css';
 
 export interface Game {
 	id: string;
@@ -96,6 +99,24 @@ const Game: React.FC = () => {
 	const [ball, setBall] = useState<Ball>();
 	const [winner, setWinner] = useState<string | null>(null);
 	const [draw, setDraw] = useState<Draw | null>();
+
+
+	const { enqueueSnackbar } = useSnackbar();
+
+	useEffect(() => {
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 	useEffect(() => {
 		if (!draw) {

@@ -1,12 +1,18 @@
 import axios from 'axios';
-import React, { FC, useEffect } from 'react';
+import { useSnackbar } from 'notistack';
+import React, { FC, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { showSnackbarNotification } from '../../App';
+import { SocketContext } from '../../context/socket';
 import TwoFA from '../Login/TwoFA/TwoFA';
 import './style.css'
+import { Message } from '../Chat/Messages/Messages';
 
 const Home: FC = () => {
 
 	const navigate = useNavigate();
+	const socket = useContext(SocketContext);
+	const { enqueueSnackbar } = useSnackbar();
   
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
@@ -18,6 +24,21 @@ const Home: FC = () => {
 		// 		return (<TwoFA/>);
 		// })
 	}, []);
+
+	useEffect(() => {
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 	return (
 		
