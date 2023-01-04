@@ -199,7 +199,13 @@
 
 /* Chat Boxes */
 
+.block.messages {
+	position: relative;
+}
+
 .block.messages .box {
+	/* position: relative; */
+
 	background-color: #ddd;
 	border-radius: 20px;
 	/* margin: 10px; */
@@ -209,6 +215,7 @@
 	font-size: 15px;
 	/* width: 50%; */
   }
+
 .block.messages .box {
 	border: 2px solid #dedede;
 	background-color: #f1f1f1;
@@ -262,14 +269,44 @@
 
 .block.messages {
 	flex-direction: column;
-	overflow: scroll
+	overflow-y: scroll;
+	overflow-x: hidden;
+	/* position: relative; */
 }
 
 .block.messages .box {
 	/* display: flex; */
-	overflow-y: auto;
+	/* overflow-y: auto; */
 }
 
 .block.messages .chat-box {
+	/* position: relative; */
+}
+
+.block.messages .input{
+	position: fixed;
+	color: black;
+	/* background-color: red; */
+	width: 90%;
+	/* left: 0px; */
+	height: 50px;
+	font-size: 25px;
+	/* bottom: 0px; */
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+
+/* button */
+.block.messages .button {
+	position: fixed;
 	color: pink;
+	background-color: blue;
+	/* right: 0px; */
+	width: 9%;
+	height: 57px;
+	/* bottom: 0px; */
+	bottom: 0;
+	right: 0;
 }

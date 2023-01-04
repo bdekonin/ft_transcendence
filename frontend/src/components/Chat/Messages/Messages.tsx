@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createRef, useContext, useEffect, useRef, useState } from "react";
+import { createRef, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { SocketContext } from "../../../context/socket";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
@@ -31,6 +31,20 @@ const Messages: React.FC<{
 
 	const socket = useContext(SocketContext);
 	const [messages, setMessages] = useState<Message[]>([]);
+
+	const scroll = useRef<HTMLDivElement>(null);
+	const submit = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		startScrollAtBottom();
+	}, [currentChat, messages])
+
+	useEffect(() => {
+		window.addEventListener("keydown", handleKeyDown);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+		}
+	})
 
 	useEffect(() => {
 		if (!currentChat) {
@@ -82,6 +96,24 @@ const Messages: React.FC<{
 		if (friendship)
 			return friendship.status == isWhat;
 		return false;
+	}
+
+	function handleKeyDown(event: any) {
+		if (event.key === "Enter")
+		{
+			postMessage(event);
+			event.currentTarget.value = '';
+			setChatBoxMsg('');
+		}
+	}
+
+	function startScrollAtBottom() {
+		if (!scroll || !scroll.current)
+			return ;
+		scroll.current?.scrollTo({
+			top: scroll.current.scrollHeight,
+			behavior: 'smooth'
+		})
 	}
 
 	function renderMessage(message: Message) {
@@ -145,23 +177,27 @@ const Messages: React.FC<{
 			return <p>Loading</p>
 		}
 		return (
-			<div className="chat-box">
+			<>
 				<input
+					className="input"
 					type="text"
 					placeholder="Type message.."
-					onChange={event => setChatBoxMsg(event.currentTarget.value)}
-					name={chatBoxMsg}
+					onChange={event => {console.log(event.currentTarget.value);setChatBoxMsg(event.currentTarget.value);}}
+					value={chatBoxMsg}
 					maxLength={256}>
 				</input>
 				<button
+					className="button"
 					type="submit"
+					ref={submit}
 					onClick={(event) => {
-						postMessage(event)
+						postMessage(event);
+						event.currentTarget.value = '';
 						setChatBoxMsg('');
 					}}>
 						Send
 				</button>
-			</div>
+			</>
 		)
 	}
 
@@ -173,7 +209,7 @@ const Messages: React.FC<{
 		)
 
 	return (
-		<div className="block messages">
+		<div className="block messages" ref={scroll}>
 			<h1 className='title'>{currentChat.name}</h1>
 			{messages.map((message) => (
 					renderMessage(message)
