@@ -1,11 +1,14 @@
 import { Dialog, DialogTitle } from '@mui/material';
 import axios from 'axios';
+import { useSnackbar } from 'notistack';
 import React, { ChangeEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { showSnackbarNotification } from '../../../App';
 
 export default function TwoFA() {
 	const navigate = useNavigate();
 	const [inputCode, setInputCode] = useState(['', '', '', '', '', '']);
+	const { enqueueSnackbar } = useSnackbar();
 
 	function onChange(e: ChangeEvent<HTMLInputElement>, num: number) {
 		var data = [...inputCode];
@@ -42,7 +45,7 @@ export default function TwoFA() {
 					navigate('/');
 				})
 				.catch(err => {
-					console.log(err);
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Dotc-1')?.focus()
 				})

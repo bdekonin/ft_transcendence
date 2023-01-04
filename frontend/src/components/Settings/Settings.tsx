@@ -6,6 +6,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import './style.css'
 import { Alert, AlertTitle } from "@mui/material";
 import { useSnackbar } from "notistack";
+import { showSnackbarNotification } from "../../App";
 
 
 interface User {
@@ -53,7 +54,9 @@ const Settings:React.FC = () => {
 			setQrCodeE(res.data);
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -66,8 +69,9 @@ const Settings:React.FC = () => {
 			setOriginUserName(elem.data.username);
 		})
 		.catch(err => {
-			console.log(err);
-			navigate('/login');
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -99,7 +103,9 @@ const Settings:React.FC = () => {
 			setDialogOpenD(false);
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -110,7 +116,9 @@ const Settings:React.FC = () => {
 			setOriginAvatar(URL.createObjectURL(elem.data));
 		})
 		.catch(err => {
-			console.log(err);
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
@@ -136,18 +144,12 @@ const Settings:React.FC = () => {
 			//Update username here
 			axios.patch('http://localhost:3000/user', {username: userNameDef}, {withCredentials: true})
 			.then((res) => {
-				enqueueSnackbar('Succesfully changed your username!', {
-					variant: "success",
-					autoHideDuration: 3000,
-					anchorOrigin: { vertical: "top", horizontal: "right" }
-				})
+				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your username!', 'success');
 			})
 			.catch((err) => {
-				enqueueSnackbar(err.response.data.message, {
-					variant: "error",
-					autoHideDuration: 3000,
-					anchorOrigin: { vertical: "top", horizontal: "right" }
-				})
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			})
 		}
 		if (inputRef.current && inputRef.current.value)
@@ -155,17 +157,12 @@ const Settings:React.FC = () => {
 			//update Avatar here
 			axios.post('http://localhost:3000/user/avatar', {file: inputRef.current.files![0]}, {withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }})
 			.then((res) => {
-				try {
-					enqueueSnackbar('Succesfully changed your avatar!', {
-					  variant: "success",
-					  autoHideDuration: 3000,
-					  anchorOrigin: { vertical: "top", horizontal: "right" }
-					  
-					})
-				  } catch (error) {}
+				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your avatar!', 'success');
 			})
 			.catch((err) => {
-				console.log(err);
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			})
 		}
 	}
@@ -208,7 +205,9 @@ const Settings:React.FC = () => {
 				.catch(err => {
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Dotc-1')?.focus()
-					console.log(err);
+					if (err.response.data.statusCode === 401)
+						navigate('/login');
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 				})
 			}
 		}
@@ -250,7 +249,9 @@ const Settings:React.FC = () => {
 				.catch(err => {
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Eotc-1')?.focus()
-					console.log(err);
+					if (err.response.data.statusCode === 401)
+						navigate('/login');
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 				})
 			}
 		}

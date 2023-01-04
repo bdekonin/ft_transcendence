@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useCallback, useContext, useEffect, useState } from "react";
 import './style.css'
 import { SocketContext } from "../../context/socket";
+import { useSnackbar } from "notistack";
+import { showSnackbarNotification } from "../../App";
 
 interface User {
 	id: number;
@@ -26,6 +28,7 @@ interface Avatar {
 const Friends:React.FC = () => {
 	
 	const socket = useContext(SocketContext);
+	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	const [users, setUsers] = useState<User[]>([]);
@@ -34,6 +37,21 @@ const Friends:React.FC = () => {
 	document.body.style.backgroundColor = "#474E68";
 	function goHome(){ navigate("/"); }
 	function goToProfile(otherUser: User) {	navigate('/profile?user=' + otherUser.username); }
+
+	useEffect(() => {
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: any) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 
 	useEffect(() => {
@@ -81,6 +99,9 @@ const Friends:React.FC = () => {
 		.then(res => {
 			setUser(res.data);
 		})
+		.catch(err => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
 	}, [])
 
 	useEffect(() => {
@@ -113,6 +134,9 @@ const Friends:React.FC = () => {
 			})
 			setUsers(friends);
 		})
+		.catch(err => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
 	}, [user])
 
 	useEffect(() => {
@@ -125,6 +149,9 @@ const Friends:React.FC = () => {
 				.then(res => {
 					setAvatars(oldArr => [...oldArr, {id: elem.id, avatar: URL.createObjectURL(res.data)}]);
 				})
+				.catch(err => {
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+				});
 			}
 		})
 	}, [users])
@@ -132,14 +159,14 @@ const Friends:React.FC = () => {
 	function acceptFriend(otherUser: User) {
 		axios.put('http://localhost:3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
 		.catch((err) => {
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
 	function denyFriend(otherUser: User) {
 		axios.delete('http://localhost:3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
 		.catch((err) => {
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 

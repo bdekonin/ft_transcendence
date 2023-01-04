@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { useSnackbar } from 'notistack';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { showSnackbarNotification } from '../../../App';
 import '../../../styles/login.css'
 import AdditionalInfo from '../AdditionalInfo/AdditionalInfo';
 import TwoFA from '../TwoFA/TwoFA';
@@ -9,6 +11,7 @@ const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
 	const [twoFA, setTwoFA] = useState(false);
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
 
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
@@ -22,7 +25,7 @@ const Login: FC = () => {
 			else if (err.response.data.message === 'twofa')
 				setTwoFA(true);
 			else
-				console.log(err.response.data.error);
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, []);
 	if (additionalInfo)

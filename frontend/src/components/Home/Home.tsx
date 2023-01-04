@@ -27,7 +27,7 @@ const Home: FC = () => {
 
 	useEffect(() => {
 		if (socket) { /* Socket stuff */
-			socket.on('chat/refresh-message', (payload: Message) => {
+			socket.on('chat/refresh-message', (payload: any) => {
 				/* Enable notification for that channel */
 				if (payload.parent.type == 'PRIVATE')
 					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');

@@ -1,7 +1,9 @@
 import axios from "axios";
 import moment from "moment";
+import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { showSnackbarNotification } from "../../App";
 import './style.css'
 
 interface Game {
@@ -43,6 +45,7 @@ const Profile:React.FC = () =>
 	const [status, setStatus] = useState<string>('');
 	
 	const query = searchParams.get('user');
+	const { enqueueSnackbar } = useSnackbar();
 
 	/* For user object */
 	useEffect(() => {
@@ -52,7 +55,9 @@ const Profile:React.FC = () =>
 			setUser(res.data);
 		})
 		.catch(err => {
-			navigate('/login');
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, [searchParams]);
 
@@ -64,7 +69,7 @@ const Profile:React.FC = () =>
 			setAvatar({id: user?.id as number, avatar: imageObjectURL});
 		})
 		.catch(err => {
-			console.log(err);
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 		if (user) {
 			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
@@ -76,8 +81,9 @@ const Profile:React.FC = () =>
 				});
 			})
 			.catch(err => {
-				console.log(err);
-				navigate('/login');
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 
 			axios.get('http://localhost:3000/social/' + user.id, { withCredentials: true })
@@ -86,8 +92,9 @@ const Profile:React.FC = () =>
 				setFriendAmount(res.data.length);
 			})
 			.catch(err => {
-				console.log(err);
-				navigate('/login');
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 
 			axios.get('http://localhost:3000/user/' + user.id + '/status', { withCredentials: true })
@@ -95,8 +102,9 @@ const Profile:React.FC = () =>
 				setStatus(res.data);
 			})
 			.catch(err => {
-				console.log(err);
-				navigate('/login');
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 		}
 	}, [user]);

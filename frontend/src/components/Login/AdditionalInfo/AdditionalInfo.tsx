@@ -1,7 +1,9 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
+import { useSnackbar } from "notistack";
 import { ChangeEvent, FC, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
+import { showSnackbarNotification } from "../../../App";
 import './style.css'
 
 const AdditionalInfo: FC = () => {
@@ -12,6 +14,7 @@ const AdditionalInfo: FC = () => {
 	const navigate = useNavigate();
 	const [image, setImage] = useState<File>();
 	const [previewImage, setPreviewImage] = useState('');
+	const { enqueueSnackbar } = useSnackbar();
 	
 	useEffect(() => {
 		checkUserNameInput();
@@ -89,14 +92,14 @@ const AdditionalInfo: FC = () => {
 			navigate('/');	
 		})
 		.catch(err => {
-			console.log(err);
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
 		.then(res => {
 			navigate('/');
 		})
 		.catch(err => {
-			console.log(err);
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
