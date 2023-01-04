@@ -130,27 +130,24 @@ const Settings:React.FC = () => {
 			inputRef.current.files = null;
 	}
 
-
-
 	function sumbit() {
-		try {
-			enqueueSnackbar('Succes!', {
-			  variant: "success",
-			  autoHideDuration: 3000,
-			  anchorOrigin: { vertical: "top", horizontal: "right" }
-			  
-			})
-		  } catch (error) {}
-
 		if (userNameDef !== originUserName)
 		{
 			//Update username here
 			axios.patch('http://localhost:3000/user', {username: userNameDef}, {withCredentials: true})
 			.then((res) => {
-				console.log('Succesfully changed name!');
+				enqueueSnackbar('Succesfully changed your username!', {
+					variant: "success",
+					autoHideDuration: 3000,
+					anchorOrigin: { vertical: "top", horizontal: "right" }
+				})
 			})
 			.catch((err) => {
-				console.log(err);
+				enqueueSnackbar(err.response.data.message, {
+					variant: "error",
+					autoHideDuration: 3000,
+					anchorOrigin: { vertical: "top", horizontal: "right" }
+				})
 			})
 		}
 		if (inputRef.current && inputRef.current.value)
@@ -158,7 +155,14 @@ const Settings:React.FC = () => {
 			//update Avatar here
 			axios.post('http://localhost:3000/user/avatar', {file: inputRef.current.files![0]}, {withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }})
 			.then((res) => {
-				console.log('Avatar uploaded succesfully!');
+				try {
+					enqueueSnackbar('Succesfully changed your avatar!', {
+					  variant: "success",
+					  autoHideDuration: 3000,
+					  anchorOrigin: { vertical: "top", horizontal: "right" }
+					  
+					})
+				  } catch (error) {}
 			})
 			.catch((err) => {
 				console.log(err);
@@ -260,7 +264,7 @@ const Settings:React.FC = () => {
 			<img className='header' src={require('./images/logo.png')}/>
 			<div className="block1">
 				<h2>Username: </h2>
-				<input type="text" value={userNameDef} maxLength={14} onChange={(e) => {setUserNameDef(e.target.value)}}/>
+				<input type="text" value={userNameDef} maxLength={14} onChange={(e) => {setUserNameDef(e.target.value)}} required/>
 				<h2>Avatar: </h2>
 				<img className='avatar' src={avatar}/>
 				<br />
@@ -354,7 +358,5 @@ const Settings:React.FC = () => {
 }
 
 export default Settings;
-function enqueueSnackbar(arg0: string, arg1: { variant: string; autoHideDuration: number; anchorOrigin: { vertical: string; horizontal: string; }; }) {
-	throw new Error("Function not implemented.");
-}
+
 
