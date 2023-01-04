@@ -1,14 +1,15 @@
 import axios from "axios";
-import { createRef, useContext, useEffect, useRef, useState } from "react";
+import { useSnackbar } from "notistack";
+import { useContext, useEffect, useState } from "react";
+import { showSnackbarNotification } from "../../../App";
 import { SocketContext } from "../../../context/socket";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
 import LeftMessage from "./LeftMessage";
 import RightMessage from "./RightMessage";
-import rightMessage from "./RightMessage";
 
 
-interface Message {
+export interface Message {
 	id: number;
 	message: string;
 	sender: User;
@@ -31,6 +32,7 @@ const Messages: React.FC<{
 
 	const socket = useContext(SocketContext);
 	const [messages, setMessages] = useState<Message[]>([]);
+	const { enqueueSnackbar } = useSnackbar();
 
 	useEffect(() => {
 		if (!currentChat) {
@@ -46,7 +48,7 @@ const Messages: React.FC<{
 		})
 		.catch(err => {
 			console.log('err', err);
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		}); 
 	}, [currentChat, currentUser]);
 
@@ -57,10 +59,6 @@ const Messages: React.FC<{
 					return; 
 				if (payload.parent.id === currentChat?.id){
 					setMessages((messages) => [...messages, payload]);
-				}
-				else {
-					/* Enable notification for that channel */
-					alert('New message in ' + payload.parent.name);
 				}
 			})
 		}

@@ -1,25 +1,15 @@
-import { useEffect, useState , useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import moment, { Moment } from 'moment';
-import './style.css'
+import './style.css';
 import { SocketContext } from '../../context/socket';
 
-import IconButton from '@mui/material/IconButton';
-import ClearIcon from '@mui/icons-material/Clear';
-import MessageIcon from '@mui/icons-material/Message';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
 import Channels from './Channel/Channels';
 import Players from './Players/Players';
-import Messages from './Messages/Messages';
+import Messages, { Message } from './Messages/Messages';
 import { CircularProgress } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { showSnackbarNotification } from '../../App';
 
 interface User {
 	id: number;
@@ -46,6 +36,8 @@ const Chat: React.FC = () => {
 	
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
+
 	const [user, setUser] = useState<User | null>(null);
 	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 
@@ -63,6 +55,21 @@ const Chat: React.FC = () => {
 			alert(err.response.data.message)
 		});
 	}, []); /* Renders only once */
+
+	useEffect(() => {
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
 
 
 

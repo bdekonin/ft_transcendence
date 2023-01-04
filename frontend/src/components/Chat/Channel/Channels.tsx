@@ -8,17 +8,12 @@ import Chat from '../Chat';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import MessageIcon from '@mui/icons-material/Message';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
 import PublicGroup from './PublicGroup';
 import ProtectedGroup from './ProtectedGroup';
+import { useSnackbar } from "notistack";
+import { showSnackbarNotification } from '../../../App';
 
 
 export type User = {
@@ -35,6 +30,7 @@ const Channels: React.FC<{
 	/* Utilities */
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
 
 	/* Chats */
 	const [joinedChats, setJoinedChats] = useState<Chat[]>([]);
@@ -60,7 +56,7 @@ const Channels: React.FC<{
 			console.log('err', err);
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, [user, refreshChats]);
 
@@ -114,7 +110,7 @@ const Channels: React.FC<{
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}
 	function joinProtected(chat: Chat) {
@@ -128,11 +124,13 @@ const Channels: React.FC<{
 			setRefreshChats(new Date().toISOString());
 
 			alert('Success');
+			showSnackbarNotification(enqueueSnackbar, 'Success', 'success');
+
 		})
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}
 	const handleChatClick = (chat: Chat, joined: boolean) => {
@@ -175,7 +173,7 @@ const Channels: React.FC<{
 		.catch(err => {
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}
 
