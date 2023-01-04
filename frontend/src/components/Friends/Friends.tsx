@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import './style.css'
+import { SocketContext } from "../../context/socket";
 
 interface User {
 	id: number;
@@ -24,6 +25,7 @@ interface Avatar {
 
 const Friends:React.FC = () => {
 	
+	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	const [users, setUsers] = useState<User[]>([]);
@@ -33,12 +35,52 @@ const Friends:React.FC = () => {
 	function goHome(){ navigate("/"); }
 	function goToProfile(otherUser: User) {	navigate('/profile?user=' + otherUser.username); }
 
+
 	useEffect(() => {
-		console.log('just loaded again');
-			axios.get('http://localhost:3000/user', {withCredentials: true})
+
+		if (!socket)
+			return ;
+
+		socket.on('chat/refresh-friendships', () => {
+			axios.get('http://localhost:3000/social', {withCredentials: true})
 			.then(res => {
-				setUser(res.data);
+				let friends: User[] = [];
+				res.data.map((elem: Friend) => {
+					let newUser: User;
+					if (elem.sender.id === user?.id)
+					{
+						newUser = {
+							id: elem.reciever.id,
+							username: elem.reciever.username,
+							status: elem.status,
+							isReceiver: false,
+						}
+					}
+					else
+					{
+						newUser = {
+							id: elem.sender.id,
+							username: elem.sender.username,
+							status: elem.status,
+							isReceiver: true,
+						}
+					}
+					friends.push(newUser);
+				})
+				setUsers(friends);
 			})
+		});
+
+		return (() => {
+			socket.off('chat/refresh-friendships');
+		})
+	})
+
+	useEffect(() => {
+		axios.get('http://localhost:3000/user', {withCredentials: true})
+		.then(res => {
+			setUser(res.data);
+		})
 	}, [])
 
 	useEffect(() => {
@@ -46,7 +88,7 @@ const Friends:React.FC = () => {
 			return ;
 		axios.get('http://localhost:3000/social', {withCredentials: true})
 		.then(res => {
-			console.log(res.data);
+			let friends: User[] = [];
 			res.data.map((elem: Friend) => {
 				let newUser: User;
 				if (elem.sender.id === user?.id)
@@ -61,14 +103,15 @@ const Friends:React.FC = () => {
 				else
 				{
 					newUser = {
-					id: elem.sender.id,
-					username: elem.sender.username,
-					status: elem.status,
-					isReceiver: true,
+						id: elem.sender.id,
+						username: elem.sender.username,
+						status: elem.status,
+						isReceiver: true,
 					}
 				}
-				setUsers(oldArr => [...oldArr, newUser])
+				friends.push(newUser);
 			})
+			setUsers(friends);
 		})
 	}, [user])
 
@@ -86,19 +129,17 @@ const Friends:React.FC = () => {
 		})
 	}, [users])
 
-
-
 	function acceptFriend(otherUser: User) {
 		axios.put('http://localhost:3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
-		.then(() => {
-			window.location.reload();
+		.catch((err) => {
+			alert(err.response.data.message)
 		})
 	}
 
 	function denyFriend(otherUser: User) {
 		axios.delete('http://localhost:3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
-		.then(() => {
-			window.location.reload();
+		.catch((err) => {
+			alert(err.response.data.message)
 		})
 	}
 
