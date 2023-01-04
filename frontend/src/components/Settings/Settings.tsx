@@ -1,9 +1,11 @@
 import axios from "axios";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import './style.css'
+import { Alert, AlertTitle } from "@mui/material";
+import { useSnackbar } from "notistack";
 
 
 interface User {
@@ -32,6 +34,10 @@ const Settings:React.FC = () => {
 
 	//Dialog states on disable
 	const [dialogOpenD, setDialogOpenD] = useState(false);
+
+	//Alerts
+	// const enqueueSnackbar = useContext(SnackBarContext);
+	const { enqueueSnackbar } = useSnackbar();
 
 
 
@@ -124,7 +130,18 @@ const Settings:React.FC = () => {
 			inputRef.current.files = null;
 	}
 
+
+
 	function sumbit() {
+		try {
+			enqueueSnackbar('Succes!', {
+			  variant: "success",
+			  autoHideDuration: 3000,
+			  anchorOrigin: { vertical: "top", horizontal: "right" }
+			  
+			})
+		  } catch (error) {}
+
 		if (userNameDef !== originUserName)
 		{
 			//Update username here
@@ -337,3 +354,7 @@ const Settings:React.FC = () => {
 }
 
 export default Settings;
+function enqueueSnackbar(arg0: string, arg1: { variant: string; autoHideDuration: number; anchorOrigin: { vertical: string; horizontal: string; }; }) {
+	throw new Error("Function not implemented.");
+}
+
