@@ -1,11 +1,9 @@
-import { Injectable} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { UserService } from "src/user/user.service";
-import { Repository } from "typeorm";
-import { UserDetails } from "./utils/types";
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from "src/entities/User.entity";
-import { jwtConstants } from "./utils/constants";
+import { User } from 'src/entities/User.entity';
+import { UserService } from 'src/user/user.service';
+
+import { UserDetails } from './utils/types';
 
 @Injectable()
 export class AuthService {

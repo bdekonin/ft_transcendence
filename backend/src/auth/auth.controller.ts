@@ -1,12 +1,11 @@
-import { Controller, createParamDecorator, Get, Req, Res, UseGuards } from "@nestjs/common";
-import { Request } from "express";
-import { AuthService } from "./auth.service";
-import { AuthenticateGuard, FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
-import { ApiTags } from "@nestjs/swagger";
-import { Response } from 'express'
-import { AuthGuard } from "@nestjs/passport";
-import { JwtAuthGuard } from "./utils/jwt-auth.guard";
-import { User } from "src/entities/User.entity";
+import { Controller, createParamDecorator, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { User } from 'src/entities/User.entity';
+
+import { AuthService } from './auth.service';
+import { FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards';
+import { JwtAuthGuard } from './utils/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')

@@ -34,9 +34,6 @@ export class JwtAuthGuard implements CanActivate {
 			throw new ImATeapotException("username");
 		if (user.twofa && !obj.twofa_verified)
 			throw new ImATeapotException('twofa');
-		//check here if verified
-		// console.log('user=', user);
-		// console.log('token=', token);
 		request.user = user;
 		return true;
 	}
@@ -64,9 +61,6 @@ export class JwtAuthGuardTwoFa implements CanActivate {
 			throw new UnauthorizedException('No User Found');
 		if (!user.username || user.username === '')
 			throw new ImATeapotException("username");
-		//check here if verified
-		// console.log('user=', user);
-		// console.log('token=', token);
 		request.user = user;
 		return true;
 	}

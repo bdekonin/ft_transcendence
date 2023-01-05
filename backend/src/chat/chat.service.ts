@@ -351,15 +351,11 @@ export class ChatService {
 		const date_as_string = Math.round(new Date().valueOf() / 1000).toString();
 
 		if (!chat.banned) {
-			console.log('no banned users');
 			return false;
 		}
 		for (let i = 0; i < bannedUsers.length; i++) {
 			if (bannedUsers[i].id === userID) {
-				console.log('date_as_string: ' + date_as_string);
-				console.log('bannedUsers[i].unbannedTime: ' + bannedUsers[i].unbannedTime);
 				if (Number(bannedUsers[i].unbannedTime) > Number(date_as_string)) {
-					console.log('user is banned');
 					return true;
 				}
 			}
@@ -397,7 +393,6 @@ export class ChatService {
 			id: bannedID, 
 			unbannedTime: String(Math.round(new Date().valueOf() / 1000) + Number(time)),
 		}
-		console.log('banPayload: ', banPayload);
 		if (chat.banned) {
 			chat.banned.push(banPayload);
 		} else {
@@ -429,11 +424,6 @@ export class ChatService {
 		if (chat.adminIDs.some(adminID => adminID === userID)) {
 			chat.adminIDs = chat.adminIDs.filter(adminID => adminID !== userID);
 		}
-		console.log('LEAVING CHAT WITH ID: ', chatID);
-		// if (chat.adminIDs.length === 0) {
-		// 	chat.adminIDs = [chat.users[0].id];
-		// }
-
 		return await this.chatRepo.save(chat);
 	}
 
@@ -565,9 +555,6 @@ export class ChatService {
 			throw new BadRequestException("User does not exist");
 		}
 		const uuid = uuidv5(String(chat.id), 'bb5d0ffa-9a4c-4d7c-8fc2-0a7d2220ba45');
-
-		/* Add to game invites  in socketGateway */
-		console.log(uuid);
 
 		const link = 'http://localhost:3006/pong?invite=' + uuid;
 

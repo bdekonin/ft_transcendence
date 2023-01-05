@@ -102,33 +102,8 @@ export class UserService {
 
 		res.clearCookie('jwt')
 		const newToken = this.jwtService.sign({ sub: user.id, oauthID: user.oauthID, twofa_verified: true }, { secret: process.env.JWT_SECRET });
-		console.log(newToken);
 		res.cookie('jwt', newToken);
-		// res.send(200);
 		res.status(200).send();
-
-
-		
-		// this.jwtService.sign({})
-
-
-		//Modify token / create new  and send to user
-
-
-
-		// this.jwtService.sign()
-		// console.log(newToken);
-		// // this.jwtService.sign({})
-		// res.send('done');
-		// const user = await this.findUserById(userID);
-		// if (!user) {
-		// 	throw new NotFoundException('User not found');
-		// }
-		// const newToken = this.authService.createToken(user, true);
-		// res.cookie('jwt', newToken, { httpOnly: true });
-		// res.header('Authorization', 'JWT ' + newToken);
-		// return ({newToken});
-		// res.status(200).json('User Logged out')
 	}
 
 	async enableTwoFA(userID: number, token: string) {

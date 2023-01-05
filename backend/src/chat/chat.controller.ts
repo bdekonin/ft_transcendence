@@ -208,7 +208,6 @@ export class ChatController {
 		@Param('userID', ParseIntPipe) userID: number, // Admin
 		@Param('chatID', ParseIntPipe) chatID: number, // Chat
 	) {
-		console.log('getAdmins', chatID, userID);
 		return await this.chatService.getAdmins(chatID);
 	}
 
