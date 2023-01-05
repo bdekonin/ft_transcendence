@@ -8,10 +8,8 @@ import { ChatModule } from "src/chat/chat.module";
 import { ChatService } from "src/chat/chat.service";
 import { Chat } from "src/entities/Chat.entity";
 import { Friend } from "src/entities/Friend.entity";
-import { Membership } from "src/entities/Membership.entity";
 import { Message } from "src/entities/Message.entity";
 import { User } from "src/entities/User.entity";
-import { MembershipService } from "src/user/membership/membership.service";
 import { UserController } from "src/user/user.controller";
 import { UserModule } from "src/user/user.module";
 import { UserService } from "src/user/user.service";
@@ -22,16 +20,13 @@ import { SocialService } from "./social.service";
 	imports: [
 		forwardRef(() => AppModule),
 		UserModule, SocialModule, ChatModule,
-		TypeOrmModule.forFeature([Chat, User, Message, Membership, Friend]),
+		TypeOrmModule.forFeature([Chat, User, Message, Friend]),
 		CacheModule.register(),
 	],
 	controllers: [
-		UserController,
 		SocialController,
-		ChatController,
 	],
 	providers: [
-		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,

@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Friend } from "src/entities/Friend.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
-import { Membership } from "src/entities/Membership.entity";
 import { User } from "src/entities/User.entity";
 import { UserModule } from "src/user/user.module";
 import { UserService } from "src/user/user.service";
@@ -18,7 +17,7 @@ import { PassportModule } from "@nestjs/passport";
 @Module({
 	imports: [
 		PassportModule,
-		UserModule, TypeOrmModule.forFeature([User, Membership, GameHistory, Friend]),
+		UserModule, TypeOrmModule.forFeature([User, GameHistory, Friend]),
 		JwtModule.register({
 			secret: jwtConstants.secret,
 			signOptions: { expiresIn: '2h' }, /* 60 minutes */

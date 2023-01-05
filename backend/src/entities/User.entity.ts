@@ -1,6 +1,5 @@
 import { Column, BeforeInsert, Entity, JoinColumn, AfterLoad, ManyToMany, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GameHistory } from "./GameHistory.entity";
-import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
 import { ApiProperty } from '@nestjs/swagger';
 import { Chat } from "./Chat.entity";
@@ -22,12 +21,6 @@ export class User {
 	@ApiProperty({ description: 'The avatar of the user', example: 'default.jpeg' })
 	@Column({ default: 'default.png' })
 	avatar: string; // Link to image || or file path to image
-
-	// @Column() // One to One
-	@ApiProperty({ description: 'Membership of the user', type: () => Membership })
-	@OneToOne(() => Membership, (membership) => membership.user)
-	@JoinColumn()
-	membership: Membership; // extends to .role .banned .muted
 
 	@ApiProperty({ example: 1 })
 	@Column({ default: 0 })

@@ -11,22 +11,19 @@ import { UserService } from 'src/user/user.service';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
-import { Membership } from 'src/entities/Membership.entity';
-import { MembershipService } from 'src/user/membership/membership.service';
 
 @Module({
 	imports: [
 		forwardRef(() => AppModule),
 		UserModule, ChatModule,
-		TypeOrmModule.forFeature([Chat, User, Message, Membership]),
+		TypeOrmModule.forFeature([Chat, User, Message]),
 		CacheModule.register(),
 	],
 	controllers: [
-		UserController,
+		// UserController,
 		ChatController,
 	],
 	providers: [
-		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,

@@ -8,13 +8,10 @@ import { ChatModule } from "src/chat/chat.module";
 import { ChatService } from "src/chat/chat.service";
 import { Chat } from "src/entities/Chat.entity";
 import { GameHistory } from "src/entities/GameHistory.entity";
-import { Membership } from "src/entities/Membership.entity";
 import { Message } from "src/entities/Message.entity";
 import { User } from "src/entities/User.entity";
-import { GameController } from "src/game/game.controller";
 import { GameModule } from "src/game/game.module";
 import { GameService } from "src/game/game.service";
-import { MembershipService } from "src/user/membership/membership.service";
 import { UserModule } from "src/user/user.module";
 import { UserService } from "src/user/user.service";
 import { socketGateway } from "./socket.gateway";
@@ -23,14 +20,13 @@ import { socketGateway } from "./socket.gateway";
 @Module({
 	imports: [
 		UserModule, ChatModule, GameModule,
-		TypeOrmModule.forFeature([Chat, User, Message, Membership, GameHistory]),
+		TypeOrmModule.forFeature([Chat, User, Message, GameHistory]),
 		forwardRef(() => AppModule),
 		CacheModule.register(),
 	],
-	controllers: [ChatController],
+	controllers: [],
 	providers: [
 		socketGateway,
-		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,

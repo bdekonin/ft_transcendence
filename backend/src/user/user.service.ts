@@ -183,19 +183,25 @@ export class UserService {
 				throw new NotModifiedException('Username is already set to ' + dto.username);
 			}
 			user.username = dto.username;
-			await this.userRepository.save(user).catch((err) => {
-				if (err.code === '23505') {
-					throw new BadRequestException('Username already exists');
-				}
-			});
+			// await this.userRepository.save(user)
+			// .catch((err) => {
+			// 	if (err.code === '23505') {
+			// 		throw new BadRequestException('Username already exists');
+			// 	}
+			// });
 		}
 		if (dto.twofa) {
 			if (user.twofa == dto.twofa) {
 				throw new NotModifiedException('twofa is already set to ' + dto.twofa);
 			}
 			user.twofa = dto.twofa;
-			this.userRepository.save(user);
 		}
+		await this.userRepository.save(user)
+		.catch((err) => {
+			if (err.code === '23505') {
+				throw new BadRequestException('Username already exists');
+			}
+		});
 		return { msg: "OK" };
 	}
 

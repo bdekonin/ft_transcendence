@@ -26,9 +26,7 @@ export class UserController {
 	// @UseGuards(AuthenticateGuard)
 	async getAllUsers()
 	{
-		const users = await this.userService.userRepository.find({
-			relations: ['membership']
-		});
+		const users = await this.userService.userRepository.find();
 		// loop through users and remove if two is enabled
 		for (let i = 0; i < users.length; i++) {
 			delete users[i].twofa;
@@ -121,7 +119,7 @@ export class UserController {
 
 		const foundUser = await this.userService.userRepository.findOne({
 			where: {id: user.id},
-			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+			relations: ['games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
 		});
 		if(!foundUser) {
 			throw new NotFoundException('User Not Found');
@@ -155,7 +153,7 @@ export class UserController {
 
 		const user = await this.userService.userRepository.findOne({
 			where: {username: username},
-			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+			relations: ['games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
 		});
 		if(!user) {
 			throw new NotFoundException('User Not Found');
