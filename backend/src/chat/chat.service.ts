@@ -83,6 +83,32 @@ export class ChatService {
 		return await this.chatRepo.save(chat);
 	}
 
+
+	async kickUser(chatID: number, kickUserID: number, adminID: number) {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === adminID)) {
+			throw new BadRequestException("userID is not part of this chat");
+		}
+		if (!chat.users.some(user => user.id === kickUserID)) {
+			throw new BadRequestException("demoteUserID is not part of this chat");
+		}
+
+		if (chat.adminIDs.includes(kickUserID))
+			throw new BadRequestException("Cannot kick a admin");
+		
+
+		return await this.leaveChat(kickUserID, chatID);
+
+	}
+
 	async getAdmins(chatID: number) {
 		const chat = await this.chatRepo.findOne({
 			relations: ['users'],
@@ -119,9 +145,8 @@ export class ChatService {
 			throw new BadRequestException("muteID is not part of this chat");
 		}
 
-		if (chat.adminIDs.some(adminID => adminID === muteID)) {
-			throw new BadRequestException("muteID cannot be an admin");
-		}
+		if (chat.adminIDs.includes(muteID))
+			throw new BadRequestException("Cannot mute a admin");
 
 		if (chat.muted) {
 			chat.muted.push(muteID);
@@ -360,9 +385,8 @@ export class ChatService {
 			throw new BadRequestException("bannedID is not part of this chat");
 		}
 
-		if (chat.adminIDs.some(adminID => adminID === bannedID)) {
-			throw new BadRequestException("bannedID cannot be an admin");
-		}
+		if (chat.adminIDs.includes(bannedID))
+			throw new BadRequestException("Cannot ban a admin");
 
 		if (chat.users.some(user => user.id === bannedID)) {
 			// await this.leaveChat(bannedID, chatID);
@@ -442,6 +466,35 @@ export class ChatService {
 			banned: [],
 		});
 		return await this.chatRepo.save(newChat);
+	}
+
+	async switchChannelType(userID: number, chatID: number, password: string): Promise<Chat> {
+		const chat = await this.chatRepo.findOne({
+			relations: ['users'],
+			where: {
+				id: chatID
+			},
+		});
+		if (!chat) {
+			throw new BadRequestException("Chat does not exist");
+		}
+		if (!chat.users.some(user => user.id === userID)) {
+			throw new BadRequestException("User is not part of this chat");
+		}
+		if (chat.type == 'PRIVATE') {
+			throw new BadRequestException("Cannot update a private chat");
+		}
+		if (chat.type == ChatType.GROUP_PROTECTED) {
+			chat.type = ChatType.GROUP;
+			chat.password = null;
+		}
+		else if (chat.type == ChatType.GROUP) {
+			chat.type = ChatType.GROUP_PROTECTED
+			chat.password = await bcrypt.hash(password, 10);
+		}
+		else
+			return ;
+		return await this.chatRepo.save(chat);
 	}
 
 	async update(userID: number, chatID: number, dto: updateChatDto): Promise<Chat> {

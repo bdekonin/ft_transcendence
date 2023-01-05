@@ -195,26 +195,26 @@ const Social: FC = () => {
 
 		if (isUserSender && isPending) {
 			return (
-				<button className="follow" onClick={() => { handleUnfollow(user) }}>Cancel</button>
+				<button className="follow" onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>Cancel</button>
 			);
 		}
 		else if (isPending) {
 			return (
 				<>
-					<button className="follow decline" onClick={() => { handleUnfollow(user) }}>Decline</button>
-					<button className="follow accept" onClick={() => { handleFollow(user) }}>Accept</button>
+					<button className="follow decline" onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>Decline</button>
+					<button className="follow accept" onClick={() => { handleFollow(enqueueSnackbar, user) }}>Accept</button>
 				</>
 			);
 		}
 
 		if (isFriend) {
 			return (
-				<button className="follow" onClick={() => { handleUnfollow(user) }}>Unfollow</button>
+				<button className="follow" onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>Unfollow</button>
 			);
 		}
 
 		return (
-			<button className="follow" onClick={() => { handleFollow(user) }}>Follow</button>
+			<button className="follow" onClick={() => { handleFollow(enqueueSnackbar, user) }}>Follow</button>
 		);
 	}
 
