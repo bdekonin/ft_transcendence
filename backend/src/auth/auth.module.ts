@@ -1,18 +1,19 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Friend } from "src/entities/Friend.entity";
-import { GameHistory } from "src/entities/GameHistory.entity";
-import { User } from "src/entities/User.entity";
-import { UserModule } from "src/user/user.module";
-import { UserService } from "src/user/user.service";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
-import { FortyTwoStrategy } from "./utils/FortyTwoStrategy";
-import { GoogleStrategy } from "./utils/GoogleStrategy";
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from "./utils/constants";
-import { JwtStrategy } from "./utils/jwt.strategy";
-import { PassportModule } from "@nestjs/passport";
+import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Friend } from 'src/entities/Friend.entity';
+import { GameHistory } from 'src/entities/GameHistory.entity';
+import { User } from 'src/entities/User.entity';
+import { UserModule } from 'src/user/user.module';
+import { UserService } from 'src/user/user.service';
+
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { jwtConstants } from './utils/constants';
+import { FortyTwoStrategy } from './utils/FortyTwoStrategy';
+import { GoogleStrategy } from './utils/GoogleStrategy';
+import { JwtStrategy } from './utils/jwt.strategy';
 
 @Module({
 	imports: [

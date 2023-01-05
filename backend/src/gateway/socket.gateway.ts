@@ -44,7 +44,6 @@ export class socketGateway {
 		private readonly chatService: ChatService,
 		private readonly gameService: GameService,
 	) {
-		console.log("socket Gateway constructor");
 	}
 
 	@WebSocketServer()
@@ -71,9 +70,6 @@ export class socketGateway {
 		rooms.forEach((room) => {
 			client.join('chat:' + room.id);
 		});
-
-		console.log('Connections', this.connections);
-		console.log('Rooms', rooms);
 	}
 
 	async handleDisconnect (client: Socket) {
@@ -87,8 +83,6 @@ export class socketGateway {
 		const clientToBeRemoved = this.connections.find((connection) => connection.socketID == client.id);
 		if (clientToBeRemoved)
 			this.connections.splice(this.connections.indexOf(clientToBeRemoved), 1);
-
-		console.log('Connections', this.connections);
 	}
 
 	/* Chats */
@@ -224,15 +218,10 @@ export class socketGateway {
 			return;
 
 		const inviteID = payload.id;
-		console.log('KJLASHDKJAH');
-		console.log('1111');
 
 		const otherUser = this.invitedPlayers.get(inviteID);
 		if (otherUser) {
-			console.warn('START');
 			/* Other user is waiting */
-
-			console.log('client, otherUser', client, otherUser);
 
 			let tempMap = new Map();
 			tempMap.set(client.id, client);
@@ -264,11 +253,7 @@ export class socketGateway {
 
 
 	async statusOfUser(userID: number, username: string) {
-		console.log('Checking status of user');
-		console.log('userID', userID);
-		console.log('username', username);
 		if (this.connections.find((connection) => connection.userID == userID)) {
-			console.log('User is connected');
 			if (this.waitingPlayers.get(userID.toString()))
 				return 'online';
 			/* Loop through every game and check if user is in game */
@@ -296,13 +281,11 @@ export class socketGateway {
 				right: game.right.username,
 			};
 		});
-		console.log('parsedGames', parsedGames);
 		return parsedGames;
 	}
 
 	@SubscribeMessage('game/spectate-list')
 	async handleSpectateList (client: Socket, payload: any) {
-		console.log('game/spectate-list');
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -311,14 +294,12 @@ export class socketGateway {
 
 	@SubscribeMessage('game/waiting')
 	async handleJoinGame (client: Socket, payload: any) {
-		console.log('game/waiting');
 		const user = await this.findUser(client)
 		if (!user)
 			return;
 		/* Check if user is already in a game */
 		const usersCurrentGame = this.isUserInGame(client.id); /* returns game if user is in a game else null */
 		if (usersCurrentGame) {
-			console.log('User is already in a game');
 			if (this.didBothUsersLeave.has(usersCurrentGame.id)) {
 				this.didBothUsersLeave.delete(usersCurrentGame.id);
 			}
@@ -361,7 +342,6 @@ export class socketGateway {
 
 	@SubscribeMessage('game/leave')
 	async handleLeaveGame (client: Socket, payload: any) {
-		console.log('game/leave');
 		const user = await this.findUser(client)
 		if (!user)
 			return;
@@ -376,14 +356,14 @@ export class socketGateway {
 		const usersCurrentGame = this.isUserInGame(client.id);
 		if (usersCurrentGame) {
 			/* User is still in a game */
-			console.log('User is still in a game');
+
 			/* Check if both users left */
 			if (this.didBothUsersLeave.has(usersCurrentGame.id)) {
 				/* Both users left */
 				this.didBothUsersLeave.set(usersCurrentGame.id, this.didBothUsersLeave.get(usersCurrentGame.id) + 1);
 				if (this.didBothUsersLeave.get(usersCurrentGame.id) == 2) {
 					/* Both users left */
-					console.log('Both users left. CREATIING DRAW!');
+
 					/* POST REQUEST TO DRAW GAME */
 					const postGame: CreateGameDTO = {
 						mode: "1v1",
@@ -420,7 +400,6 @@ export class socketGateway {
 			return;
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
-			// console.log('game/move game not found', payload);
 			return;
 		}
 		if (game.left.socket == client.id) {
@@ -448,7 +427,6 @@ export class socketGateway {
 			return;
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
-			console.log('game/score game not found');
 			return;
 		}
 		if (game.left.socket == client.id && payload.side == 'left') {
@@ -476,13 +454,12 @@ export class socketGateway {
 	@SubscribeMessage('game/request-spectate')
 	async handleRequestSpectate (client: Socket, payload: any) {
 		/* payload only has .id */
-		console.log('game/request-spectate', payload.id);
+
 		const user = await this.findUser(client)
 		if (!user)
 			return;
 		const game = this.currentGames.get(payload.id);
 		if (!game) {
-			console.log('game/request-spectate game not found');
 			return;
 		}
 		this.server.to(client.id).emit('game/spectate', game);
@@ -490,11 +467,9 @@ export class socketGateway {
 	}
 
 	async handleEndGame (game: Game, winner?: Paddle, loser?: Paddle, winnerScore?: number, loserScore?: number) {
-		// console.log('Ending game', game.id);
 		this.currentGames.delete(game.id);
 
 		if (!winner && !loser) { /* Draw */
-			// console.log('Its a draw', winner);
 			this.server.to('game:' + game.id).emit('game/end');
 			this.server.socketsLeave('game:' + game.id);
 			const postGame: CreateGameDTO = {
@@ -519,7 +494,6 @@ export class socketGateway {
 			winnerScore: winnerScore,
 			loserScore: loserScore,
 		}
-		console.log('POSTING GAME!');
 		await this.gameService.create(postGame);
 	}
 
@@ -549,7 +523,6 @@ export class socketGateway {
 			leftScore: 0,
 			rightScore: 0
 		}
-		console.log('Creating game', game);
 		return game;
 	}
 }
