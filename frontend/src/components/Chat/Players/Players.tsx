@@ -9,6 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { handleFollow, handleUnfollow, handleBlock, handleUnblock, handleMute, handleKick, handleBan, handlePromote, handleDemote, handleUnmute, handleInviteToGame } from './ButtonHandlers';
 import BanDialog from './BanDialog';
+import { showSnackbarNotification } from '../../../App';
+import { useSnackbar } from 'notistack';
+
 
 type User = {
 	id: number;
@@ -36,6 +39,7 @@ const Players: React.FC<{
 
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
+	const { enqueueSnackbar } = useSnackbar();
 	const [users, setUsers] = useState<User[]>([]);
 
 	useEffect(() => {
@@ -105,7 +109,7 @@ const Players: React.FC<{
 		if (isUserSender && isPending) {
 			return (
 				<Button variant='contained' className='action-button add'
-					onClick={() => { handleUnfollow(user) }}>
+					onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>
 						Cancel
 				</Button>
 			);
@@ -114,11 +118,11 @@ const Players: React.FC<{
 			return (
 				<>
 					<Button variant='contained' className='action-button add'
-						onClick={() => { handleUnfollow(user) }}>
+						onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>
 							Decline
 					</Button>
 					<Button variant='contained' className='action-button add'
-						onClick={() => { handleFollow(user) }}>
+						onClick={() => { handleFollow(enqueueSnackbar, user) }}>
 							Accept
 					</Button>
 				</>
@@ -128,7 +132,7 @@ const Players: React.FC<{
 		if (isFriend) {
 			return (
 				<Button variant='contained' className='action-button add'
-					onClick={() => { handleUnfollow(user) }}>
+					onClick={() => { handleUnfollow(enqueueSnackbar, user) }}>
 						Unfollow
 				</Button>
 			);
@@ -136,7 +140,7 @@ const Players: React.FC<{
 
 		return (
 			<Button variant='contained' className='action-button add'
-				onClick={() => { handleFollow(user) }}>
+				onClick={() => { handleFollow(enqueueSnackbar, user) }}>
 					Follow
 			</Button>
 		)
@@ -152,12 +156,12 @@ const Players: React.FC<{
 				{
 					!isBlocked ?
 					<Button variant='contained' className='action-button block'
-						onClick={() => { handleBlock(user) }}>
+						onClick={() => { handleBlock(enqueueSnackbar, user) }}>
 							Block
 					</Button>
 					:
 					<Button variant='contained' className='action-button block'
-						onClick={() => { handleUnblock(user) }}>
+						onClick={() => { handleUnblock(enqueueSnackbar, user) }}>
 							Unblock
 					</Button>
 				}
@@ -176,21 +180,21 @@ const Players: React.FC<{
 				{
 					admin && !mutes?.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
-						onClick={() => { handleMute(currentUser as User, user, currentChat)}}>
+						onClick={() => { handleMute(enqueueSnackbar, currentUser as User, user, currentChat)}}>
 						Mute
 					</Button>
 				}
 				{
 					admin && mutes && mutes.includes(user.id) &&
 					<Button variant='contained' className='action-button mute'
-						onClick={() => { handleUnmute(currentUser as User, user, currentChat)}}>
+						onClick={() => { handleUnmute(enqueueSnackbar, currentUser as User, user, currentChat)}}>
 						Unmute
 					</Button>
 				}
 				{
 					admin &&
 					<Button variant='contained' className='action-button kick'
-						onClick={() => { handleKick(currentUser as User, user, currentChat) }}>
+						onClick={() => { handleKick(enqueueSnackbar, currentUser as User, user, currentChat) }}>
 							Kick
 					</Button>
 				}
@@ -209,7 +213,7 @@ const Players: React.FC<{
 					{
 						admin &&
 						<Button variant='contained' className='action-button ban' 
-							// onClick={() => { handleBan(currentUser as User, user, currentChat) }}>
+							// onClick={() => { handleBan(enqueueSnackbar, currentUser as User, user, currentChat) }}>
 							onClick={() => { handleBanDialogOpen(user) }}>
 							Ban
 						</Button>
@@ -217,14 +221,14 @@ const Players: React.FC<{
 					{
 						admin && !isAdmin(user) &&
 						<Button variant='contained' className='action-button set-admin'
-							onClick={() => { handlePromote(currentUser as User, user, currentChat) }}>
+							onClick={() => { handlePromote(enqueueSnackbar, currentUser as User, user, currentChat) }}>
 							Set Admin
 						</Button>
 					}
 					{
 						admin && isAdmin(user) &&
 						<Button variant='contained' className='action-button set-admin'
-							onClick={() => { handleDemote(currentUser as User, user, currentChat) }}>
+							onClick={() => { handleDemote(enqueueSnackbar, currentUser as User, user, currentChat) }}>
 							Unset Admin
 						</Button>
 					}
@@ -260,7 +264,7 @@ const Players: React.FC<{
 			return (
 				<div className='buttons'>
 					<Button variant='contained' className='action-button invite'
-						onClick={() => { handleInviteToGame(currentUser as User, currentChat) }}>
+						onClick={() => { handleInviteToGame(enqueueSnackbar, currentUser as User, currentChat) }}>
 							Invite to game
 					</Button>
 					<Button variant='contained' className='action-button profile'

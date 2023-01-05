@@ -242,7 +242,7 @@ export class ChatController {
 		@Param('chatID', ParseIntPipe) chatID: number, // Chat
 		@Body('kickUserID') kickUserID: number, // User to ban
 	) {
-		const output = await this.chatService.leaveChat(kickUserID, chatID);
+		const output = await this.chatService.kickUser(chatID, kickUserID, userID);
 		this.socketGateway.server.emit('chat/refresh-chats');
 		const payloadToBeSent = {
 			id: chatID,
@@ -294,5 +294,17 @@ export class ChatController {
 		const messagePayload = await this.chatService.gameInvite(userID, chatID);
 		this.socketGateway.server.in('chat:' + chatID).emit('chat/refresh-message', messagePayload);
 		return messagePayload;
+	}
+
+	@Patch('switch/:chatID')
+	async switchChatType(
+		@Param('userID', ParseIntPipe) userID: number, // Admin
+		@Param('chatID', ParseIntPipe) chatID: number, // Chat
+		@Body('password') password: string
+	) {
+		const output = await this.chatService.switchChannelType(userID, chatID, password);
+		this.socketGateway.server.emit('chat/refresh-chats-joined');
+		this.socketGateway.server.emit('chat/refresh-chats');
+		return output;
 	}
  }

@@ -1,36 +1,31 @@
 import axios from "axios";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
-
-
-
-
-
-
+import { showSnackbarNotification } from '../../../App';
 
 /* Follow / Unfollow */
-export function handleFollow(user: User) {
+export function handleFollow(enqueueSnackbar: any, user: User) {
 	axios.put("http://localhost:3000/social/" + user.id + "/follow", {}, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
-export function handleUnfollow(user: User) {
+export function handleUnfollow(enqueueSnackbar: any, user: User) {
 	axios.delete("http://localhost:3000/social/" + user.id + "/unfollow", {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
 
 /* Block / Unblock */
-export function handleBlock(user: User) {
+export function handleBlock(enqueueSnackbar: any, user: User) {
 	axios.put("http://localhost:3000/social/" + user.id + "/block", {}, {withCredentials: true})
 	.then((payload) => {
 	})
@@ -38,20 +33,20 @@ export function handleBlock(user: User) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
-export function handleUnblock(user: User) {
+export function handleUnblock(enqueueSnackbar: any, user: User) {
 	axios.delete("http://localhost:3000/social/" + user.id + "/unblock", {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
-export function handleMute(currentUser: User, user: User, currentChat: Chat) {
+export function handleMute(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -64,10 +59,10 @@ export function handleMute(currentUser: User, user: User, currentChat: Chat) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
-export function handleUnmute(currentUser: User, user: User, currentChat: Chat) {
+export function handleUnmute(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -80,11 +75,11 @@ export function handleUnmute(currentUser: User, user: User, currentChat: Chat) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
-export function handleKick(currentUser: User, user: User, currentChat: Chat) {
+export function handleKick(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -98,7 +93,7 @@ export function handleKick(currentUser: User, user: User, currentChat: Chat) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
@@ -106,7 +101,7 @@ export function handleKick(currentUser: User, user: User, currentChat: Chat) {
 // @Param('chatID', ParseIntPipe) chatID: number, // Chat
 // @Body('bannedID') bannedID: number, // User to ban
 // @Body('time') time: string, // Time to ban for
-export function handleBan(currentUser: User, user: User, currentChat: Chat, time_in_seconds: number) {
+export function handleBan(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat, time_in_seconds: number) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -121,11 +116,11 @@ export function handleBan(currentUser: User, user: User, currentChat: Chat, time
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
-export function handlePromote(currentUser: User, user: User, currentChat: Chat) {
+export function handlePromote(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -140,11 +135,11 @@ export function handlePromote(currentUser: User, user: User, currentChat: Chat) 
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
-export function handleDemote(currentUser: User, user: User, currentChat: Chat) {
+export function handleDemote(enqueueSnackbar: any, currentUser: User, user: User, currentChat: Chat) {
 	if (currentUser.id === user.id)
 		return ;
 	if (!currentUser || !user || !currentChat)
@@ -158,11 +153,11 @@ export function handleDemote(currentUser: User, user: User, currentChat: Chat) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }
 
-export function handleInviteToGame(currentUser: User, currentChat: Chat) {
+export function handleInviteToGame(enqueueSnackbar: any, currentUser: User, currentChat: Chat) {
 	if (!currentUser  || !currentChat)
 		return ;
 
@@ -171,6 +166,6 @@ export function handleInviteToGame(currentUser: User, currentChat: Chat) {
 		if (err.response.data.statusCode === 401)
 			return ;
 		else
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 	});
 }

@@ -14,9 +14,8 @@ import { useSnackbar } from "notistack";
 import { showSnackbarNotification } from '../../../App';
 import ProtectedGroup from './ProtectedGroup';
 import PublicGroup from './PublicGroup';
-
 import SettingsIcon from '@mui/icons-material/Settings';
-import PasswordDialog from './PasswordDialog';
+import SettingsDialog from './SettingsDialog';
 
 export type User = {
 	id: number;
@@ -286,7 +285,7 @@ const Channels: React.FC<{
 	function renderActionsButton(chat: any, joined: boolean, userID: number) {
 		if (joined && isAdmin(userID) && currentChat?.type != 'PRIVATE' && chat.id == currentChat?.id) {
 			return (
-				<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { handlePasswordDialogOpen() }}>
+				<IconButton className='options' aria-label="options-button" sx={{ color: 'white' }} onClick={() => { handleSettingsDialogOpen() }}>
 					<SettingsIcon />
 				</IconButton>
 			)
@@ -372,7 +371,7 @@ const Channels: React.FC<{
 
 	const [publicDialogOpen, setPublicDialogOpen] = useState(false);
 	const [protectedDialog, setprotectedDialog] = useState(false);
-	const [passwordDialog, setPasswordDialog] = useState(false);
+	const [settingsDialog, setSettingsDialog] = useState(false);
 
 	const handlePublicDialogClose = () => {
 		setPublicDialogOpen(false);
@@ -388,11 +387,11 @@ const Channels: React.FC<{
 		setprotectedDialog(true);
 	}
 
-	const handlePasswordDialogClose = () => {
-		setPasswordDialog(false);
+	const handleSettingsDialogClose = () => {
+		setSettingsDialog(false);
 	};
-	const handlePasswordDialogOpen = () => {
-		setPasswordDialog(true);
+	const handleSettingsDialogOpen = () => {
+		setSettingsDialog(true);
 	}
 
 	if (!user)
@@ -423,11 +422,11 @@ const Channels: React.FC<{
 					open={protectedDialog}
 					setClose={handleProtectedDialogClose}
 				/>
-				<PasswordDialog
+				<SettingsDialog
 					currentUser={user}
 					currentChat={currentChat}
-					open={passwordDialog}
-					setClose={handlePasswordDialogClose}
+					open={settingsDialog}
+					setClose={handleSettingsDialogClose}
 					setCurrentChat={setCurrentChat}
 					leaveChannel={leaveChannel}
 				/>
