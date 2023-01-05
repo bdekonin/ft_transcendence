@@ -7,6 +7,7 @@ import { GameHistory } from 'src/entities/GameHistory.entity';
 import { User } from 'src/entities/User.entity';
 import { UserModule } from 'src/user/user.module';
 import { UserService } from 'src/user/user.service';
+import { TwoFAController } from './2fa/TwoFA.controller';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -24,7 +25,7 @@ import { JwtStrategy } from './utils/jwt.strategy';
 			signOptions: { expiresIn: '2h' }, /* 60 minutes */
 		}),
 	],
-	controllers: [AuthController],
+	controllers: [AuthController, TwoFAController],
 	providers: [
 		{
 			provide: 'AUTH_SERVICE',
