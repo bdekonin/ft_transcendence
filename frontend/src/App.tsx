@@ -52,7 +52,6 @@ const App:React.FC = () =>
 				<Route path='/settings' element={<Protected><Settings /></Protected>}/>
 				<Route path='/pong' element={<Protected><Game /></Protected>}/>
 				<Route path='/gamescreen' element={<Protected><Gamescreen /></Protected>}/>
-				<Route path='/aboutus' element={<Login />}/>
 			</Routes>
 		</Router>
 		</SocketContext.Provider>

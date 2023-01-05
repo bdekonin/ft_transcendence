@@ -14,7 +14,6 @@ const AdditionalInfo: FC = () => {
 	const navigate = useNavigate();
 	const [image, setImage] = useState<File>();
 	const [previewImage, setPreviewImage] = useState('');
-	const { enqueueSnackbar } = useSnackbar();
 	
 	useEffect(() => {
 		checkUserNameInput();
@@ -92,14 +91,14 @@ const AdditionalInfo: FC = () => {
 			navigate('/');	
 		})
 		.catch(err => {
-			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			alert(err.response.data.message);
 		})
 		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
 		.then(res => {
 			navigate('/');
 		})
 		.catch(err => {
-			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			alert(err.response.data.message);
 		})
 	}
 

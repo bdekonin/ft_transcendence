@@ -8,7 +8,6 @@ import { showSnackbarNotification } from '../../../App';
 export default function TwoFA() {
 	const navigate = useNavigate();
 	const [inputCode, setInputCode] = useState(['', '', '', '', '', '']);
-	const { enqueueSnackbar } = useSnackbar();
 
 	function onChange(e: ChangeEvent<HTMLInputElement>, num: number) {
 		var data = [...inputCode];
@@ -45,7 +44,7 @@ export default function TwoFA() {
 					navigate('/');
 				})
 				.catch(err => {
-					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+					alert(err.response.data.message);
 					setInputCode(['', '', '', '', '', '']);
 					document.getElementById('Dotc-1')?.focus()
 				})

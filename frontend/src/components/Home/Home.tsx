@@ -61,6 +61,8 @@ const Home: FC = () => {
 							onClick={() => {navigate('/profile')}}>Profile</a></li>
 					<li><a
 							onClick={() => {navigate('/settings')}}>Settings</a></li>
+					<li><a
+							onClick={() => { axios.get('http://localhost:3000/auth/logout', { withCredentials: true }).then(() => { navigate('/login') }) }}>Logout</a></li>
 				</ul>
 
 
