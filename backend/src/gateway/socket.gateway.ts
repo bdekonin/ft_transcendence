@@ -134,14 +134,15 @@ export class socketGateway {
 	
 	@SubscribeMessage('chat/new-chat')
 	async emitNewChatMessage(client: Socket, payload: MessageDto) {
-		console.log('Recieved emit', new Date().valueOf().toString());
 		const user = await this.findUser(client)
 		if (!user)
 			return;
 	
 		if (user.id != payload.senderID) {
-			console.log('User ID does not match sender ID');
 			return;
+		}
+		if (payload.message.length == 0) {
+			return ;
 		}
 		const messagePayload = await this.chatService.sendMessage(payload.chatID, user.id, payload.message);
 		this.server.in('chat:' + payload.chatID).emit('chat/refresh-message', messagePayload);

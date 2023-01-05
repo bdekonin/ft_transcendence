@@ -1,6 +1,5 @@
 import { Injectable} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Membership, UserRole } from "src/entities/Membership.entity";
 import { UserService } from "src/user/user.service";
 import { Repository } from "typeorm";
 import { UserDetails } from "./utils/types";
@@ -14,8 +13,6 @@ export class AuthService {
 	constructor(
 		public userService: UserService,
 		private jwtService: JwtService,
-		@InjectRepository(Membership) public membershipRepo:
-		Repository<Membership>,
 	) {}
 
 	async validateUser(details: UserDetails) {
@@ -26,11 +23,7 @@ export class AuthService {
 		if (user)
 			return user;
 		
-		const newMembership = this.membershipRepo.create();
-		const savedMembership = await this.membershipRepo.save(newMembership);
-		
 		const newUser = this.getPlayerRepository().create(details);
-		newUser.membership = savedMembership;
 		return this.getPlayerRepository().save(newUser);
 	}
 

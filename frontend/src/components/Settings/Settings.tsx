@@ -145,6 +145,7 @@ const Settings:React.FC = () => {
 			axios.patch('http://localhost:3000/user', {username: userNameDef}, {withCredentials: true})
 			.then((res) => {
 				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your username!', 'success');
+				setOriginUserName(userNameDef);
 			})
 			.catch((err) => {
 				if (err.response.data.statusCode === 401)

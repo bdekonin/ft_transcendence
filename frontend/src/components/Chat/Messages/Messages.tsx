@@ -166,7 +166,9 @@ const Messages: React.FC<{
 			"chatID": currentChat?.id,
 			"message": chatBoxMsg
 		}
-		console.log('Emitting message', payload);
+		if (chatBoxMsg.length == 0) {
+			return ;
+		}
 		socket.emit('chat/new-chat', payload);
 	}
 
