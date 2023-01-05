@@ -63,15 +63,15 @@ const Profile:React.FC = () =>
 
 	//getting the Avatars
 	useEffect(() => {
-		axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
-		.then(res => {
-			const imageObjectURL = URL.createObjectURL(res.data);
-			setAvatar({id: user?.id as number, avatar: imageObjectURL});
-		})
-		.catch(err => {
-			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
-		});
 		if (user) {
+			axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
+			.then(res => {
+				const imageObjectURL = URL.createObjectURL(res.data);
+				setAvatar({id: user?.id as number, avatar: imageObjectURL});
+			})
+			.catch(err => {
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
 			.then(res => {
 				console.log(res);
@@ -117,16 +117,21 @@ const Profile:React.FC = () =>
 		if (game?.draw == true)
 			class_name = 'draw';
 		return (
-			<tr key={game.id} className={class_name}>
-				<td>{game.id}</td>
-				<td>{game.mode}</td>
-				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.winner.username)}}>{game.winner.username}</td>
-				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.loser.username)}}>{game.loser.username}</td>
-				<td>{game.winnerScore}</td>
-				<td>{game.loserScore}</td>
-				{/* string to int */}
-				<td>{new Date(parseInt(game.createdAt)).toUTCString()}</td>
-			</tr>
+			<table>
+				<tbody>
+					<tr key={game.id} className={class_name}>
+						<td>{game.id}</td>
+						<td>{game.mode}</td>
+						<td className="clickable" onClick={() => {navigate('/profile?user=' + game.winner.username)}}>{game.winner.username}</td>
+						<td className="clickable" onClick={() => {navigate('/profile?user=' + game.loser.username)}}>{game.loser.username}</td>
+						<td>{game.winnerScore}</td>
+						<td>{game.loserScore}</td>
+			
+						{/* string to int */}
+						<td>{new Date(parseInt(game.createdAt)).toUTCString()}</td>
+					</tr>
+				</tbody>
+			</table>
 		);
 	}
 

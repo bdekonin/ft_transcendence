@@ -33,7 +33,14 @@
 	height: 200px;
 	border-radius: 50%;
 	outline: 3px solid black;
+}
 
+.profile .profileblock .avatar {
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	outline: 3px solid black;
+	background-color: gray;
 }
 
 
