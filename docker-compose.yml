@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  db:
-    container_name: pg_container
+  postgres:
+    container_name: ts_postgres
     image: postgres
     restart: always
     environment:
@@ -10,12 +10,21 @@ services:
       POSTGRES_DB: ft_trans
     ports:
       - "5432:5432"
-  pgadmin:
-    container_name: pgadmin4_container
-    image: dpage/pgadmin4
+  nginx:
+    container_name: ts_nginx
+    image: nginx
     restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: root@root.com
-      PGADMIN_DEFAULT_PASSWORD: root
     ports:
-      - "5050:80"
+      - "8080:80"
+    volumes:
+            - ./frontend/build:/usr/share/nginx/html
+  node:
+    build:
+      context: ./backend/.
+      dockerfile: Dockerfile
+    container_name: ts_node
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
