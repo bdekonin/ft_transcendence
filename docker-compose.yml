@@ -11,13 +11,13 @@ services:
     ports:
       - "5432:5432"
   nginx:
-    container_name: ts_nginx
-    image: nginx
-    restart: always
-    ports:
-      - "3006:80"
-    volumes:
-            - ./frontend/build:/usr/share/nginx/html
+      container_name: ts_nginx
+      build:
+        context: ./frontend/.
+        dockerfile: Dockerfile
+      ports:
+        - "3006:80"
+      restart: always
   node:
     build:
       context: ./backend/.
