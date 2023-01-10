@@ -109,14 +109,17 @@ const Game: React.FC = () => {
 				/* Enable notification for that channel */
 				if (payload.parent.type === 'PRIVATE')
 					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
-				else
-					showSnackbarNotification(enqueueSnackbar, "New message in groupchat '" + payload.parent.name + "'", 'info');
+				else {
+					// eslint-disable-next-line
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+				}
 			});
 		}
 		return () => {
 			socket.off('chat/refresh-message');
 		}
-	}, [socket, enqueueSnackbar]);
+		// eslint-disable-next-line
+	}, [socket]);
 
 	useEffect(() => {
 		if (!draw) {
@@ -124,7 +127,8 @@ const Game: React.FC = () => {
 				setDraw(new Draw(canvasRef.current.height, canvasRef.current.width));
 			}
 		}
-	}, [canvasRef, draw]);
+	// eslint-disable-next-line
+	}, [canvasRef]);
 
 	useEffect(() => {
 		if (location.hash) {
@@ -158,7 +162,8 @@ const Game: React.FC = () => {
 			socket.off("game/spectate");
 			socket.off("game/invite-start");
 		}
-	}, [socket, location]);
+	// eslint-disable-next-line
+	}, [socket]);
 
 	useEffect(() => {
 		if (state === STATE.WAITING) {
@@ -177,7 +182,8 @@ const Game: React.FC = () => {
 			socket.off("game/start");
 			socket.emit("game/leave");
 		};
-	}, [socket, state, location]);
+	// eslint-disable-next-line
+	}, [socket]);
 
 	useEffect(() => {
 		socket.on('game/rejoin', (data: Game) => {
@@ -190,7 +196,8 @@ const Game: React.FC = () => {
 		return () => {
 			socket.off("game/rejoin");
 		}
-	}, [socket, state]);
+	// eslint-disable-next-line
+	}, [socket]);
 
 	useEffect(() => {
 		socket.on("game/update", (data: Game) => {
@@ -204,7 +211,8 @@ const Game: React.FC = () => {
 		return () => {
 			socket.off("game/update");
 		};
-	}, [socket, state]);
+	// eslint-disable-next-line
+	}, [socket]);
 
 	useEffect(() => {
 		socket.on("game/ball", (data: Ball) => {
@@ -230,7 +238,7 @@ const Game: React.FC = () => {
 	/* Mouse move handler */
 	const mouseMoveHandler = useCallback(
 		(e: MouseEvent) => {
-			if (typeof gameState != "undefined" && state === STATE.PLAYING) {
+			if (typeof gameState !== "undefined" && state === STATE.PLAYING) {
 				socket.emit("game/move", {y: e.clientY, id: gameState.id});
 			}
 		},
