@@ -1,11 +1,15 @@
-import { ArgumentMetadata, BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, PipeTransform } from "@nestjs/common";
+import { ArgumentMetadata, BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException, PipeTransform, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entities/User.entity";
 import { Repository } from "typeorm";
 import * as fs from 'fs'
 import { updateUserDto } from "./user.dto";
 import { NotModifiedException, UserNotFoundException } from "src/utils/exceptions";
-import { createChatDto } from "src/chat/chat.controller";
+import * as qrcode from 'qrcode'
+import { authenticator } from '@otplib/preset-default';
+import { AuthService } from "src/auth/auth.service";
+import { JwtService } from "@nestjs/jwt";
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
@@ -18,9 +22,12 @@ export class FileSizeValidationPipe implements PipeTransform {
 @Injectable()
 export class UserService {
 	constructor(
+		private jwtService: JwtService,
 		@InjectRepository(User) public userRepository:
 			Repository<User>,
-	) { }
+	) { 
+	}
+	// let secretOrKey: string;
 	/* Endpoints */
 
 	/* Avatar */
@@ -61,13 +68,75 @@ export class UserService {
 	}
 
 	/* twofa */
-	async getTwoFA(userID: number): Promise<boolean> {
+	async getTwoFA(userID: number) {
+		var qrCode: any;
+
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		const otpauth = authenticator.keyuri(user.username, 'ft_transendence', user.twofa_secret);
+		await qrcode.toDataURL(otpauth, {width: 350})
+		.then(res => {
+			qrCode = res;
+		})
+		return await qrCode;
+	}
+
+	async getTwoFAStatus(userID: number) {
 		const user = await this.findUserById(userID);
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
 		return user.twofa;
 	}
+
+	async verifyTwoFA(userID: number, res: any, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (authenticator.verify({token: token, secret: user.twofa_secret}) === false)
+			throw new UnauthorizedException('Invalid 2fa code.');
+
+		res.clearCookie('jwt')
+		const newToken = this.jwtService.sign({ sub: user.id, oauthID: user.oauthID, twofa_verified: true }, { secret: process.env.JWT_SECRET });
+		res.cookie('jwt', newToken);
+		res.status(200).send();
+	}
+
+	async enableTwoFA(userID: number, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		if (user.twofa)
+			return null; //already enabled error!
+		if (authenticator.verify({token: token, secret: user.twofa_secret})) {
+			user.twofa = !user.twofa;
+			this.userRepository.save(user);
+			return 'OK';
+		}
+		throw new UnauthorizedException('Invalid 2fa code.');
+	}
+
+	async disableTwoFa(userID: number, token: string) {
+		const user = await this.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (!user.twofa)
+			return null; //already enabled error!
+		if (authenticator.verify({token: token, secret: user.twofa_secret})) {
+			user.twofa = !user.twofa;
+			this.userRepository.save(user);
+			return 'OK';
+		}
+		throw new UnauthorizedException('Invalid 2fa code.');
+	}
+
 
 	/* user */
 	async getUser(id: number): Promise<User> {
@@ -89,24 +158,25 @@ export class UserService {
 				throw new NotModifiedException('Username is already set to ' + dto.username);
 			}
 			user.username = dto.username;
-			await this.userRepository.save(user).catch((err) => {
-				if (err.code === '23505') {
-					throw new BadRequestException('Username already exists');
-				}
-			});
+			// await this.userRepository.save(user)
+			// .catch((err) => {
+			// 	if (err.code === '23505') {
+			// 		throw new BadRequestException('Username already exists');
+			// 	}
+			// });
 		}
 		if (dto.twofa) {
 			if (user.twofa == dto.twofa) {
 				throw new NotModifiedException('twofa is already set to ' + dto.twofa);
 			}
 			user.twofa = dto.twofa;
-			this.userRepository.save(user);
 		}
-		if (dto.lastOnline) {
-			user.lastOnline = dto.lastOnline;
-			this.userRepository.save(user);
-		}
-
+		await this.userRepository.save(user)
+		.catch((err) => {
+			if (err.code === '23505') {
+				throw new BadRequestException('Username already exists');
+			}
+		});
 		return { msg: "OK" };
 	}
 

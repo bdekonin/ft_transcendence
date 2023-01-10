@@ -15,8 +15,4 @@ export class updateUserDto {
 
 	@IsOptional()
 	avatar?: string;
-
-	@IsOptional()
-	@IsDate()
-	lastOnline?: string;
 }

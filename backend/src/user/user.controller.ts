@@ -9,11 +9,15 @@ import { AuthenticateGuard } from "src/auth/utils/Guards";
 import { Request } from "express";
 import { AuthGuard } from "@nestjs/passport";
 import { JwtAuthGuard, JwtAuthGuardPatch } from "src/auth/utils/jwt-auth.guard";
+import { socketGateway } from 'src/gateway/socket.gateway';
 
 @ApiTags('user')
 @Controller('/user/')
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly socketGateway: socketGateway,
+		) {}
 
 	// General
 	@Get('all')
@@ -22,9 +26,7 @@ export class UserController {
 	// @UseGuards(AuthenticateGuard)
 	async getAllUsers()
 	{
-		const users = await this.userService.userRepository.find({
-			relations: ['membership']
-		});
+		const users = await this.userService.userRepository.find();
 		// loop through users and remove if two is enabled
 		for (let i = 0; i < users.length; i++) {
 			delete users[i].twofa;
@@ -117,20 +119,29 @@ export class UserController {
 
 		const foundUser = await this.userService.userRepository.findOne({
 			where: {id: user.id},
-			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+			relations: ['games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
 		});
 		if(!foundUser) {
 			throw new NotFoundException('User Not Found');
 		}
-
-		// combine games_won and games_lost
-		// foundUser['games'] = foundUser.games_lost.concat(foundUser.games_won).sort((a, b) => {
-		// 	return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-		// });
-		// delete foundUser.games_won;
-		// delete foundUser.games_lost;
 		return foundUser;
 	}
+
+	@Get(':userID/status')
+	@UseGuards(JwtAuthGuard)
+		@ApiNotFoundResponse({description: 'User not found'})
+		@ApiOkResponse({ description: 'Returns everything about the user', type: User })
+	async getUserStatus(
+		@Param('userID', ParseIntPipe) userID: number,
+	): Promise<string> {
+		const user = await this.userService.findUserById(userID);
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return await this.socketGateway.statusOfUser(user.id, user.username);
+	}
+
+
 	@Get(':username')
 	@UseGuards(JwtAuthGuard)
 		@ApiNotFoundResponse({description: 'User not found'})
@@ -142,7 +153,7 @@ export class UserController {
 
 		const user = await this.userService.userRepository.findOne({
 			where: {username: username},
-			relations: ['membership', 'games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
+			relations: ['games_won', "games_lost", 'sentFriendRequests', 'receivedFriendRequests', 'chats']
 		});
 		if(!user) {
 			throw new NotFoundException('User Not Found');

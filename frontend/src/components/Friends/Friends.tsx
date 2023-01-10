@@ -1,7 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { useCallback, useEffect, useState } from "react";
-import './style.css'
+import { useSnackbar } from "notistack";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { showSnackbarNotification } from "../../App";
+import { SocketContext } from "../../context/socket";
+import './style.css';
 
 interface User {
 	id: number;
@@ -24,6 +27,8 @@ interface Avatar {
 
 const Friends:React.FC = () => {
 	
+	const socket = useContext(SocketContext);
+	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User>();
 	const [users, setUsers] = useState<User[]>([]);
@@ -34,11 +39,69 @@ const Friends:React.FC = () => {
 	function goToProfile(otherUser: User) {	navigate('/profile?user=' + otherUser.username); }
 
 	useEffect(() => {
-		console.log('just loaded again');
-			axios.get('http://localhost:3000/user', {withCredentials: true})
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: any) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
+
+
+	useEffect(() => {
+
+		if (!socket)
+			return ;
+
+		socket.on('chat/refresh-friendships', () => {
+			axios.get('http://localhost:3000/social', {withCredentials: true})
 			.then(res => {
-				setUser(res.data);
+				let friends: User[] = [];
+				res.data.map((elem: Friend) => {
+					let newUser: User;
+					if (elem.sender.id === user?.id)
+					{
+						newUser = {
+							id: elem.reciever.id,
+							username: elem.reciever.username,
+							status: elem.status,
+							isReceiver: false,
+						}
+					}
+					else
+					{
+						newUser = {
+							id: elem.sender.id,
+							username: elem.sender.username,
+							status: elem.status,
+							isReceiver: true,
+						}
+					}
+					friends.push(newUser);
+				})
+				setUsers(friends);
 			})
+		});
+
+		return (() => {
+			socket.off('chat/refresh-friendships');
+		})
+	})
+
+	useEffect(() => {
+		axios.get('http://localhost:3000/user', {withCredentials: true})
+		.then(res => {
+			setUser(res.data);
+		})
+		.catch(err => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
 	}, [])
 
 	useEffect(() => {
@@ -46,7 +109,7 @@ const Friends:React.FC = () => {
 			return ;
 		axios.get('http://localhost:3000/social', {withCredentials: true})
 		.then(res => {
-			console.log(res.data);
+			let friends: User[] = [];
 			res.data.map((elem: Friend) => {
 				let newUser: User;
 				if (elem.sender.id === user?.id)
@@ -61,15 +124,19 @@ const Friends:React.FC = () => {
 				else
 				{
 					newUser = {
-					id: elem.sender.id,
-					username: elem.sender.username,
-					status: elem.status,
-					isReceiver: true,
+						id: elem.sender.id,
+						username: elem.sender.username,
+						status: elem.status,
+						isReceiver: true,
 					}
 				}
-				setUsers(oldArr => [...oldArr, newUser])
+				friends.push(newUser);
 			})
+			setUsers(friends);
 		})
+		.catch(err => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
 	}, [user])
 
 	useEffect(() => {
@@ -82,23 +149,24 @@ const Friends:React.FC = () => {
 				.then(res => {
 					setAvatars(oldArr => [...oldArr, {id: elem.id, avatar: URL.createObjectURL(res.data)}]);
 				})
+				.catch(err => {
+					showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+				});
 			}
 		})
 	}, [users])
 
-
-
 	function acceptFriend(otherUser: User) {
 		axios.put('http://localhost:3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
-		.then(() => {
-			window.location.reload();
+		.catch((err) => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
 	function denyFriend(otherUser: User) {
 		axios.delete('http://localhost:3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
-		.then(() => {
-			window.location.reload();
+		.catch((err) => {
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 

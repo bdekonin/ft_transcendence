@@ -1,9 +1,9 @@
 import axios from "axios";
-import moment from "moment";
-import { stringify } from "querystring";
+import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import './style.css'
+import { showSnackbarNotification } from "../../App";
+import './style.css';
 
 interface Game {
 	id: number;
@@ -25,7 +25,6 @@ interface User {
 	loses: string;
 // chats*	{...}
 	createdAt: string;
-	lastOnline: string;
 }
 
 interface Avatar {
@@ -40,65 +39,68 @@ const Profile:React.FC = () =>
 	const [user, setUser] = useState<User>();
 	const [avatar, setAvatar] = useState<Avatar>();
 	let [searchParams, setSearchParams] = useSearchParams();
-	const query = searchParams.get('user');
-	// const [avatar, setAvatar] = useState<string>();
 	const [games, setGames] = useState<Game[]>();
 	const [friendAmount, setFriendAmount] = useState<number>(0);
-
+	const [status, setStatus] = useState<string>('');
+	
+	const query = searchParams.get('user');
+	const { enqueueSnackbar } = useSnackbar();
 
 	/* For user object */
 	useEffect(() => {
-		// console.log('Param user=' + searchParams.get('user'));
 		axios.get('http://localhost:3000/user/' + (query ? query : ''), { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
 		})
 		.catch(err => {
-			navigate('/login');
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 	}, [searchParams]);
 
 	//getting the Avatars
 	useEffect(() => {
-		axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
-		.then(res => {
-			const imageObjectURL = URL.createObjectURL(res.data);
-			setAvatar({id: user?.id as number, avatar: imageObjectURL});
-		})
-		.catch(err => {
-			console.log(err);
-		});
-	}, [user]);
-
-	/* For games */
-	useEffect(() => {
 		if (user) {
+			axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
+			.then(res => {
+				const imageObjectURL = URL.createObjectURL(res.data);
+				setAvatar({id: user?.id as number, avatar: imageObjectURL});
+			})
+			.catch(err => {
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
 			.then(res => {
-				console.log(res);
 				setGames(res.data);
 				games?.sort((a, b) => {
 					return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 				});
 			})
 			.catch(err => {
-				console.log(err);
-				navigate('/login');
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
-		}
-	}, [user]);
 
-	/* For friends */
-	useEffect(() => {
-		if (user) {
-			axios.get('http://localhost:3000/social/' + user?.id, { withCredentials: true })
+			axios.get('http://localhost:3000/social/' + user.id, { withCredentials: true })
 			.then(res => {
-				console.log(res);
 				setFriendAmount(res.data.length);
 			})
 			.catch(err => {
-				console.log(err);
-				navigate('/login');
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
+
+			axios.get('http://localhost:3000/user/' + user.id + '/status', { withCredentials: true })
+			.then(res => {
+				setStatus(res.data);
+			})
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 		}
 	}, [user]);
@@ -111,31 +113,27 @@ const Profile:React.FC = () =>
 		if (game?.draw == true)
 			class_name = 'draw';
 		return (
-			<tr key={game.id} className={class_name}>
-				<td>{game.id}</td>
-				<td>{game.mode}</td>
-				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.winner.username)}}>{game.winner.username}</td>
-				<td className="clickable" onClick={() => {navigate('/profile?user=' + game.loser.username)}}>{game.loser.username}</td>
-				<td>{game.winnerScore}</td>
-				<td>{game.loserScore}</td>
-				{/* string to int */}
-				<td>{new Date(parseInt(game.createdAt)).toUTCString()}</td>
-			</tr>
+			<table>
+				<tbody>
+					<tr key={game.id} className={class_name}>
+						<td>{game.id}</td>
+						<td>{game.mode}</td>
+						<td className="clickable" onClick={() => {navigate('/profile?user=' + game.winner.username)}}>{game.winner.username}</td>
+						<td className="clickable" onClick={() => {navigate('/profile?user=' + game.loser.username)}}>{game.loser.username}</td>
+						<td>{game.winnerScore}</td>
+						<td>{game.loserScore}</td>
+			
+						{/* string to int */}
+						<td>{new Date(parseInt(game.createdAt)).toUTCString()}</td>
+					</tr>
+				</tbody>
+			</table>
 		);
 	}
 
 	function renderLastOnline() {
-		if (user?.lastOnline) {
-			const minute = 60 * 1000; /* 1 Minute * 1 second */
-			const current_time = new Date().getTime();
-			const last_online = new Date(Number(user.lastOnline)).getTime();
-			if (current_time - last_online < minute * 5) {
-				return <span className="online">Online</span>;
-			}
-			else {
-				/* Last seen */
-				return <span className="offline">Last seen {moment(last_online).format('DD dddd HH:mm:ss')}</span>;
-			}
+		if (status) {
+			return <span className="online">{status}</span>;
 		}
 		else
 			return <p>Loading...</p>
@@ -144,16 +142,14 @@ const Profile:React.FC = () =>
 
 	return (
 		<div className="profile">
+			<div className="background"/>
+			<h1>{user?.username}</h1>
+			<div className="profileblock">
+				<img
+					className="avatar"
+					src={avatar?.avatar} alt="" />
+			</div>
 			<button onClick={() => {navigate('/')}}>Home</button>
-			<h1>Profile</h1>
-			<div className='profile'>
-
-				<img className="profile-pic" src={avatar?.avatar} alt="profile"></img>
-				 <p>{user?.username}</p>
-			</div>
-			<div className='edit-profile'>
-				{/* <button onClick={() => {navigate('/edit-profile')}}>Edit Profile</button> */}
-			</div>
 			<div className='last-online'>
 				{renderLastOnline()}
 			</div>
@@ -169,10 +165,9 @@ const Profile:React.FC = () =>
 				<p>Wins: {user?.wins}</p>
 				<p>Loses: {user?.loses}</p>
 			</div>
-
 			<div className='games'>
 				<table>
-					<h4>all games</h4>
+					<h1>Game History</h1>
 					<tr>
 						<th>#</th>
 						<th>Mode</th>

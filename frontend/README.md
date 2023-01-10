@@ -1,7 +1,3 @@
-https://www.youtube.com/watch?v=LlvBzyy-558&list=LL&index=1
-
-https://github.com/axios/axios#request-config
-
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

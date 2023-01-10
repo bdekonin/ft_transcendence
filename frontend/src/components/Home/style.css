@@ -1,0 +1,38 @@
+.homepage {
+	max-width: 100%;
+	max-height: 100%;
+	overflow: hidden;
+}
+
+.homepage .background {
+	background-image: url('./background.png');
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: -1;
+}
+
+.homepage .logo {
+	margin-top: 5%;
+	margin-left: 50%;
+	transform: translate(-50%);
+}
+
+.homepage .navigate {
+	list-style: none
+}
+
+.homepage .navigate a{
+	font-family: 'Press Start 2P';
+	color: #fff;
+	margin-left: 45%;
+	transform: translate(-50%);
+	font-size: 25px;
+}
+
+.homepage .navigate a:hover{
+	color: var(--accent-color);
+	--accent-color: #00ffff;
+}

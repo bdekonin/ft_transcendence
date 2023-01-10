@@ -1,9 +1,9 @@
 import { Column, BeforeInsert, Entity, JoinColumn, AfterLoad, ManyToMany, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GameHistory } from "./GameHistory.entity";
-import { Membership } from "./Membership.entity";
 import { Friend } from "./Friend.entity";
 import { ApiProperty } from '@nestjs/swagger';
 import { Chat } from "./Chat.entity";
+import { authenticator } from '@otplib/preset-default';
 
 
 // https://www.tutorialspoint.com/typeorm/typeorm_entity.htm
@@ -22,12 +22,6 @@ export class User {
 	@Column({ default: 'default.png' })
 	avatar: string; // Link to image || or file path to image
 
-	// @Column() // One to One
-	@ApiProperty({ description: 'Membership of the user', type: () => Membership })
-	@OneToOne(() => Membership, (membership) => membership.user)
-	@JoinColumn()
-	membership: Membership; // extends to .role .banned .muted
-
 	@ApiProperty({ example: 1 })
 	@Column({ default: 0 })
 	level: number;
@@ -40,9 +34,13 @@ export class User {
 	@Column({ default: 0})
 	loses: number;
 
-	@ApiProperty({ description: 'if twofa is enabled for the user', example: false })
-	@Column({ default: false})
+	@ApiProperty({description: 'Wether 2fa is enabled', example: 'false'})
+	@Column({default: false})
 	twofa: boolean;
+
+	@ApiProperty({description: '2fa secret key'})
+	@Column({unique: true, nullable: false})
+	twofa_secret: string;
 
 	@ApiProperty({ description: 'List of games that the user has won', type: () => GameHistory })
 	@OneToMany(() => GameHistory, (gameHistory) => gameHistory.winner)
@@ -72,14 +70,14 @@ export class User {
 	@Column()
 	createdAt: string;
 
-	@ApiProperty({ description: 'Last seen online', example: '1669318644507' })
-	@Column({nullable: true})
-	lastOnline: string;
-
 	@BeforeInsert()
 	updateDates() {
 		const date = new Date().valueOf() + 3600;
 		this.createdAt = date.toString();
-		this.lastOnline = date.toString();
+	}
+
+	@BeforeInsert()
+	createSecret() {
+		this.twofa_secret = authenticator.generateSecret();
 	}
 }

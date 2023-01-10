@@ -1,12 +1,11 @@
-import { Controller, createParamDecorator, Get, Req, Res, UseGuards } from "@nestjs/common";
-import { Request } from "express";
-import { AuthService } from "./auth.service";
-import { AuthenticateGuard, FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards'
-import { ApiTags } from "@nestjs/swagger";
-import { Response } from 'express'
-import { AuthGuard } from "@nestjs/passport";
-import { JwtAuthGuard } from "./utils/jwt-auth.guard";
-import { User } from "src/entities/User.entity";
+import { Controller, createParamDecorator, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { User } from 'src/entities/User.entity';
+
+import { AuthService } from './auth.service';
+import { FortyTwoAuthGuard, GoogleAuthGuard } from './utils/Guards';
+import { JwtAuthGuard } from './utils/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -78,7 +77,7 @@ export class AuthController {
 		if (!user) {
 			return res.redirect(process.env.FRONTEND_REDIRECT_UR);
 		}
-		const token = this.authService.createToken(user);
+		const token = this.authService.createToken(user, false);
 		res.cookie('jwt', token, { httpOnly: true });
 		res.header('Authorization', 'JWT ' + token);
 		

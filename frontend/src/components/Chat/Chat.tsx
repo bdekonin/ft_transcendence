@@ -1,10 +1,15 @@
-import { useEffect, useState , useContext } from 'react';
 import axios from 'axios';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import moment, { Moment } from 'moment';
-import './style.css'
 import { SocketContext } from '../../context/socket';
-import { Socket } from 'socket.io-client';
+import './style.css';
+
+import { CircularProgress } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { showSnackbarNotification } from '../../App';
+import Channels from './Channel/Channels';
+import Messages, { Message } from './Messages/Messages';
+import Players from './Players/Players';
 
 interface User {
 	id: number;
@@ -13,62 +18,30 @@ interface User {
 
 interface Chat {
 	id: number;
+	type: string;
 	name: string;
 	users: User[];
-	unread: boolean;
+
+	adminIDs: number[];
+	bannedIDs: number[];
+	muted: number[];
 }
-interface Message {
-	id: number;
-	message: string;
+type Friendship = {
+	user: User;
+	status: string;
 	sender: User;
-	parent: Chat;
-	createdAt: string;
-}
-interface Avatar {
-	id: number,
-	avatar: string
 }
 
 const Chat: React.FC = () => {
 	
 	const socket = useContext(SocketContext);
 	const navigate = useNavigate();
-	const [user, setUser] = useState<User>();
-	const [currentChat, setCurrentChat] = useState<Chat>({id: 0, name: '', users: [], unread: false});
-	const [messages, setMessages] = useState<Message[]>([]);
-	const [chatBoxMsg, setChatBoxMsg] = useState<string>('');
-	
-	/* Chats */
-	const [joinedChats, setJoinedChats] = useState<Chat[]>([]);
-	const [publicChats, setPublicChats] = useState<Chat[]>([]);
-	const [protectedChats, setProtectedChats] = useState<Chat[]>([]);
+	const { enqueueSnackbar } = useSnackbar();
 
-	/* Refresh */
-	const [pong, setPong] = useState('');
+	const [user, setUser] = useState<User | null>(null);
+	const [currentChat, setCurrentChat] = useState<Chat | null>(null);
 
 	document.body.style.background = '#323232';
-
-
-	useEffect(() => {
-		socket.on('chat/refresh-message', (incomingPayload: Message) => {
-			if (incomingPayload.parent.id === currentChat.id){
-				setMessages((messages) => [incomingPayload, ...messages]);
-			}
-			else {
-				/* Enable notification for that channel */
-			}
-		})
-		socket.on('chat/refresh-chats', () => {
-			console.log('refreshing chats');
-			// window.location.reload();
-			setPong(new Date().toISOString());
-			/* Refresh chats */
-		})
-		return () => {
-			socket.off('chat/refresh-message');
-			socket.off('chat/refresh-chats');
-		}
-	});
 
 	useEffect(() => {
 		axios.get('http://localhost:3000/user', { withCredentials: true })
@@ -76,269 +49,156 @@ const Chat: React.FC = () => {
 			setUser(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
-	}, []);
+	}, []); /* Renders only once */
 
-	/* Retrieving User's Chats */
 	useEffect(() => {
-		if (!user)
+		if (socket) { /* Socket stuff */
+			socket.on('chat/refresh-message', (payload: Message) => {
+				/* Enable notification for that channel */
+				if (payload.parent.type == 'PRIVATE')
+					showSnackbarNotification(enqueueSnackbar, "New message from " + payload.sender.username, 'info');
+				else
+					showSnackbarNotification(enqueueSnackbar, "New message in groupchat \'" + payload.parent.name + "\'", 'info');
+			});
+		}
+		return () => {
+			socket.off('chat/refresh-message');
+		}
+	}, [socket]);
+
+
+
+
+
+	const [friendships, setFriendships] = useState<Friendship[]>([]);
+	const [mutes, setMutes] = useState<number[]>([]);
+	const [admins, setAdmins] = useState<number[]>([]);
+
+	useEffect(() => {
+		if (!user || !currentChat) {
 			return;
-		axios.get('http://localhost:3000/chat/' + user?.id + '/chats?filter=all', { withCredentials: true })
+		}
+
+		axios.get('http://localhost:3000/social', { withCredentials: true })
 		.then(res => {
-			setJoinedChats(res.data.joined);
-			setPublicChats(res.data.public);
-			setProtectedChats(res.data.protected);
+			// parse data
+			const parsedData: Friendship[] = res.data.map((friendship: any) => {
+				const otherUser = friendship.sender.id == user.id ? friendship.reciever : friendship.sender;
+				return {
+					status: friendship.status,
+					user: otherUser,
+					sender: friendship.sender,
+				}
+			});
+			setFriendships(parsedData);
+		})
+		axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+		.then(res => {
+			setMutes(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
-			alert(err.response.data.message)
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
-	}, [user, pong]);
+		axios.get('http://localhost:3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+		.then(res => {
+			setAdmins(res.data);
+		})
+		.catch(err => {
+			if (err.response.data.statusCode === 401)
+				navigate('/login');
+			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+		});
+		
+		if (!socket)
+			return;
 
-	/* Setting the current chat after retrieving chats */
-	useEffect(() => {
-		if (joinedChats.length == 0) {
-			if (pong == '')
-				setCurrentChat({id: 0, name: '', users: [], unread: false});
+		socket.on('chat/refresh-friendships', () => {
+			axios.get('http://localhost:3000/social', { withCredentials: true })
+			.then(res => {
+				// parse data
+				const parsedData: Friendship[] = res.data.map((friendship: any) => {
+					const otherUser = friendship.sender.id == user.id ? friendship.reciever : friendship.sender;
+					return {
+						status: friendship.status,
+						user: otherUser,
+						sender: friendship.sender,
+					}
+				});
+				setFriendships(parsedData);
+			})
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
+		});
+		socket.on('chat/refresh-mutes', () => {
+			if (!currentChat) {
+				return;
 			}
-		else {
-			if (pong == '')
-				setCurrentChat(joinedChats[0]);
-		}
-	}, [joinedChats, pong]);
-
-	/* Retrieving messages and avatars of the currentChat */
-	useEffect(() => {
-		if (currentChat.id == 0)
-			return;
-		axios.get('http://localhost:3000/chat/' + user?.id + '/messages/' + currentChat.id, { withCredentials: true })
-		.then(res => {
-			setMessages(res.data);
-		})
-		.catch(err => {
-			console.log('err', err);
-			if (err.response.data.statusCode === 401)
-				navigate('/login');
-			alert(err.response.data.message)
+			axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+			.then(res => {
+				setMutes(res.data);
+			})
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 		});
-	}, [currentChat, pong]);
-
-	/* Retrieving avatars of the currentChat */
-	// useEffect(() => {
-	// 	if (currentChat.id == 0)
-	// 		return;
-
-	// 	currentChat.users.forEach((user) => {
-	// 		axios.get('http://localhost:3000/user/' + user.id + '/avatar', { withCredentials: true })
-	// 		.then(res => {
-	// 			// user['avatar'] = res.data.avatar;
-	// 			console.log('res');
-	// 		})
-	// 		.catch(err => {
-	// 			console.log('err', err);
-	// 			if (err.response.data.statusCode === 401)
-	// 				navigate('/login');	
-	// 			alert(err.response.data.message)
-	// 		});
-	// 	});
-	// }, [currentChat, pong]);
-
-	function sendJoinEmitter(chatID: number) {
-		socket.emit('chat/join', { chatID: chatID });
-	}
-
-	function sendLeaveEmitter(chatID: number) {
-		socket.emit('chat/leave', { chatID: chatID });
-	}
-
-	function joinPublic(chat: Chat) {
-		const payload = {
-			chatID: chat.id
-		}
-		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
-		.then(res => {
-			// setPong(new Date().toISOString());
-			setCurrentChat(chat);
-			sendJoinEmitter( chat.id );
-		})
-		.catch(err => {
-			navigate('/login');
+		socket.on('chat/refresh-admins', () => {
+			if (!currentChat) {
+				return;
+			}
+			axios.get('http://localhost:3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+			.then(res => {
+				setAdmins(res.data);
+			})
+			.catch(err => {
+				if (err.response.data.statusCode === 401)
+					navigate('/login');
+				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
+			});
 		});
-	}
-	function joinProtected(chat: Chat) {
-		const payload = {
-			chatID: chat.id,
-			password: prompt('Please enter the password')
+		return () => {
+			socket.off('chat/refresh-friendships');
+			socket.off('chat/refresh-mutes');
+			socket.off('chat/refresh-admins');
 		}
-		axios.patch('http://localhost:3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
-		.then(res => {
-			setPong(new Date().toISOString());
-			alert('Success');
-			sendJoinEmitter( chat.id );
-		})
-		.catch(err => {
-			if (err.response.data.statusCode === 418)
-				navigate('/login');
-			alert(err.response.data.message)
-		});
+	}, [currentChat, socket]);
+
+	if (!user) {
+		<CircularProgress />
 	}
 
-	function renderUsers() {
-		return (
-			<div className='user-icons'>
-				{
-					/* print out the users in the chat */
-					currentChat.users.map((user: User) => {
-						return <img src={require("../../avatars/icons8-avatar-64-1.png")} alt="" key={user.id}/>
-					})
-				}
-			</div>
-		)
-	}
-	function renderActionButtons() {
-		return (
-			<div className='action-buttons'>
-				<button onClick={() => {
-					axios.delete('http://localhost:3000/chat/' + user?.id + '/leave/' + currentChat.id, { withCredentials: true })
-					.then(res => {
-						socket.emit('chat/leave', {chatID: currentChat.id, userID: user?.id});
-						// setJoinedChats(joinedChats.filter(chat => chat.id != currentChat.id));
-						setPong(new Date().toISOString());
-						sendLeaveEmitter( currentChat.id );
-					})
-					.catch(err => {
-						console.log('err', err);
-						if (err.response.data.statusCode === 401)
-							navigate('/login');
-						alert(err.response.data.message)
-					});
-				}}>Leave Current Chat</button>
-
-				<button onClick={() => {
-					console.log('user', user);
-					console.log('currentChat', currentChat);
-					console.log('messages', messages);
-					console.log('chatBoxMsg', chatBoxMsg);
-					
-					/* Chats */
-					console.log('joinedChats', joinedChats);
-					console.log('publicChats', publicChats);
-					console.log('protectedChats', protectedChats);
-				}}>Debug</button>
-			</div>
-		)
-	}
-	function renderRooms() {
-		return (
-			<div className="rooms">
-				<h3>Users in this chat</h3>
-				{renderUsers()}
-				<h3>Joined Rooms</h3>
-				<ul>
-					{
-						joinedChats.length == 0 ? <p>No joined rooms</p> :
-						joinedChats.map(chat => {
-							return (
-								<li key={chat.id}>
-									<p className={chat.unread ? 'room-name-clickable unread' : 'room-name-clickable'} onClick={() => setCurrentChat(chat)}>{chat.name}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-				<h3>Public Rooms</h3>
-				<ul>
-					{
-						publicChats.length == 0 ? <p>No public rooms</p> :
-						publicChats.map(chat => {
-							return (
-								<li key={chat.id}>
-									<p className="room-name-clickable" onClick={() => joinPublic(chat)}>{chat.name}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-				<h3>Private Rooms</h3>
-				<ul>
-					{
-						protectedChats.length == 0 ? <p>No private rooms</p> :
-						protectedChats.map(chat => {
-							return (
-								<li key={chat.id}>
-									<p className="room-name-clickable" onClick={() => joinProtected(chat)}>{chat.name}</p>
-								</li>
-							);
-						})
-					}
-				</ul>
-				<h3>Action Buttons</h3>
-				{renderActionButtons()}
-			</div>
-		)
-	}
-	function renderMessages() {
-		return (
-			<div className="messages">
-				<h2 className='chatName'>{currentChat.name}</h2>
-				{
-					messages.map((message, index)=> {
-						return (
-							<div className={!(index % 2) ? 'container' : 'container darker'} key={index}>
-								<p className={!(index % 2) ? 'right' : ''}>{!(index % 2) ? message.sender.username : ''}</p>
-								<p>{message.message}</p>
-								<span className="time-right">{moment(Number(message.createdAt)).format('DD dddd HH:mm:ss')}</span>
-								<p className={(index % 2) ? '' : 'right'}>{(index % 2) ? message.sender.username : ''}</p>
-							</div>
-						);
-					})
-				}
-			</div>
-		)
-	}
-	function renderChatBox() {
-		if (currentChat.id == 0) {
-			return ;
-		}
-		return (
-			<div className="chat-box">
-				<input
-					type="text"
-					placeholder="Type message.."
-					onChange={event => setChatBoxMsg(event.currentTarget.value)}
-					name={chatBoxMsg}
-					maxLength={256}>
-				</input>
-				<button
-					type="submit"
-					onClick={(event) => postMessage(event)}>
-						Send
-				</button>
-			</div>
-		)
-	}
-
-	function postMessage(event:any) {
-		const payload = {
-			"senderID": user?.id,
-			"chatID": currentChat.id,
-			"message": chatBoxMsg
-		}
-		console.log('Emitting message', payload);
-		socket.emit('chat/new-chat', payload);
-	}
-	
 	return (
 		<div className="main-container">
-			{renderRooms()}
-			{renderMessages()}
-			{renderChatBox()}
+			<Channels
+				user={user}
+				currentChat={currentChat}
+				setCurrentChat={setCurrentChat}
+				admins={admins}
+				/>
+			<Messages
+				currentUser={user}
+				currentChat={currentChat}
+				mutes={mutes}
+				friendships={friendships}
+				admins={admins}
+				/>
+			<Players
+				currentUser={user}
+				currentChat={currentChat}
+				mutes={mutes}
+				friendships={friendships}
+				admins={admins}
+				/>
 		</div>
 	);
 }

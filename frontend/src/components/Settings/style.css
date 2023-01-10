@@ -1,14 +1,43 @@
-.settings .header{
-	font-size: 75px;
-	text-align: center;
+.settings {
+	font-family: 'Super Mario 256';
+}
 
+.settings .header{
+	width: 60%;
+	margin: auto;
+	display: block;
+	margin-bottom: 86px;
+}
+
+.settings .background {
+	background-image: url('./images/background.jpg');
+	width: 100%;
+	height: 100%;
+	background-repeat: no-repeat;
+	background-size: cover;
+	position: absolute;
+	z-index: -1;
+	bottom: 0px;
+	left: 0px;
+	background-position: bottom;
+	/* bottom: 0px; */
+	/* left: 0px; */
+}
+
+.settings #remove{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 20px;
+	height: 20px;
 }
 
 .settings .block1 {
-	width: 70%;
-	height: 700px;
-	background-color: white;
+	width: 62%;
+	/* height: 700px; */
+	/* background-color: white; */
 	margin: auto;
+	margin-top: 100px;
 	/* border-radius: 45%; */
 }
 
@@ -16,3 +45,71 @@
 	width: 150px;
 	height: 150px;
 }
+
+
+.otc {
+	position: relative;
+	width: 320px;
+	margin: 0 auto;
+}
+
+.otc fieldset {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.otc fieldset div {
+	display: flex;
+	align-items: center;
+}
+
+.otc legend {
+	margin: 0 auto 1em;
+	color: #5555FF;
+}
+
+input[type="number"] {
+	width: .82em;
+	line-height: 1;
+	margin: .1em;
+	padding: 8px 0 4px;
+	font-size: 2.65em;
+	text-align: center;
+	appearance: textfield;
+	-webkit-appearance: textfield;
+	border: 2px solid #BBBBFF;
+	color: purple;
+	border-radius: 4px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 2 group of 3 items */
+input[type="number"]:nth-child(n+4) {
+	order: 2;
+}
+.otc div::before {
+	content: '';
+	height: 2px;
+	width: 24px;
+	margin: 0 .25em;
+	order: 1;
+	background: #BBBBFF;
+}
+
+
+
+@font-face {
+    font-family: 'Super Mario 256';
+    src: url('./fonts/SuperMarioGalaxy.woff2') format('woff2'),
+        url('./fonts/SuperMarioGalaxy.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+

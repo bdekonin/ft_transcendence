@@ -1,5 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createChatDto } from 'src/chat/chat.controller';
+import { ChatService } from 'src/chat/chat.service';
+import { ChatType } from 'src/entities/Chat.entity';
 import { Friend } from 'src/entities/Friend.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
@@ -9,7 +12,8 @@ export class SocialService
 {
 	constructor(
 		@InjectRepository(Friend) private repo: Repository<Friend>,
-		private readonly userService: UserService
+		private readonly userService: UserService,
+		private readonly chatService: ChatService,
 	) {}
 
 	async follow(senderID: number, recieverID: number): Promise<Friend> {
@@ -54,6 +58,20 @@ export class SocialService
 				reciever: reciever,
 			});
 		}
+
+		/* If friendship is accepted create a chat */
+		if (friendship.status == 'accepted') {
+			const payload: createChatDto = {
+				type: ChatType.PRIVATE,
+				users: [
+					friendship.sender.id,
+					friendship.reciever.id,
+				]
+			}
+			this.chatService.createChat(friendship.sender.id, payload);
+		}
+
+
 		return this.repo.save(friendship);
 	}
 	async  unfollow(senderID: number, recieverID: number): Promise<Friend> {
@@ -72,6 +90,13 @@ export class SocialService
 			throw new NotFoundException('Friendship not found');
 		// if (friendship.status != 'accepted')
 		// 	throw new BadRequestException('You are not friends with this user');
+
+		if (friendship.status == 'accepted') {
+			const chatID = await this.chatService.getPrivateChat(sender.id, reciever.id)
+			if (chatID)
+				this.chatService.leaveChat(friendship.sender.id, chatID.id);
+		}
+
 		return await this.repo.remove(friendship);
 	}
 	async block(senderID: number, recieverID: number): Promise<Friend> {
@@ -92,6 +117,11 @@ export class SocialService
 				{ sender:  { id: reciever.id }, reciever: { id: sender.id } },
 			],
 		});
+		if (friendship) {
+			const chatID = await this.chatService.getPrivateChat(sender.id, reciever.id)
+			if (chatID)
+				this.chatService.leaveChat(friendship.sender.id, chatID.id);
+		}
 
 		/* If friendship already exist change to blocked */
 		if (friendship) {
@@ -107,6 +137,7 @@ export class SocialService
 		}
 		return this.repo.save(friendship);
 	}
+
 	async unblock(senderID: number, recieverID: number): Promise<Friend> {
 		if (senderID == recieverID)
 			throw new BadRequestException('You cannot unfollow yourself');

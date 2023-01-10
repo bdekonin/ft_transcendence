@@ -10,23 +10,18 @@ import { GameController } from './game.controller';
 import { GameService } from './game.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from 'src/auth/auth.service';
-import { MembershipService } from 'src/user/membership/membership.service';
-import { MembershipController } from 'src/user/membership/membership.controller';
-import { Membership } from 'src/entities/Membership.entity';
 
 @Module({
 	imports: [
+		forwardRef(() => AppModule),
 		UserModule, GameModule,
-		TypeOrmModule.forFeature([GameHistory, User, Membership]),
-		forwardRef(() => AppModule)
+		TypeOrmModule.forFeature([GameHistory, User]),
 	],
 	controllers: [
-		MembershipController,
-		UserController,
+		// UserController,
 		GameController,
 	],
 	providers: [
-		MembershipService,
 		{
 			provide: 'AUTH_SERVICE',
 			useClass: AuthService,
