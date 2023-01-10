@@ -1,12 +1,11 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useSnackbar } from 'notistack';
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SocketContext } from "../../../context/socket";
+import { showSnackbarNotification } from '../../../App';
 import Chat from "../Chat";
 import { User } from "./Channels";
-import { showSnackbarNotification } from '../../../App';
-import { useSnackbar } from 'notistack';
 
 
 

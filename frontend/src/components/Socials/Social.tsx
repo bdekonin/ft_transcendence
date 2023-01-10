@@ -1,12 +1,11 @@
 import axios from "axios";
-import { error } from "console";
 import { useSnackbar } from "notistack";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
 import { socket } from "../../context/socket";
 import { handleFollow, handleUnfollow } from "../Chat/Players/ButtonHandlers";
-import './style.css'
+import './style.css';
 
 interface User {
 	id: number;
@@ -53,7 +52,6 @@ const Social: FC = () => {
 
 		axios.get("http://localhost:3000/user/all", {withCredentials: true})
 		.then(res => {
-			console.log(res.data);
 			setUsers(res.data);
 		})
 		.catch((err) => {
@@ -105,11 +103,10 @@ const Social: FC = () => {
 				});
 				setFriendships(parsedData);
 			})
-			console.log('chat/refresh-friendships');
 		});
 	
 		return () => {
-		socket.off('chat/refresh-friendships')
+			socket.off('chat/refresh-friendships')
 		}
 	})
 	

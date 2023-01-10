@@ -246,7 +246,6 @@ export class socketGateway {
 		else {
 			/* User is waiting on other user */
 			this.invitedPlayers.set(inviteID, client);
-			console.warn('User is waiting on other user');
 		}
 
 	}
@@ -498,10 +497,6 @@ export class socketGateway {
 	}
 
 	private async createGame (players: any[]): Promise<Game> {
-		// const players = Array.from(this.waitingPlayers);
-
-		console.table(players);
-		
 		const random = Math.round(Math.random());
 		
 		const player1 = players[random];

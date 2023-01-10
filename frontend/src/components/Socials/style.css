@@ -108,8 +108,8 @@
 
 @font-face {
     font-family: 'Minecraft Ten';
-    src: url('./transfonter.org-20221214-233247/MinecraftTen.woff2') format('woff2'),
-        url('./transfonter.org-20221214-233247/MinecraftTen.woff') format('woff');
+    src: url('./fonts/MinecraftTen.woff2') format('woff2'),
+        url('./fonts/MinecraftTen.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;

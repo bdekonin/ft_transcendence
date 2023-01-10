@@ -1,9 +1,7 @@
 import { Dialog, DialogTitle } from '@mui/material';
 import axios from 'axios';
-import { useSnackbar } from 'notistack';
-import React, { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showSnackbarNotification } from '../../../App';
 
 export default function TwoFA() {
 	const navigate = useNavigate();
@@ -33,7 +31,6 @@ export default function TwoFA() {
 			var ret: string = '';
 			for (var i: number = 0; i < 6; i++)
 				ret = ret + data[i];
-			console.log(ret);
 			if (ret.length !== 6)
 				setInputCode(['', '', '', '', '', '']);
 			else 

@@ -1,12 +1,10 @@
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import React, { FC, useContext, useEffect } from 'react';
+import { FC, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showSnackbarNotification } from '../../App';
 import { SocketContext } from '../../context/socket';
-import TwoFA from '../Login/TwoFA/TwoFA';
-import './style.css'
-import { Message } from '../Chat/Messages/Messages';
+import './style.css';
 
 const Home: FC = () => {
 
@@ -17,7 +15,6 @@ const Home: FC = () => {
 	useEffect(() => {
 		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
 		// .catch((err) => {
-		// 	console.log(err);
 		// 	if (err.data.message === 'username')
 		// 		navigate('/login');
 		// 	else if (err.data.message === 'twofa')

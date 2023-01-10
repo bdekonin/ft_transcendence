@@ -144,7 +144,6 @@ const Chat: React.FC = () => {
 			}
 			axios.get('http://localhost:3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
 			.then(res => {
-				console.log('Incoming mutes Players: ', res.data, ' for chat: ', currentChat.id, '');
 				setMutes(res.data);
 			})
 			.catch(err => {

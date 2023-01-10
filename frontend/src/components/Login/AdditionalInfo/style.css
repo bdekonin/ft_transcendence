@@ -94,8 +94,8 @@
 
 @font-face {
 	font-family: 'FlappyBirdy';
-	src: url('./transfonter.org-20221215-182728/FlappyBirdy.woff2') format('woff2'),
-		url('./transfonter.org-20221215-182728/FlappyBirdy.woff') format('woff');
+	src: url('./fonts/FlappyBirdy.woff2') format('woff2'),
+		url('./fonts/FlappyBirdy.woff') format('woff');
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
