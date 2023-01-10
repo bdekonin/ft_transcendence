@@ -1,19 +1,3 @@
-https://www.mindmeister.com/map/2462871372
-
-Sources
-
-https://arctype.com/blog/nestjs-2fa/
-
-Invite links
-https://docs.nestjs.com/techniques/caching
-A temp hash is made for the invite link, if the incoming url has a hash that matches the stored hash it joins the user to the roomID
-
-
-
-https://github.com/typeorm/typeorm/blob/master/docs/listeners-and-subscribers.md#beforeupdate
-
-https://orkhan.gitbook.io/typeorm/docs/find-options
-
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
