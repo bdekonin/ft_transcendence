@@ -1,5 +1,4 @@
 import { io } from "socket.io-client";
-import { callbackify } from "util";
 
 export class Socket {
 	public socket;

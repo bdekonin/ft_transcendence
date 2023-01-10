@@ -10,7 +10,6 @@ export class Space {
 	constructor() {
 		this.starPositions = this.generateStarPositions();
 		this.starVelocities = this.generateStarVelocities(this.starPositions.length, 0.05, 0.09);
-		console.log('Space theme created');
 	}
 
 	private generateStarPositions() {

@@ -61,7 +61,6 @@ const Messages: React.FC<{
 			setMessages(res.data);
 		})
 		.catch(err => {
-			console.log('err', err);
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		}); 
 	}, [currentChat, currentUser]);
@@ -182,7 +181,7 @@ const Messages: React.FC<{
 					className="input"
 					type="text"
 					placeholder="Type message.."
-					onChange={event => {console.log(event.currentTarget.value);setChatBoxMsg(event.currentTarget.value);}}
+					onChange={event => { setChatBoxMsg(event.currentTarget.value); }}
 					value={chatBoxMsg}
 					maxLength={256}>
 				</input>

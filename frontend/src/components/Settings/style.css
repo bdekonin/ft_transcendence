@@ -106,8 +106,8 @@ input[type="number"]:nth-child(n+4) {
 
 @font-face {
     font-family: 'Super Mario 256';
-    src: url('./transfonter.org-20221215-020226/SuperMarioGalaxy.woff2') format('woff2'),
-        url('./transfonter.org-20221215-020226/SuperMarioGalaxy.woff') format('woff');
+    src: url('./fonts/SuperMarioGalaxy.woff2') format('woff2'),
+        url('./fonts/SuperMarioGalaxy.woff') format('woff');
     font-weight: bold;
     font-style: normal;
     font-display: swap;

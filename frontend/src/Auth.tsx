@@ -1,9 +1,7 @@
-import axios from 'axios'
+import axios from 'axios';
 import { SnackbarProvider } from 'notistack';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AdditionalInfo from './components/Login/AdditionalInfo/AdditionalInfo';
-import TwoFA from './components/Login/TwoFA/TwoFA';
 
 const Protected = ({children}: any) => {
 

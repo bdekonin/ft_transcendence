@@ -1,10 +1,9 @@
 import axios from "axios";
-import moment from "moment";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
-import './style.css'
+import './style.css';
 
 interface Game {
 	id: number;
@@ -49,7 +48,6 @@ const Profile:React.FC = () =>
 
 	/* For user object */
 	useEffect(() => {
-		// console.log('Param user=' + searchParams.get('user'));
 		axios.get('http://localhost:3000/user/' + (query ? query : ''), { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
@@ -74,7 +72,6 @@ const Profile:React.FC = () =>
 			});
 			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
 			.then(res => {
-				console.log(res);
 				setGames(res.data);
 				games?.sort((a, b) => {
 					return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -88,7 +85,6 @@ const Profile:React.FC = () =>
 
 			axios.get('http://localhost:3000/social/' + user.id, { withCredentials: true })
 			.then(res => {
-				console.log(res);
 				setFriendAmount(res.data.length);
 			})
 			.catch(err => {

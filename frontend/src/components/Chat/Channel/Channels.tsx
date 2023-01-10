@@ -55,7 +55,6 @@ const Channels: React.FC<{
 			setProtectedChats(res.data.protected);
 		})
 		.catch(err => {
-			console.log('err', err);
 			if (err.response.data.statusCode === 401)
 				navigate('/login');
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
@@ -81,9 +80,8 @@ const Channels: React.FC<{
 					
 				})
 				.catch(err => {
-					console.log('err', err);
 					if (err.response.data.statusCode === 401)
-					navigate('/login');
+						navigate('/login');
 					alert(err.response.data.message)
 				});
 			})

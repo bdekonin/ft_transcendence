@@ -1,12 +1,11 @@
-import axios from "axios";
-import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import './style.css'
-import { Alert, AlertTitle } from "@mui/material";
+import axios from "axios";
 import { useSnackbar } from "notistack";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
+import './style.css';
 
 
 interface User {
@@ -64,7 +63,6 @@ const Settings:React.FC = () => {
 		axios.get('http://localhost:3000/user', {withCredentials: true})
 		.then(elem => {
 			setUser(elem.data);
-			console.log(elem.data);
 			setUserNameDef(elem.data.username);
 			setOriginUserName(elem.data.username);
 		})
@@ -81,11 +79,9 @@ const Settings:React.FC = () => {
 		await sleep(300);
 		axios.get('http://localhost:3000/twofa/status', {withCredentials: true})
 		.then(res => {
-			console.log('2fa status', res);
 			if (res.data === true)
 			{
 				var newUser: User | undefined = Object.assign({}, user);
-				// console.log(newUser);
 				if (!newUser)
 					return ;
 				newUser.twofa = true;
@@ -192,7 +188,6 @@ const Settings:React.FC = () => {
 			var ret: string = '';
 			for (var i: number = 0; i < 6; i++)
 				ret = ret + data[i];
-			console.log(ret);
 			if (ret.length !== 6)
 				setInputCode(['', '', '', '', '', '']);
 			else 
@@ -238,7 +233,6 @@ const Settings:React.FC = () => {
 			var ret: string = '';
 			for (var i: number = 0; i < 6; i++)
 				ret = ret + data[i];
-			console.log(ret);
 			if (ret.length !== 6)
 				setInputCode(['', '', '', '', '', '']);
 			else 

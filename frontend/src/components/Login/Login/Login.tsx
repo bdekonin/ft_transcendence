@@ -1,11 +1,9 @@
 import axios from 'axios';
-import { useSnackbar } from 'notistack';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showSnackbarNotification } from '../../../App';
-import '../../../styles/login.css'
 import AdditionalInfo from '../AdditionalInfo/AdditionalInfo';
 import TwoFA from '../TwoFA/TwoFA';
+import './style.css';
 
 const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
@@ -18,13 +16,10 @@ const Login: FC = () => {
 			navigate('/');
 		})
 		.catch((err) => {
-			// console.log(err.response.data);
 			if (err.response.data.message === 'username')
 				setAdditionalInfo(true);
 			else if (err.response.data.message === 'twofa')
 				setTwoFA(true);
-			else
-				console.log('error', err.response.data.message);
 		});
 	}, []);
 	if (additionalInfo)

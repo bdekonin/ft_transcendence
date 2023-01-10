@@ -1,10 +1,8 @@
 import axios from "axios";
 import { isAlphanumeric } from "class-validator";
-import { useSnackbar } from "notistack";
-import { ChangeEvent, FC, useEffect, useState } from "react"
+import { ChangeEvent, FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { showSnackbarNotification } from "../../../App";
-import './style.css'
+import './style.css';
 
 const AdditionalInfo: FC = () => {
 	const [selected, setSelected] = useState(1);

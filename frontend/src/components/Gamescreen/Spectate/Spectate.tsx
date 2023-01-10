@@ -21,7 +21,6 @@ const Spectate: React.FC =() => {
 	
 	useEffect(() => {
 		socket.on('game/spectate-list', (data: { [key: string]: SpectateProps }) => {
-			console.log('game/spectate-list', data);
 			setGameList(Object.values(data));
 		});
 	

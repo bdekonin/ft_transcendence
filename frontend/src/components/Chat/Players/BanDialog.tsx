@@ -1,10 +1,8 @@
-import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Button } from "@mui/material";
-import { create } from "@mui/material/styles/createTransitions";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { useSnackbar } from 'notistack';
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
 import { handleBan } from "./ButtonHandlers";
-import { showSnackbarNotification } from '../../../App';
-import { useSnackbar } from 'notistack';
 
 
 const BanDialog: React.FC<{

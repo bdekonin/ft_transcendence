@@ -144,7 +144,6 @@ const Game: React.FC = () => {
 			if (values[0] != '?invite')
 				return ;
 			
-			console.warn(values);
 			socket.emit("game/invite-waiting", {id: values[1] });
 			// socket.on('game/invite-start', (data: Game) => {
 

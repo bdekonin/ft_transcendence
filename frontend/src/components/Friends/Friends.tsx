@@ -1,10 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { useCallback, useContext, useEffect, useState } from "react";
-import './style.css'
-import { SocketContext } from "../../context/socket";
 import { useSnackbar } from "notistack";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
+import { SocketContext } from "../../context/socket";
+import './style.css';
 
 interface User {
 	id: number;
