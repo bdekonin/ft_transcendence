@@ -355,9 +355,18 @@ const Game: React.FC = () => {
 	};
 
 	const requestIdRef = useRef<number>(0);
+	let previousFrameTime = 0;
+	
 	const tick = () => {
-		render();
-		update();
+		const currentTime = Date.now();
+		const elapsedTime = currentTime - previousFrameTime;
+		
+		if (elapsedTime >= (33 / 4)) { // 30 fps = 1000 ms / 30 = 33.333... ms/frame
+			render();
+			update();
+			previousFrameTime = currentTime;
+		}
+		
 		if (requestIdRef.current) {
 			requestIdRef.current = requestAnimationFrame(tick);
 		}
@@ -365,6 +374,7 @@ const Game: React.FC = () => {
 	
 	/* Launch game + cleanup */
 	useEffect(() => {
+		previousFrameTime = Date.now();
 		requestIdRef.current = requestAnimationFrame(tick);
 		return () => {
 			cancelAnimationFrame(requestIdRef.current);
