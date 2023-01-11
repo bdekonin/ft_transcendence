@@ -201,7 +201,79 @@ export class socketGateway {
 
 	invitedPlayers: Map<string, Socket> = new Map(); /* inviteID, socket */
 
+	intervalIds: Map<string, NodeJS.Timer> = new Map();
 
+
+	async calculateBall(game_id: string) {
+		let game = this.currentGames.get(game_id);
+		if (!game) {
+			// console.log('NO GAME!!!')
+			return ;
+		}
+		if (game.leftScore >= 10) {
+			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
+			return;
+		}
+		else if (game.rightScore >= 10) {
+			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			return;
+		}
+		
+		// check top canvas bounds
+		if(game.ball.y < 10){
+			game.ball.yVel = 1;
+		}
+		
+		//check bottom canvas bounds
+		if(game.ball.y + game.ball.height > 400 - 10){
+			game.ball.yVel = -1;
+		}
+		
+		//check left canvas bounds
+		if(game.ball.x < 0){
+			game.leftScore += 1;
+			game.ball.reset()
+			this.currentGames.set(game.id, game);
+		}
+
+		//check right canvas bounds
+		if(game.ball.x + game.ball.width > 700){
+			game.rightScore += 1;
+			game.ball.reset()
+			this.currentGames.set(game.id, game);
+		}
+
+		//check left player collision
+		if(game.ball.x <= game.left.x + game.left.width + 10){
+			if(game.ball.y >= game.left.y && game.ball.y + game.ball.height <= game.left.y + game.left.height){
+				game.ball.xVel = 1;
+			}
+		} 
+
+		//check right player collision
+		if(game.ball.x + game.ball.width >= game.right.x){
+			if(game.ball.y >= game.right.y && game.ball.y + game.ball.height <= game.right.y + game.right.height){
+				game.ball.xVel = -1;
+			}
+		}
+		game.ball.x += game.ball.xVel * (game.ball.speed);
+		game.ball.y += game.ball.yVel * (game.ball.speed);
+
+		// socketGateway.update
+		this.server.to('game:' + game.id).emit('game/update', game);
+
+		// console.table(game.ball);
+		this.currentGames.set(game.id, game);
+	}
+
+	createLiveGame(gameId: string) {
+		setTimeout(() => {
+			const interval_id = setInterval(() => {
+				this.calculateBall(gameId);
+			}, 30 * 2);
+			this.intervalIds.set(gameId, interval_id);
+		}, 10000);
+	}
 
 	isUserInInviteList (client: Socket): string | null {
 		this.invitedPlayers.forEach((socket, inviteID) => {
@@ -325,6 +397,7 @@ export class socketGateway {
 			this.waitingPlayers.clear();
 			this.server.in('game:' + game.id).emit('game/start', game);
 			this.currentGames.set(game.id, game);
+			this.createLiveGame(game.id);
 		}
 		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
@@ -389,8 +462,6 @@ export class socketGateway {
 		this.server.emit('game/spectate-list', this.parseCurrentGames());
 	}
 
-	moveAmount = 8;
-
 	/* Mouse movement */
 	@SubscribeMessage('game/move')
 	async handleMouseMove(client: Socket, payload: any) {
@@ -416,39 +487,39 @@ export class socketGateway {
 		}
 		// save game
 		this.currentGames.set(payload.id, game);
-		this.server.to('game:' + payload.id).emit('game/update', game);
+		// this.server.to('game:' + payload.id).emit('game/update', game);
 	}
 
-	@SubscribeMessage('game/score')
-	async handleScore (client: Socket, payload: any) {
-		const user = await this.findUser(client)
-		if (!user)
-			return;
-		const game = this.currentGames.get(payload.id);
-		if (!game) {
-			return;
-		}
-		if (game.left.socket == client.id && payload.side == 'left') {
-			game.leftScore += 1;
-		} else if (game.right.socket == client.id && payload.side == 'right') {
-			game.rightScore += 1;
-		}
-		if (game.leftScore >= 10) {
-			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
-			return;
-		}
-		else if (game.rightScore >= 10) {
-			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
-			this.server.emit('game/spectate-list', this.parseCurrentGames());
-			return;
-		}
+	// @SubscribeMessage('game/score')
+	// async handleScore (client: Socket, payload: any) {
+	// 	const user = await this.findUser(client)
+	// 	if (!user)
+	// 		return;
+	// 	const game = this.currentGames.get(payload.id);
+	// 	if (!game) {
+	// 		return;
+	// 	}
+	// 	if (game.left.socket == client.id && payload.side == 'left') {
+	// 		game.leftScore += 1;
+	// 	} else if (game.right.socket == client.id && payload.side == 'right') {
+	// 		game.rightScore += 1;
+	// 	}
+	// 	if (game.leftScore >= 10) {
+	// 		this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
+	// 		return;
+	// 	}
+	// 	else if (game.rightScore >= 10) {
+	// 		this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+	// 		this.server.emit('game/spectate-list', this.parseCurrentGames());
+	// 		return;
+	// 	}
 
-		// save game
-		game.ball.reset(); 
-		this.currentGames.set(payload.id, game);
-		this.server.to('game:' + payload.id).emit('game/update', game);
-		this.server.to('game:' + payload.id).emit('game/ball', game.ball);
-	}
+	// 	// save game
+	// 	game.ball.reset(); 
+	// 	this.currentGames.set(payload.id, game);
+	// 	this.server.to('game:' + payload.id).emit('game/update', game);
+	// 	this.server.to('game:' + payload.id).emit('game/ball', game.ball);
+	// }
 
 	@SubscribeMessage('game/request-spectate')
 	async handleRequestSpectate (client: Socket, payload: any) {
@@ -467,6 +538,9 @@ export class socketGateway {
 
 	async handleEndGame (game: Game, winner?: Paddle, loser?: Paddle, winnerScore?: number, loserScore?: number) {
 		this.currentGames.delete(game.id);
+		const intervalID = this.intervalIds.get(game.id);
+		clearInterval(intervalID);
+		this.intervalIds.delete(game.id);
 
 		if (!winner && !loser) { /* Draw */
 			this.server.to('game:' + game.id).emit('game/end');
@@ -533,7 +607,7 @@ interface Game {
 }
 
 class Ball {
-	readonly speed: number = 4; /* 2.5 */
+	readonly speed: number = 12; /* 2.5 */
 
 	x: number;
 	y: number;

@@ -199,9 +199,19 @@ const Game: React.FC = () => {
 	}, [socket]);
 
 	useEffect(() => {
+		if (!gameState)
+			return ;
 		socket.on("game/update", (data: Game) => {
 			/* Update game state */
+			// setGameState(oldArr => {ball: data.ball, })
+			if (socket.id == data.left.socket) {
+				data.left = gameState.left;
+			}
+			else if (socket.id == data.right.socket) {
+				data.right = gameState.right;
+			}
 			setGameState(data);
+			setBall(data.ball)
 			if (state !== STATE.SPECTATOR) {
 				if (socket.id === data.left.socket || socket.id === data.right.socket)
 					setState(STATE.PLAYING);
@@ -211,16 +221,16 @@ const Game: React.FC = () => {
 			socket.off("game/update");
 		};
 	// eslint-disable-next-line
-	}, [socket]);
+	});
 
-	useEffect(() => {
-		socket.on("game/ball", (data: Ball) => {
-			setBall(data);
-		});
-		return () => {
-			socket.off("game/ball");
-		};
-	}, [socket]);
+	// useEffect(() => {
+	// 	socket.on("game/ball", (data: Ball) => {
+	// 		setBall(data);
+	// 	});
+	// 	return () => {
+	// 		socket.off("game/ball");
+	// 	};
+	// }, [socket]);
 	
 	useEffect(() => {
 		socket.on("game/end", (payload?: any) => {
@@ -238,6 +248,21 @@ const Game: React.FC = () => {
 	const mouseMoveHandler = useCallback(
 		(e: MouseEvent) => {
 			if (typeof gameState !== "undefined" && state === STATE.PLAYING) {
+				console.log('Mouse updated');
+				if (gameState.left.socket == socket.id) {
+					if (e.clientY + 60 >= 400)
+						return;
+					if (e.clientY <= 0)
+						return;
+					gameState.left.y = e.clientY;
+				}
+				else if (gameState.right.socket == socket.id) {
+					if (e.clientY + 60 >= 400)
+						return;
+					if (e.clientY <= 0)
+						return;
+					gameState.right.y = e.clientY;
+				}
 				socket.emit("game/move", {y: e.clientY, id: gameState.id});
 			}
 		},
@@ -362,7 +387,7 @@ const Game: React.FC = () => {
 		
 		if (elapsedTime >= (33 / 4)) { // 30 fps = 1000 ms / 30 = 33.333... ms/frame
 			render();
-			update();
+			// update();
 			previousFrameTime = currentTime;
 		}
 		
@@ -373,7 +398,7 @@ const Game: React.FC = () => {
 	
 	/* Launch game + cleanup */
 	useEffect(() => {
-		previousFrameTime = Date.now();
+		// previousFrameTime = Date.now();
 		requestIdRef.current = requestAnimationFrame(tick);
 		return () => {
 			cancelAnimationFrame(requestIdRef.current);
@@ -416,7 +441,7 @@ const Game: React.FC = () => {
 			</Select>
 			</FormControl>
 		</div>
-	  );
+	);
 }
 
 export default Game;
