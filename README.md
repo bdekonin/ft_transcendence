@@ -10,7 +10,7 @@ NestJS
 PostgreSQL
 
 ## API
-Our API is fully documented with swagger at `http://f1r3s17:3000/api/` (using openapi3.0).<br>
+Our API is fully documented with swagger at `http://localhost:3000/api/` (using openapi3.0).<br>
 
 # Homepage
 
