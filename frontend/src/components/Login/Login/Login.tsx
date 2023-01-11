@@ -11,7 +11,7 @@ const Login: FC = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
+		axios.get('http://' + process.env.HOST + ':3000/auth/status', {withCredentials: true})
 		.then(() => {
 			navigate('/');
 		})
@@ -38,13 +38,13 @@ const Login: FC = () => {
 			</video>
 			<div className='block1'>
 			<h1>User login</h1>
-			<a href="http://localhost:3000/auth/42/login">
+			<a href={"http://" + process.env.HOST + ":3000/auth/42/login"}>
 				<img src={require("./42LogoBlue.png")}
 					alt="42 Logo" 
 					className='image1'
 					/>
 			</a>
-			<a href="http://localhost:3000/auth/google/login">
+			<a href={"http://" + process.env.HOST + ":3000/auth/google/login"}>
 				<img src={require("./googleLogo.png")}
 					alt='Google logo'
 					className='image2'

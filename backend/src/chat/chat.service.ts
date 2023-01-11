@@ -556,7 +556,7 @@ export class ChatService {
 		}
 		const uuid = uuidv5(String(chat.id), 'bb5d0ffa-9a4c-4d7c-8fc2-0a7d2220ba45');
 
-		const link = 'http://localhost:3006/pong?invite=' + uuid;
+		const link = 'http://' + process.env.HOST + ':3006/pong?invite=' + uuid;
 
 		const message = 'Game invite: ' + link;
 

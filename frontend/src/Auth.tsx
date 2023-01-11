@@ -8,7 +8,7 @@ const Protected = ({children}: any) => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		axios.get('http://localhost:3000/auth/jwt', {withCredentials: true})
+		axios.get('http://' + process.env.HOST + ':3000/auth/jwt', {withCredentials: true})
 		.catch(e => {
 			navigate('/login');
 		})

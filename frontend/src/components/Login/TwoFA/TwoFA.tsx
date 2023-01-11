@@ -35,7 +35,7 @@ export default function TwoFA() {
 				setInputCode(['', '', '', '', '', '']);
 			else 
 			{
-				axios.post('http://localhost:3000/twofa/verify', {token: ret}, {withCredentials: true})
+				axios.post('http://' + process.env.HOST + ':3000/twofa/verify', {token: ret}, {withCredentials: true})
 				.then(res => {
 					setInputCode(['', '', '', '', '', '']);
 					navigate('/');

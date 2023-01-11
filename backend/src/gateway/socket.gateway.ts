@@ -30,7 +30,7 @@ class UserSocket {
 @WebSocketGateway({
 	cors: {
 		origin: [
-			'http://localhost:3006',
+			'http://' + process.env.HOST + ':3006',
 		],
 		credentials: true,
 	},
@@ -211,11 +211,11 @@ export class socketGateway {
 			return ;
 		}
 		if (game.leftScore >= 10) {
-			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
+			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
 			return;
 		}
 		else if (game.rightScore >= 10) {
-			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
 			return;
 		}
 		

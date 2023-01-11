@@ -25,8 +25,8 @@ async function bootstrap() {
 
 	app.enableCors({
 		origin: [
-			"http://localhost:3006",
-			"http://localhost:3000",
+			"http://" + process.env.HOST + ":3006",
+			"http://" + process.env.HOST + ":3000",
 		],
 		credentials: true,
 		exposedHeaders: ['randomStringLol', 'X-XSRF-TOKEN', "Authorization"],
