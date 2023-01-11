@@ -11,7 +11,7 @@ const Login: FC = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		axios.get('http://localhost:3000/auth/status', {withCredentials: true})
+		axios.get('http://' + process.env.HOST + ':3000/auth/status', {withCredentials: true})
 		.then(() => {
 			navigate('/');
 		})
@@ -22,6 +22,11 @@ const Login: FC = () => {
 				setTwoFA(true);
 		});
 	}, []);
+
+	const login42Url = 'http://' + process.env.HOST + ':3000/auth/42/login';
+	const loginGoogleUrl = 'http://' + process.env.HOST + ':3000/auth/google/login';
+
+
 	if (additionalInfo)
 		return (<AdditionalInfo/>);
 	else if (twoFA)
@@ -38,13 +43,13 @@ const Login: FC = () => {
 			</video>
 			<div className='block1'>
 			<h1>User login</h1>
-			<a href="http://localhost:3000/auth/42/login">
+			<a href={login42Url}>
 				<img src={require("./42LogoBlue.png")}
 					alt="42 Logo" 
 					className='image1'
 					/>
 			</a>
-			<a href="http://localhost:3000/auth/google/login">
+			<a href={loginGoogleUrl}>
 				<img src={require("./googleLogo.png")}
 					alt='Google logo'
 					className='image2'

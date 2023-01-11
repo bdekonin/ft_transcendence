@@ -84,14 +84,14 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.patch('http://localhost:3000/user', { username: userName }, { withCredentials: true })
+		axios.patch('http://' + process.env.HOST + ':3000/user', { username: userName }, { withCredentials: true })
 		.then(res => {
 			navigate('/');	
 		})
 		.catch(err => {
 			alert(err.response.data.message);
 		})
-		axios.post('http://localhost:3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
+		axios.post('http://' + process.env.HOST + ':3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
 		.then(res => {
 			navigate('/');
 		})

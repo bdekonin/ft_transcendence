@@ -56,7 +56,7 @@ const Messages: React.FC<{
 			return;
 		}
 
-		axios.get('http://localhost:3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
+		axios.get('http://' + process.env.HOST + ':3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
 		.then(res => {
 			setMessages(res.data);
 		})

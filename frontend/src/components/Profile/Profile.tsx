@@ -48,7 +48,7 @@ const Profile:React.FC = () =>
 
 	/* For user object */
 	useEffect(() => {
-		axios.get('http://localhost:3000/user/' + (query ? query : ''), { withCredentials: true })
+		axios.get('http://' + process.env.HOST + ':3000/user/' + (query ? query : ''), { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
 		})
@@ -62,7 +62,7 @@ const Profile:React.FC = () =>
 	//getting the Avatars
 	useEffect(() => {
 		if (user) {
-			axios.get("http://localhost:3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
+			axios.get("http://" + process.env.HOST + ":3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
 			.then(res => {
 				const imageObjectURL = URL.createObjectURL(res.data);
 				setAvatar({id: user?.id as number, avatar: imageObjectURL});
@@ -70,7 +70,7 @@ const Profile:React.FC = () =>
 			.catch(err => {
 				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
-			axios.get('http://localhost:3000/game/userID/' + user?.id, { withCredentials: true })
+			axios.get('http://' + process.env.HOST + ':3000/game/userID/' + user?.id, { withCredentials: true })
 			.then(res => {
 				setGames(res.data);
 				games?.sort((a, b) => {
@@ -83,7 +83,7 @@ const Profile:React.FC = () =>
 				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 
-			axios.get('http://localhost:3000/social/' + user.id, { withCredentials: true })
+			axios.get('http://' + process.env.HOST + ':3000/social/' + user.id, { withCredentials: true })
 			.then(res => {
 				setFriendAmount(res.data.length);
 			})
@@ -93,7 +93,7 @@ const Profile:React.FC = () =>
 				showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 			});
 
-			axios.get('http://localhost:3000/user/' + user.id + '/status', { withCredentials: true })
+			axios.get('http://' + process.env.HOST + ':3000/user/' + user.id + '/status', { withCredentials: true })
 			.then(res => {
 				setStatus(res.data);
 			})

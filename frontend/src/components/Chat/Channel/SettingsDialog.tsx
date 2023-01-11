@@ -39,7 +39,7 @@ const SettingsDialog: React.FC<{
 			password: channelPassword.length == 0 ? null : channelPassword
 		};
 
-		axios.patch('http://localhost:3000/chat/' + currentUser.id + '/update/' + currentChat?.id, payload, { withCredentials: true })
+		axios.patch('http://' + process.env.HOST + ':3000/chat/' + currentUser.id + '/update/' + currentChat?.id, payload, { withCredentials: true })
 		.then(res => {
 			showSnackbarNotification(enqueueSnackbar, 'Group updated successfully.', 'success');
 			setClose();
@@ -72,7 +72,7 @@ const SettingsDialog: React.FC<{
 			}
 		}
 
-		axios.patch('http://localhost:3000/chat/' + currentUser.id + '/switch/' + currentChat?.id, { password: password }, { withCredentials: true })
+		axios.patch('http://' + process.env.HOST + ':3000/chat/' + currentUser.id + '/switch/' + currentChat?.id, { password: password }, { withCredentials: true })
 		.then(res => {
 			showSnackbarNotification(enqueueSnackbar, 'Group updated successfully.', 'success');
 			setClose();
