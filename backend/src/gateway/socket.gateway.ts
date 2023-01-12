@@ -171,6 +171,16 @@ export class socketGateway {
 		return { id: user.id, username: user.username };
 	}
 
+	async userBannedOrKicked(chatID: number, userID: number) {
+
+		const socket = this.connections.find(obj => obj.userID === userID);
+
+		const client = this.server.sockets.sockets.get(socket.socketID);
+		if (!client)
+			return ;
+		client.leave('chat:' + chatID);
+	}
+
 
 
 
