@@ -206,7 +206,6 @@ export class socketGateway {
 	async calculateBall(game_id: string) {
 		let game = this.currentGames.get(game_id);
 		if (!game) {
-			// console.log('NO GAME!!!')
 			return ;
 		}
 		if (game.leftScore >= 10) {
@@ -491,9 +490,10 @@ export class socketGateway {
 
 	@SubscribeMessage("game-spectator-leave")
 	async leaveSpectator(client: Socket, gameID: String | undefined) {
-		console.log("AJKSDHAJKSDHAJKDAHSDJHDKASKDJHAKJSDHAKSJDHASKDJAHKAJD");
-		if (gameID)
-			client.leave("game:" + gameID)
+		this.currentGames.forEach((game) => {
+			client.leave("game:" + game.id)
+		})
+
 	}
 
 	// @SubscribeMessage('game/score')
@@ -538,6 +538,7 @@ export class socketGateway {
 		if (!game) {
 			return;
 		}
+		this.waitingPlayers.delete(client.id);
 		this.server.to(client.id).emit('game/spectate', game);
 		client.join('game:' + payload.id);
 	}
@@ -598,8 +599,7 @@ export class socketGateway {
 			leftScore: 0,
 			rightScore: 0
 		}
-		console.log('UserLeft: ', game.left.username);
-		console.log('Userright: ', game.right.username);
+
 		return game;
 	}
 }
