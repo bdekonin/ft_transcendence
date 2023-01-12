@@ -191,6 +191,7 @@ export class ChatController {
 			},
 		}
 		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		this.socketGateway.userBannedOrKicked(chatID, userID);
 		return output;
 	}
 
@@ -250,6 +251,7 @@ export class ChatController {
 			},
 		}
 		this.socketGateway.server.to('chat:' + chatID).emit('chat/refresh-users-leave', payloadToBeSent);
+		this.socketGateway.userBannedOrKicked(chatID, userID);
 		return output;
 	}
 

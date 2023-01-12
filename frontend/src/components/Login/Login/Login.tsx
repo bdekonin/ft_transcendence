@@ -1,17 +1,21 @@
 import axios from 'axios';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hostname } from '../../../context/host';
 import AdditionalInfo from '../AdditionalInfo/AdditionalInfo';
 import TwoFA from '../TwoFA/TwoFA';
 import './style.css';
+
+
+
 
 const Login: FC = () => {
 	const [additionalInfo, setAdditionalInfo] = useState(false);
 	const [twoFA, setTwoFA] = useState(false);
 	const navigate = useNavigate();
-
+	
 	useEffect(() => {
-		axios.get('http://' + process.env.HOST + ':3000/auth/status', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/auth/status', {withCredentials: true})
 		.then(() => {
 			navigate('/');
 		})
@@ -23,9 +27,8 @@ const Login: FC = () => {
 		});
 	}, []);
 
-	const login42Url = 'http://' + process.env.HOST + ':3000/auth/42/login';
-	const loginGoogleUrl = 'http://' + process.env.HOST + ':3000/auth/google/login';
-
+	const login42Url = "http://" + hostname + ":3000/auth/42/login";
+	const loginGoogleUrl = "http://" + hostname + ":3000/auth/google/login";
 
 	if (additionalInfo)
 		return (<AdditionalInfo/>);

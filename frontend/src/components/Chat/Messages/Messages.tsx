@@ -2,6 +2,7 @@ import axios from "axios";
 import { useSnackbar } from "notistack";
 import { useContext, useEffect, useRef, useState } from "react";
 import { showSnackbarNotification } from "../../../App";
+import { hostname } from "../../../context/host";
 import { SocketContext } from "../../../context/socket";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
@@ -56,7 +57,7 @@ const Messages: React.FC<{
 			return;
 		}
 
-		axios.get('http://' + process.env.HOST + ':3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/chat/' + currentUser.id + '/messages/' + currentChat.id, { withCredentials: true })
 		.then(res => {
 			setMessages(res.data);
 		})

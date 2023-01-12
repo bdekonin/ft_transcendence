@@ -10,16 +10,15 @@ services:
       POSTGRES_DB: ft_trans
     ports:
       - "5432:5432"
-  nginx:
-      container_name: ts_nginx
-      build:
-        context: ./frontend/.
-        dockerfile: Dockerfile
-      ports:
-        - "3006:80"
-      restart: always
-      env_file:
-        - ./.env
+  # pgadmin:
+  #   container_name: pgadmin4_container
+  #   image: dpage/pgadmin4
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: root@root.com
+  #     PGADMIN_DEFAULT_PASSWORD: root
+  #   ports:
+  #     - "5050:80"
   node:
     build:
       context: ./backend/.
@@ -32,12 +31,13 @@ services:
       - postgres
     env_file:
       - ./.env
-  pgadmin:
-    container_name: pgadmin4_container
-    image: dpage/pgadmin4
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: root@root.com
-      PGADMIN_DEFAULT_PASSWORD: root
-    ports:
-      - "5050:80"
+  nginx:
+      container_name: ts_nginx
+      build:
+        context: ./frontend/.
+        dockerfile: Dockerfile
+      ports:
+        - "3006:80"
+      restart: always
+      env_file:
+        - ./.env

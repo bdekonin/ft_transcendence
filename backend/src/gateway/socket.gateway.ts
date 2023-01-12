@@ -13,6 +13,7 @@ import { UserService } from 'src/user/user.service';
 import {v4 as uuidv4} from 'uuid';
 import { CreateGameDTO } from 'src/game/game.dto';
 import { GameService } from 'src/game/game.service';
+import { hostname } from 'src/main';
 
 class userDto {
 	id: number; /* user id */
@@ -30,7 +31,8 @@ class UserSocket {
 @WebSocketGateway({
 	cors: {
 		origin: [
-			'http://' + process.env.HOST + ':3006',
+			"http://" + "localhost" + ":3006",
+			"http://" + "localhost" + ":3000",
 		],
 		credentials: true,
 	},
@@ -64,7 +66,6 @@ export class socketGateway {
 		this.connections.push({
 			userID: user.id, socketID: client.id
 		});
-
 
 		/* Add client to every chat he is in */
 		rooms.forEach((room) => {
@@ -170,6 +171,16 @@ export class socketGateway {
 		return { id: user.id, username: user.username };
 	}
 
+	async userBannedOrKicked(chatID: number, userID: number) {
+
+		const socket = this.connections.find(obj => obj.userID === userID);
+
+		const client = this.server.sockets.sockets.get(socket.socketID);
+		if (!client)
+			return ;
+		client.leave('chat:' + chatID);
+	}
+
 
 
 
@@ -207,15 +218,14 @@ export class socketGateway {
 	async calculateBall(game_id: string) {
 		let game = this.currentGames.get(game_id);
 		if (!game) {
-			// console.log('NO GAME!!!')
 			return ;
 		}
 		if (game.leftScore >= 10) {
-			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
 			return;
 		}
 		else if (game.rightScore >= 10) {
-			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
+			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
 			return;
 		}
 		
@@ -231,14 +241,14 @@ export class socketGateway {
 		
 		//check left canvas bounds
 		if(game.ball.x < 0){
-			game.leftScore += 1;
+			game.rightScore += 1;
 			game.ball.reset()
 			this.currentGames.set(game.id, game);
 		}
-
+		
 		//check right canvas bounds
 		if(game.ball.x + game.ball.width > 700){
-			game.rightScore += 1;
+			game.leftScore += 1;
 			game.ball.reset()
 			this.currentGames.set(game.id, game);
 		}
@@ -314,6 +324,7 @@ export class socketGateway {
 			this.currentGames.delete(game.id);
 			this.server.in('game:' + game.id).emit('game/start', game);
 			this.currentGames.set(game.id, game);
+			this.createLiveGame(game.id);
 		}
 		else {
 			/* User is waiting on other user */
@@ -490,6 +501,14 @@ export class socketGateway {
 		// this.server.to('game:' + payload.id).emit('game/update', game);
 	}
 
+	@SubscribeMessage("game-spectator-leave")
+	async leaveSpectator(client: Socket, gameID: String | undefined) {
+		this.currentGames.forEach((game) => {
+			client.leave("game:" + game.id)
+		})
+
+	}
+
 	// @SubscribeMessage('game/score')
 	// async handleScore (client: Socket, payload: any) {
 	// 	const user = await this.findUser(client)
@@ -532,6 +551,7 @@ export class socketGateway {
 		if (!game) {
 			return;
 		}
+		this.waitingPlayers.delete(client.id);
 		this.server.to(client.id).emit('game/spectate', game);
 		client.join('game:' + payload.id);
 	}
@@ -592,6 +612,7 @@ export class socketGateway {
 			leftScore: 0,
 			rightScore: 0
 		}
+
 		return game;
 	}
 }

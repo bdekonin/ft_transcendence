@@ -3,6 +3,7 @@ import { useSnackbar } from "notistack";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
+import { hostname } from '../../context/host';
 import { SocketContext } from "../../context/socket";
 import './style.css';
 
@@ -60,7 +61,7 @@ const Friends:React.FC = () => {
 			return ;
 
 		socket.on('chat/refresh-friendships', () => {
-			axios.get('http://' + process.env.HOST + ':3000/social', {withCredentials: true})
+			axios.get('http://' + hostname + ':3000/social', {withCredentials: true})
 			.then(res => {
 				let friends: User[] = [];
 				res.data.map((elem: Friend) => {
@@ -95,7 +96,7 @@ const Friends:React.FC = () => {
 	})
 
 	useEffect(() => {
-		axios.get('http://' + process.env.HOST + ':3000/user', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/user', {withCredentials: true})
 		.then(res => {
 			setUser(res.data);
 		})
@@ -107,7 +108,7 @@ const Friends:React.FC = () => {
 	useEffect(() => {
 		if (user === undefined)
 			return ;
-		axios.get('http://' + process.env.HOST + ':3000/social', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/social', {withCredentials: true})
 		.then(res => {
 			let friends: User[] = [];
 			res.data.map((elem: Friend) => {
@@ -145,7 +146,7 @@ const Friends:React.FC = () => {
 		users.map(elem => {
 			if (!avatars.find(o => o.id === elem.id))
 			{
-				axios.get('http://' + process.env.HOST + ':3000/user/' + elem.id + '/avatar', {withCredentials: true, responseType: 'blob'})
+				axios.get('http://' + hostname + ':3000/user/' + elem.id + '/avatar', {withCredentials: true, responseType: 'blob'})
 				.then(res => {
 					setAvatars(oldArr => [...oldArr, {id: elem.id, avatar: URL.createObjectURL(res.data)}]);
 				})
@@ -157,14 +158,14 @@ const Friends:React.FC = () => {
 	}, [users])
 
 	function acceptFriend(otherUser: User) {
-		axios.put('http://' + process.env.HOST + ':3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
+		axios.put('http://' + hostname + ':3000/social/' + otherUser.id + '/follow', {}, {withCredentials: true})
 		.catch((err) => {
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})
 	}
 
 	function denyFriend(otherUser: User) {
-		axios.delete('http://' + process.env.HOST + ':3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
+		axios.delete('http://' + hostname + ':3000/social/' + otherUser.id + '/unfollow', {withCredentials: true})
 		.catch((err) => {
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		})

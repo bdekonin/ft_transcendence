@@ -2,10 +2,11 @@ import axios from "axios";
 import { User } from "../Channel/Channels";
 import Chat from "../Chat";
 import { showSnackbarNotification } from '../../../App';
+import { hostname } from "../../../context/host";
 
 /* Follow / Unfollow */
 export function handleFollow(enqueueSnackbar: any, user: User) {
-	axios.put("http://" + process.env.HOST + ":3000/social/" + user.id + "/follow", {}, {withCredentials: true})
+	axios.put("http://" + hostname + ":3000/social/" + user.id + "/follow", {}, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -14,7 +15,7 @@ export function handleFollow(enqueueSnackbar: any, user: User) {
 	});
 }
 export function handleUnfollow(enqueueSnackbar: any, user: User) {
-	axios.delete("http://" + process.env.HOST + ":3000/social/" + user.id + "/unfollow", {withCredentials: true})
+	axios.delete("http://" + hostname + ":3000/social/" + user.id + "/unfollow", {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -26,7 +27,7 @@ export function handleUnfollow(enqueueSnackbar: any, user: User) {
 
 /* Block / Unblock */
 export function handleBlock(enqueueSnackbar: any, user: User) {
-	axios.put("http://" + process.env.HOST + ":3000/social/" + user.id + "/block", {}, {withCredentials: true})
+	axios.put("http://" + hostname + ":3000/social/" + user.id + "/block", {}, {withCredentials: true})
 	.then((payload) => {
 	})
 	.catch((err) => {
@@ -37,7 +38,7 @@ export function handleBlock(enqueueSnackbar: any, user: User) {
 	});
 }
 export function handleUnblock(enqueueSnackbar: any, user: User) {
-	axios.delete("http://" + process.env.HOST + ":3000/social/" + user.id + "/unblock", {withCredentials: true})
+	axios.delete("http://" + hostname + ":3000/social/" + user.id + "/unblock", {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -54,7 +55,7 @@ export function handleMute(enqueueSnackbar: any, currentUser: User, user: User, 
 
 	const data = { muteUserID: user.id };
 
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/mute/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/mute/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -70,7 +71,7 @@ export function handleUnmute(enqueueSnackbar: any, currentUser: User, user: User
 
 	const data = { unmuteUserID: user.id };
 
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/unmute/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/unmute/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -88,7 +89,7 @@ export function handleKick(enqueueSnackbar: any, currentUser: User, user: User, 
 
 	const data = { kickUserID: user.id };
 
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/kick/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/kick/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -111,7 +112,7 @@ export function handleBan(enqueueSnackbar: any, currentUser: User, user: User, c
 		bannedID: user.id,
 		time: time_in_seconds.toString()  /* Time in seconds */
 	}
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + user.id + "/ban/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + user.id + "/ban/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -130,7 +131,7 @@ export function handlePromote(enqueueSnackbar: any, currentUser: User, user: Use
 	const data = { promoteUserID: user.id };
 
 	// ban/:chatID/:userID
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/promote/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/promote/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -148,7 +149,7 @@ export function handleDemote(enqueueSnackbar: any, currentUser: User, user: User
 
 	const data = { demoteUserID: user.id };
 
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/demote/" + currentChat.id, data, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/demote/" + currentChat.id, data, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;
@@ -161,7 +162,7 @@ export function handleInviteToGame(enqueueSnackbar: any, currentUser: User, curr
 	if (!currentUser  || !currentChat)
 		return ;
 
-	axios.post("http://" + process.env.HOST + ":3000/chat/" + currentUser.id + "/game-invite/" + currentChat.id, { }, {withCredentials: true})
+	axios.post("http://" + hostname + ":3000/chat/" + currentUser.id + "/game-invite/" + currentChat.id, { }, {withCredentials: true})
 	.catch((err) => {
 		if (err.response.data.statusCode === 401)
 			return ;

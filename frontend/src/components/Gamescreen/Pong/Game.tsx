@@ -131,14 +131,15 @@ const Game: React.FC = () => {
 	}, [canvasRef]);
 
 	useEffect(() => {
+		socket.on('game/spectate', (data: Game) => {
+			setGameState(data);
+			setBall(data.ball)
+			setState(STATE.SPECTATOR);
+		});
+
 		if (location.hash) {
 			/* User wants to spectate a game */
 			socket.emit("game/request-spectate", {id: location.hash.substring(1)});
-			socket.on('game/spectate', (data: Game) => {
-				setGameState(data);
-				setBall(data.ball)
-				setState(STATE.SPECTATOR);
-			});
 		}
 
 		if (location.search) {
@@ -161,8 +162,14 @@ const Game: React.FC = () => {
 			socket.off("game/spectate");
 			socket.off("game/invite-start");
 		}
-	// eslint-disable-next-line
 	}, [socket]);
+	
+	useEffect(() => {
+		return () => {
+			// if (gameState && state == STATE.SPECTATOR)
+				socket.emit('game-spectator-leave');
+		}
+	}, [canvasRef])
 
 	useEffect(() => {
 		if (state === STATE.WAITING) {
@@ -222,15 +229,6 @@ const Game: React.FC = () => {
 		};
 	// eslint-disable-next-line
 	});
-
-	// useEffect(() => {
-	// 	socket.on("game/ball", (data: Ball) => {
-	// 		setBall(data);
-	// 	});
-	// 	return () => {
-	// 		socket.off("game/ball");
-	// 	};
-	// }, [socket]);
 	
 	useEffect(() => {
 		socket.on("game/end", (payload?: any) => {
@@ -248,7 +246,6 @@ const Game: React.FC = () => {
 	const mouseMoveHandler = useCallback(
 		(e: MouseEvent) => {
 			if (typeof gameState !== "undefined" && state === STATE.PLAYING) {
-				console.log('Mouse updated');
 				if (gameState.left.socket == socket.id) {
 					if (e.clientY + 60 >= 400)
 						return;
@@ -336,48 +333,6 @@ const Game: React.FC = () => {
 		}
 	};
 
-	const update = () => {
-		if ((state === STATE.SPECTATOR || state === STATE.PLAYING) && gameState && ball) {
-			//check top canvas bounds
-			if(ball.y < 10){
-				ball.yVel = 1;
-			}
-
-			//check bottom canvas bounds
-			if(ball.y + ball.height > 400 - 10){
-				ball.yVel = -1;
-			}
-
-			//check left canvas bounds
-			if(ball.x < 0){
-				if (state === STATE.PLAYING)
-					socket.emit("game/score", {side: "right", id: gameState.id});
-			}
-
-			//check right canvas bounds
-			if(ball.x + ball.width > 700){
-				if (state === STATE.PLAYING)
-					socket.emit("game/score", {side: "left", id: gameState.id});
-			}
-
-			//check left player collision
-			if(ball.x <= gameState.left.x + gameState.left.width + 10){
-				if(ball.y >= gameState.left.y && ball.y + ball.height <= gameState.left.y + gameState.left.height){
-					ball.xVel = 1;
-				}
-			} 
-
-			//check right player collision
-			if(ball.x + ball.width >= gameState.right.x){
-				if(ball.y >= gameState.right.y && ball.y + ball.height <= gameState.right.y + gameState.right.height){
-					ball.xVel = -1;
-				}
-			}
-			ball.x += ball.xVel * ball.speed;
-			ball.y += ball.yVel * ball.speed;
-		}
-	};
-
 	const requestIdRef = useRef<number>(0);
 	let previousFrameTime = 0;
 	
@@ -387,7 +342,6 @@ const Game: React.FC = () => {
 		
 		if (elapsedTime >= (33 / 4)) { // 30 fps = 1000 ms / 30 = 33.333... ms/frame
 			render();
-			// update();
 			previousFrameTime = currentTime;
 		}
 		
