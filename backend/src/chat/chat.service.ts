@@ -669,17 +669,24 @@ export class ChatService {
 		}
 		return true;
 	}
+
 	private async doesPrivateExist(idOne: number, idTwo: number): Promise<Chat> {
-		return await this.chatRepo.findOne({
-			relations: ['users'],
-			where: {
-				type: ChatType.PRIVATE,
-				// users: In([idOne, idTwo]),
-				users: {
-					id: In([idOne, idTwo]),
-				},
-			}
+		const userOne = await this.userService.findUserById(idOne)
+		const userTwo = await this.userService.findUserById(idTwo)
+
+		if (!userOne) {
+			throw new UserNotFoundException();
+		}
+		if (!userTwo) {
+			throw new UserNotFoundException();
+		}
+		const allchats = await this.chatRepo.find();
+		const foundChat = allchats.find((chat) => {
+			if (chat.type == ChatType.PRIVATE && chat.users.includes(userOne) && chat.users.includes(userTwo))
+				return chat;
 		});
+
+		return (foundChat);
 	}
 
 	/* Chat - Get Types */

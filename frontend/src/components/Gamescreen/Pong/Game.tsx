@@ -173,7 +173,7 @@ const Game: React.FC = () => {
 
 	useEffect(() => {
 		if (state === STATE.WAITING) {
-			if (!location.search) {
+			if (!location.search && !location.hash) {
 				socket.emit("game/waiting");
 			}
 		}
