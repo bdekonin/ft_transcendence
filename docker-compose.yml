@@ -19,25 +19,25 @@ services:
   #     PGADMIN_DEFAULT_PASSWORD: root
   #   ports:
   #     - "5050:80"
-  # node:
-  #   build:
-  #     context: ./backend/.
-  #     dockerfile: Dockerfile
-  #   container_name: ts_node
-  #   restart: always
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - postgres
-  #   env_file:
-  #     - ./.env
-  # nginx:
-  #     container_name: ts_nginx
-  #     build:
-  #       context: ./frontend/.
-  #       dockerfile: Dockerfile
-  #     ports:
-  #       - "3006:80"
-  #     restart: always
-  #     env_file:
-  #       - ./.env
+  node:
+    build:
+      context: ./backend/.
+      dockerfile: Dockerfile
+    container_name: ts_node
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    env_file:
+      - ./.env
+  nginx:
+      container_name: ts_nginx
+      build:
+        context: ./frontend/.
+        dockerfile: Dockerfile
+      ports:
+        - "3006:80"
+      restart: always
+      env_file:
+        - ./.env

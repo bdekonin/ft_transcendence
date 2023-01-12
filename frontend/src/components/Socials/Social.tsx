@@ -3,6 +3,7 @@ import { useSnackbar } from "notistack";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
+import { hostname } from "../../context/host";
 import { socket } from "../../context/socket";
 import { handleFollow, handleUnfollow } from "../Chat/Players/ButtonHandlers";
 import './style.css';
@@ -40,7 +41,7 @@ const Social: FC = () => {
 	//Getting the users details
 	useEffect(() => {
 
-		axios.get("http://" + "localhost" + ":3000/user", {withCredentials: true})
+		axios.get("http://" + hostname + ":3000/user", {withCredentials: true})
 		.then(res => {
 			setCurrentUser(res.data);
 		})
@@ -50,7 +51,7 @@ const Social: FC = () => {
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
 
-		axios.get("http://" + "localhost" + ":3000/user/all", {withCredentials: true})
+		axios.get("http://" + hostname + ":3000/user/all", {withCredentials: true})
 		.then(res => {
 			setUsers(res.data);
 		})
@@ -65,7 +66,7 @@ const Social: FC = () => {
 		if (!currentUser)
 			return ;
 
-		axios.get("http://" + "localhost" + ":3000/social", { withCredentials: true })
+		axios.get("http://" + hostname + ":3000/social", { withCredentials: true })
 		.then(res => {
 			// parse data
 			const parsedData: Friendship[] = res.data.map((friendship: any) => {
@@ -90,7 +91,7 @@ const Social: FC = () => {
 		if (!currentUser)
 			return ;
 		socket.on('chat/refresh-friendships', () => {
-			axios.get("http://" + "localhost" + ":3000/social", { withCredentials: true })
+			axios.get("http://" + hostname + ":3000/social", { withCredentials: true })
 			.then(res => {
 				// parse data
 				const parsedData: Friendship[] = res.data.map((friendship: any) => {
@@ -114,7 +115,7 @@ const Social: FC = () => {
 	//Getting the avatars
 	useEffect(() => {
 		users.map(elem => {
-			axios.get("http://" + "localhost" + ":3000/user/"+elem.id+"/avatar", {withCredentials: true, responseType: 'blob'})
+			axios.get("http://" + hostname + ":3000/user/"+elem.id+"/avatar", {withCredentials: true, responseType: 'blob'})
 			.then((res) => {
 				const imageObjectURL = URL.createObjectURL(res.data);
 				setAvatars(prev => [...prev, {id: elem.id, avatar: imageObjectURL}]);

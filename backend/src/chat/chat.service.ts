@@ -13,6 +13,7 @@ import { UserAccess } from 'src/entities/Ban.entity';
 import { runInThisContext } from 'vm';
 import * as bcrypt from 'bcrypt';
 import {v5 as uuidv5} from 'uuid';
+import { hostname } from 'src/main';
 
 @Injectable()
 export class ChatService {
@@ -556,7 +557,7 @@ export class ChatService {
 		}
 		const uuid = uuidv5(String(chat.id), 'bb5d0ffa-9a4c-4d7c-8fc2-0a7d2220ba45');
 
-		const link = "http://" + "localhost" + ":3006/pong?invite=" + uuid;
+		const link = "http://" + hostname + ":3006/pong?invite=" + uuid;
 
 		const message = 'Game invite: ' + link;
 

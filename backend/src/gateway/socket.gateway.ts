@@ -13,6 +13,7 @@ import { UserService } from 'src/user/user.service';
 import {v4 as uuidv4} from 'uuid';
 import { CreateGameDTO } from 'src/game/game.dto';
 import { GameService } from 'src/game/game.service';
+import { hostname } from 'src/main';
 
 class userDto {
 	id: number; /* user id */
@@ -31,6 +32,7 @@ class UserSocket {
 	cors: {
 		origin: [
 			"http://" + "localhost" + ":3006",
+			"http://" + "localhost" + ":3000",
 		],
 		credentials: true,
 	},
@@ -312,6 +314,7 @@ export class socketGateway {
 			this.currentGames.delete(game.id);
 			this.server.in('game:' + game.id).emit('game/start', game);
 			this.currentGames.set(game.id, game);
+			this.createLiveGame(game.id);
 		}
 		else {
 			/* User is waiting on other user */

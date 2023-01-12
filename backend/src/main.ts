@@ -6,7 +6,7 @@ import * as passport from 'passport';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 
-
+export const hostname = "localhost"
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -25,8 +25,8 @@ async function bootstrap() {
 
 	app.enableCors({
 		origin: [
-			"http://" + "localhost" + ":3006",
-			"http://" + "localhost" + ":3000",
+			"http://" + hostname + ":3006",
+			"http://" + hostname + ":3000",
 		],
 		credentials: true,
 		exposedHeaders: ['randomStringLol', 'X-XSRF-TOKEN', "Authorization"],
