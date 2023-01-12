@@ -11,7 +11,6 @@ import { TwoFAController } from './2fa/TwoFA.controller';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { jwtConstants } from './utils/constants';
 import { FortyTwoStrategy } from './utils/FortyTwoStrategy';
 import { GoogleStrategy } from './utils/GoogleStrategy';
 import { JwtStrategy } from './utils/jwt.strategy';
@@ -21,7 +20,7 @@ import { JwtStrategy } from './utils/jwt.strategy';
 		PassportModule,
 		UserModule, TypeOrmModule.forFeature([User, GameHistory, Friend]),
 		JwtModule.register({
-			secret: jwtConstants.secret,
+			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '2h' }, /* 60 minutes */
 		}),
 	],
