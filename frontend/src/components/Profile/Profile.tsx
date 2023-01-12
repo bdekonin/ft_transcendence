@@ -63,7 +63,7 @@ const Profile:React.FC = () =>
 	//getting the Avatars
 	useEffect(() => {
 		if (user) {
-			axios.get("http://" + "f1r3s17" + ":3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
+			axios.get("http://" + "localhost" + ":3000/user/" + user?.id + "/avatar", { withCredentials: true, responseType: 'blob'})
 			.then(res => {
 				const imageObjectURL = URL.createObjectURL(res.data);
 				setAvatar({id: user?.id as number, avatar: imageObjectURL});

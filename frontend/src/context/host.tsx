@@ -1,1 +1,1 @@
-export const hostname = 'f1r3s17'
+export const hostname = 'localhost'

@@ -27,8 +27,8 @@ const Login: FC = () => {
 		});
 	}, []);
 
-	const login42Url = "http://" + "f1r3s17" + ":3000/auth/42/login";
-	const loginGoogleUrl = "http://" + "f1r3s17" + ":3000/auth/google/login";
+	const login42Url = "http://" + "localhost" + ":3000/auth/42/login";
+	const loginGoogleUrl = "http://" + "localhost" + ":3000/auth/google/login";
 
 	if (additionalInfo)
 		return (<AdditionalInfo/>);

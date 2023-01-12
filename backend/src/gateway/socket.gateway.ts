@@ -30,7 +30,7 @@ class UserSocket {
 @WebSocketGateway({
 	cors: {
 		origin: [
-			"http://" + "f1r3s17" + ":3006",
+			"http://" + "localhost" + ":3006",
 		],
 		credentials: true,
 	},
@@ -598,6 +598,8 @@ export class socketGateway {
 			leftScore: 0,
 			rightScore: 0
 		}
+		console.log('UserLeft: ', game.left.username);
+		console.log('Userright: ', game.right.username);
 		return game;
 	}
 }
