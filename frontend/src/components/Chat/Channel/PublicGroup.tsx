@@ -12,6 +12,7 @@ import { useSnackbar } from 'notistack';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showSnackbarNotification } from '../../../App';
+import { hostname } from '../../../context/host';
 import { SocketContext } from '../../../context/socket';
 import { User } from './Channels';
 
@@ -48,7 +49,7 @@ const PublicGroup: React.FC<{
 			type: 'GROUP',
 		};
 
-		axios.post('http://' + process.env.HOST + ':3000/chat/' + user?.id + '/create', payload, { withCredentials: true })
+		axios.post('http://' + hostname + ':3000/chat/' + user?.id + '/create', payload, { withCredentials: true })
 		.then(res => {
 			if (socket)
 				socket.emit('chat/join', { chatID: res.data.id });

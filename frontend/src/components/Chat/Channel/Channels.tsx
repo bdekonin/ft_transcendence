@@ -16,6 +16,7 @@ import ProtectedGroup from './ProtectedGroup';
 import PublicGroup from './PublicGroup';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SettingsDialog from './SettingsDialog';
+import { hostname } from '../../../context/host';
 
 export type User = {
 	id: number;
@@ -48,7 +49,7 @@ const Channels: React.FC<{
 		/* Get all chats */
 		if (!user)
 			return;
-		axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
 		.then(res => {
 			setJoinedChats(res.data.joined);
 			setPublicChats(res.data.public);
@@ -64,7 +65,7 @@ const Channels: React.FC<{
 	useEffect(() => {
 		if (socket && currentChat && user) {
 			socket.on('chat/refresh-chats-joined', () => {
-				axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
+				axios.get('http://' + hostname + ':3000/chat/' + user.id + '/chats?filter=all', { withCredentials: true })
 				.then(res => {
 
 					/* loop through chats */
@@ -136,7 +137,7 @@ const Channels: React.FC<{
 		const payload = {
 			chatID: chat.id
 		}
-		axios.patch('http://' + process.env.HOST + ':3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
+		axios.patch('http://' + hostname + ':3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			socket.emit('chat/join', { chatID: chat.id }); /* Join the room / Let other users know that a new user joined */
 			setRefreshChats(new Date().toISOString());
@@ -152,7 +153,7 @@ const Channels: React.FC<{
 			chatID: chat.id,
 			password: prompt('Please enter the password')
 		}
-		axios.patch('http://' + process.env.HOST + ':3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
+		axios.patch('http://' + hostname + ':3000/chat/' + user?.id + '/join', payload, { withCredentials: true })
 		.then(res => {
 			socket.emit('chat/join', { chatID: chat.id }); /* Join the room / Let other users know that a new user joined */
 			setRefreshChats(new Date().toISOString());
@@ -193,7 +194,7 @@ const Channels: React.FC<{
 	}
 
 	const leaveChannel = (chatID: number) => {
-		axios.delete('http://' + process.env.HOST + ':3000/chat/' + user?.id + '/leave/' + chatID, { withCredentials: true })
+		axios.delete('http://' + hostname + ':3000/chat/' + user?.id + '/leave/' + chatID, { withCredentials: true })
 		.then(res => {
 			socket.emit('chat/leave', { chatID: chatID });
 			setRefreshChats(new Date().toISOString());

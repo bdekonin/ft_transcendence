@@ -3,6 +3,7 @@ import { useSnackbar } from 'notistack';
 import { FC, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showSnackbarNotification } from '../../App';
+import { hostname } from '../../context/host';
 import { SocketContext } from '../../context/socket';
 import './style.css';
 
@@ -13,7 +14,7 @@ const Home: FC = () => {
 	const { enqueueSnackbar } = useSnackbar();
   
 	useEffect(() => {
-		axios.get('http://' + process.env.HOST + ':3000/auth/status', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/auth/status', {withCredentials: true})
 		// .catch((err) => {
 		// 	if (err.data.message === 'username')
 		// 		navigate('/login');
@@ -59,7 +60,7 @@ const Home: FC = () => {
 					<li><a
 							onClick={() => {navigate('/settings')}}>Settings</a></li>
 					<li><a
-							onClick={() => { axios.get('http://' + process.env.HOST + ':3000/auth/logout', { withCredentials: true }).then(() => { navigate('/login') }) }}>Logout</a></li>
+							onClick={() => { axios.get('http://' + hostname + ':3000/auth/logout', { withCredentials: true }).then(() => { navigate('/login') }) }}>Logout</a></li>
 				</ul>
 
 

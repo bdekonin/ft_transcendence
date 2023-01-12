@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showSnackbarNotification } from "../../App";
+import { hostname } from '../../context/host';
 import './style.css';
 
 
@@ -48,7 +49,7 @@ const Settings:React.FC = () => {
 	}, [])
 
 	function getQrCode() {
-		axios.get('http://' + process.env.HOST + ':3000/twofa', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/twofa', {withCredentials: true})
 		.then(res => {
 			setQrCodeE(res.data);
 		})
@@ -60,7 +61,7 @@ const Settings:React.FC = () => {
 	}
 
 	function getUserInfo() {
-		axios.get('http://' + process.env.HOST + ':3000/user', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/user', {withCredentials: true})
 		.then(elem => {
 			setUser(elem.data);
 			setUserNameDef(elem.data.username);
@@ -77,7 +78,7 @@ const Settings:React.FC = () => {
 
 	async function getTwoFAStatus() {
 		await sleep(300);
-		axios.get('http://' + process.env.HOST + ':3000/twofa/status', {withCredentials: true})
+		axios.get('http://' + hostname + ':3000/twofa/status', {withCredentials: true})
 		.then(res => {
 			if (res.data === true)
 			{
@@ -106,7 +107,7 @@ const Settings:React.FC = () => {
 	}
 
 	function getAvatar() {
-		axios.get('http://' + process.env.HOST + ':3000/user/avatar', {withCredentials: true, responseType: 'blob'})
+		axios.get('http://' + hostname + ':3000/user/avatar', {withCredentials: true, responseType: 'blob'})
 		.then(elem => {
 			setAvatar(URL.createObjectURL(elem.data));
 			setOriginAvatar(URL.createObjectURL(elem.data));
@@ -138,7 +139,7 @@ const Settings:React.FC = () => {
 		if (userNameDef !== originUserName)
 		{
 			//Update username here
-			axios.patch('http://' + process.env.HOST + ':3000/user', {username: userNameDef}, {withCredentials: true})
+			axios.patch('http://' + hostname + ':3000/user', {username: userNameDef}, {withCredentials: true})
 			.then((res) => {
 				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your username!', 'success');
 				setOriginUserName(userNameDef);
@@ -152,7 +153,7 @@ const Settings:React.FC = () => {
 		if (inputRef.current && inputRef.current.value)
 		{
 			//update Avatar here
-			axios.post('http://' + process.env.HOST + ':3000/user/avatar', {file: inputRef.current.files![0]}, {withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }})
+			axios.post('http://' + hostname + ':3000/user/avatar', {file: inputRef.current.files![0]}, {withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }})
 			.then((res) => {
 				showSnackbarNotification(enqueueSnackbar, 'Succesfully changed your avatar!', 'success');
 			})
@@ -192,7 +193,7 @@ const Settings:React.FC = () => {
 				setInputCode(['', '', '', '', '', '']);
 			else 
 			{
-				axios.patch('http://' + process.env.HOST + ':3000/twofa/disable', {token: ret}, {withCredentials: true})
+				axios.patch('http://' + hostname + ':3000/twofa/disable', {token: ret}, {withCredentials: true})
 				.then(() => {
 						getTwoFAStatus();
 						setDialogOpenD(false);
@@ -237,7 +238,7 @@ const Settings:React.FC = () => {
 				setInputCode(['', '', '', '', '', '']);
 			else 
 			{
-				axios.patch('http://' + process.env.HOST + ':3000/twofa/enable', {token: ret}, {withCredentials: true})
+				axios.patch('http://' + hostname + ':3000/twofa/enable', {token: ret}, {withCredentials: true})
 				.then(() => {
 					navigate('/login');
 				})

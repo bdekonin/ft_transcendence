@@ -30,7 +30,7 @@ class UserSocket {
 @WebSocketGateway({
 	cors: {
 		origin: [
-			'http://' + process.env.HOST + ':3006',
+			"http://" + "f1r3s17" + ":3006",
 		],
 		credentials: true,
 	},
@@ -64,7 +64,6 @@ export class socketGateway {
 		this.connections.push({
 			userID: user.id, socketID: client.id
 		});
-
 
 		/* Add client to every chat he is in */
 		rooms.forEach((room) => {
@@ -211,11 +210,11 @@ export class socketGateway {
 			return ;
 		}
 		if (game.leftScore >= 10) {
-			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
+			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
 			return;
 		}
 		else if (game.rightScore >= 10) {
-			this.handleEndGame(game, game.left, game.right , game.leftScore, game.rightScore);
+			this.handleEndGame(game, game.right, game.left, game.rightScore, game.leftScore);
 			return;
 		}
 		
@@ -231,14 +230,14 @@ export class socketGateway {
 		
 		//check left canvas bounds
 		if(game.ball.x < 0){
-			game.leftScore += 1;
+			game.rightScore += 1;
 			game.ball.reset()
 			this.currentGames.set(game.id, game);
 		}
-
+		
 		//check right canvas bounds
 		if(game.ball.x + game.ball.width > 700){
-			game.rightScore += 1;
+			game.leftScore += 1;
 			game.ball.reset()
 			this.currentGames.set(game.id, game);
 		}

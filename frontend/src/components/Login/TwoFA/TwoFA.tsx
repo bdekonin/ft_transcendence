@@ -2,6 +2,7 @@ import { Dialog, DialogTitle } from '@mui/material';
 import axios from 'axios';
 import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hostname } from '../../../context/host';
 
 export default function TwoFA() {
 	const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function TwoFA() {
 				setInputCode(['', '', '', '', '', '']);
 			else 
 			{
-				axios.post('http://' + process.env.HOST + ':3000/twofa/verify', {token: ret}, {withCredentials: true})
+				axios.post('http://' + hostname + ':3000/twofa/verify', {token: ret}, {withCredentials: true})
 				.then(res => {
 					setInputCode(['', '', '', '', '', '']);
 					navigate('/');

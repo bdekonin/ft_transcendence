@@ -2,6 +2,7 @@ import axios from "axios";
 import { isAlphanumeric } from "class-validator";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { hostname } from "../../../context/host";
 import './style.css';
 
 const AdditionalInfo: FC = () => {
@@ -84,14 +85,14 @@ const AdditionalInfo: FC = () => {
 	}
 
 	function sumbit() {
-		axios.patch('http://' + process.env.HOST + ':3000/user', { username: userName }, { withCredentials: true })
+		axios.patch('http://' + hostname + ':3000/user', { username: userName }, { withCredentials: true })
 		.then(res => {
 			navigate('/');	
 		})
 		.catch(err => {
 			alert(err.response.data.message);
 		})
-		axios.post('http://' + process.env.HOST + ':3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
+		axios.post('http://' + hostname + ':3000/user/avatar', {file: image} , { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } })
 		.then(res => {
 			navigate('/');
 		})

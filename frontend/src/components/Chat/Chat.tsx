@@ -10,6 +10,7 @@ import { showSnackbarNotification } from '../../App';
 import Channels from './Channel/Channels';
 import Messages, { Message } from './Messages/Messages';
 import Players from './Players/Players';
+import { hostname } from '../../context/host';
 
 interface User {
 	id: number;
@@ -44,7 +45,7 @@ const Chat: React.FC = () => {
 	document.body.style.background = '#323232';
 
 	useEffect(() => {
-		axios.get('http://' + process.env.HOST + ':3000/user', { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/user', { withCredentials: true })
 		.then(res => {
 			setUser(res.data);
 		})
@@ -83,7 +84,7 @@ const Chat: React.FC = () => {
 			return;
 		}
 
-		axios.get('http://' + process.env.HOST + ':3000/social', { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/social', { withCredentials: true })
 		.then(res => {
 			// parse data
 			const parsedData: Friendship[] = res.data.map((friendship: any) => {
@@ -96,7 +97,7 @@ const Chat: React.FC = () => {
 			});
 			setFriendships(parsedData);
 		})
-		axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
 		.then(res => {
 			setMutes(res.data);
 		})
@@ -105,7 +106,7 @@ const Chat: React.FC = () => {
 				navigate('/login');
 			showSnackbarNotification(enqueueSnackbar, err.response.data.message, 'error');
 		});
-		axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+		axios.get('http://' + hostname + ':3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
 		.then(res => {
 			setAdmins(res.data);
 		})
@@ -119,7 +120,7 @@ const Chat: React.FC = () => {
 			return;
 
 		socket.on('chat/refresh-friendships', () => {
-			axios.get('http://' + process.env.HOST + ':3000/social', { withCredentials: true })
+			axios.get('http://' + hostname + ':3000/social', { withCredentials: true })
 			.then(res => {
 				// parse data
 				const parsedData: Friendship[] = res.data.map((friendship: any) => {
@@ -142,7 +143,7 @@ const Chat: React.FC = () => {
 			if (!currentChat) {
 				return;
 			}
-			axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
+			axios.get('http://' + hostname + ':3000/chat/' + user.id + '/mutes/' + currentChat.id, { withCredentials: true })
 			.then(res => {
 				setMutes(res.data);
 			})
@@ -156,7 +157,7 @@ const Chat: React.FC = () => {
 			if (!currentChat) {
 				return;
 			}
-			axios.get('http://' + process.env.HOST + ':3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
+			axios.get('http://' + hostname + ':3000/chat/' + user.id + '/admins/' + currentChat.id, { withCredentials: true })
 			.then(res => {
 				setAdmins(res.data);
 			})
