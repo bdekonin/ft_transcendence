@@ -160,6 +160,7 @@ const Game: React.FC = () => {
 		return () => {
 			socket.off("game/spectate");
 			socket.off("game/invite-start");
+			socket.emit('game-spectator-leave', gameState?.id);
 		}
 	// eslint-disable-next-line
 	}, [socket]);

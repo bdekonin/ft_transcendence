@@ -489,6 +489,13 @@ export class socketGateway {
 		// this.server.to('game:' + payload.id).emit('game/update', game);
 	}
 
+	@SubscribeMessage("game-spectator-leave")
+	async leaveSpectator(client: Socket, gameID: String | undefined) {
+		console.log("AJKSDHAJKSDHAJKDAHSDJHDKASKDJHAKJSDHAKSJDHASKDJAHKAJD");
+		if (gameID)
+			client.leave("game:" + gameID)
+	}
+
 	// @SubscribeMessage('game/score')
 	// async handleScore (client: Socket, payload: any) {
 	// 	const user = await this.findUser(client)
