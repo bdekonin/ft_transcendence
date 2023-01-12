@@ -161,18 +161,20 @@ const Profile:React.FC = () =>
 				<p>Loses: {user?.loses}</p>
 			</div>
 			<div className='games'>
+				<h1>Game History</h1>
 				<table>
-					<h1>Game History</h1>
-					<tr>
-						<th>#</th>
-						<th>Mode</th>
-						<th>Winner</th>
-						<th>Loser</th>
-						<th>Winner score</th>
-						<th>Loser score</th>
-						<th>Date</th>
-					</tr>
-					{ games?.map(game => gameRow(game)) }
+					<tbody>
+						<tr>
+							<th>#</th>
+							<th>Mode</th>
+							<th>Winner</th>
+							<th>Loser</th>
+							<th>Winner score</th>
+							<th>Loser score</th>
+							<th>Date</th>
+						</tr>
+						{ games?.map(game => gameRow(game)) }
+					</tbody>
 				</table>
 			</div>
 		</div>
